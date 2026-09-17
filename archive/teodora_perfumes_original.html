@@ -1,0 +1,3384 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEODORA — Perfumes & Cosméticos | Alta Perfumaria & Cuidados Nobres</title>
+  
+  <!-- Google Fonts: Playfair Display (Editorial), Montserrat (Clean e-commerce) & Great Vibes (Toque manuscrito) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome 6 Icons CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teodora: {
+              white: '#FFFFFF',
+              bgLight: '#FCFAF9',       /* Seda suave off-white */
+              cream: '#F8F4F1',
+              roseSoft: '#E8D4D0',      /* Rosé suave da marca */
+              roseMedium: '#D5B7B2',    /* Rosé mais encorpado e sofisticado */
+              roseLight: '#F7EFEB',     /* Fundo blush sutil */
+              gold: '#C5A059',          /* Dourado champanhe discreto */
+              goldLight: '#F6EEDB',
+              goldDark: '#A6823F',
+              text: '#1E1A1A',          /* Preto carvão quente e nobre */
+              textMuted: '#6E6565',     /* Texto secundário límpido */
+              border: '#EDE4E0',        /* Divisórias ultrafinas e delicadas */
+              borderSubtle: '#F0E8E5'
+            }
+          },
+          fontFamily: {
+            serif: ['"Playfair Display"', 'Georgia', 'serif'],
+            sans: ['"Montserrat"', '-apple-system', 'sans-serif'],
+            script: ['"Great Vibes"', 'cursive']
+          },
+          boxShadow: {
+            'subtle': '0 4px 20px -2px rgba(45, 38, 38, 0.04)',
+            'card-clean': '0 10px 25px -4px rgba(45, 38, 38, 0.06)',
+            'card-hover': '0 20px 35px -8px rgba(197, 160, 89, 0.16)',
+            'drawer': '-15px 0 45px rgba(30, 26, 26, 0.12)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #FCFAF9;
+      color: #1E1A1A;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+    }
+    
+    .font-heading {
+      font-family: 'Playfair Display', serif;
+    }
+    
+    .font-signature {
+      font-family: 'Great Vibes', cursive;
+    }
+
+    /* Scrollbar premium minimalista */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FCFAF9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D5B7B2;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #C5A059;
+    }
+
+    /* Range slider elegante */
+    input[type=range] {
+      accent-color: #C5A059;
+    }
+
+    /* Utilitário para ocultar barra de rolagem horizontal mantendo scroll */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-teodora-roseSoft selection:text-teodora-text flex flex-col min-h-screen">
+
+  <aside class="bg-teodora-roseSoft/70 text-teodora-text text-xs tracking-[0.15em] py-2.5 px-4 uppercase text-center border-b border-teodora-border/80">
+    <div class="max-w-[1320px] mx-auto flex items-center justify-between">
+      <span class="hidden md:flex items-center gap-1.5 text-[11px] tracking-widest text-teodora-textMuted font-medium">
+        <i class="fa-solid fa-sparkles text-teodora-gold"></i> Perfumes • Cosméticos • Cremes Corporais
+      </span>
+      <div class="mx-auto md:mx-0 flex items-center gap-2">
+        <i class="fa-solid fa-shield-heart text-teodora-gold text-xs"></i>
+        <span>Beleza que te acompanha em todos os momentos • <strong class="font-bold text-teodora-text">Até 6x sem juros</strong> ou 5% OFF no Pix</span>
+      </div>
+      <a href="https://wa.me/" target="_blank" class="hidden md:flex items-center gap-2 text-[11px] font-semibold text-teodora-text hover:text-teodora-gold transition">
+        <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i> Atendimento WhatsApp
+      </a>
+    </div>
+  </aside>
+
+  <header class="sticky top-0 z-40 bg-white/98 backdrop-blur-md border-b border-teodora-border shadow-sm">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Linha Principal: Busca Aberta + Logotipo Marcante + Ações -->
+      <div class="flex items-center justify-between h-24 gap-6">
+        
+        <!-- Mobile Drawer Trigger & Desktop Search Bar -->
+        <div class="flex items-center gap-4 flex-1 max-w-sm">
+          <button onclick="toggleMobileFilter()" class="lg:hidden p-2 text-teodora-text hover:text-teodora-gold" aria-label="Abrir Menu e Filtros">
+            <i class="fa-solid fa-bars-staggered text-xl"></i>
+          </button>
+          
+          <!-- Busca Desktop Evidente e Espaçosa -->
+          <div class="hidden sm:flex items-center w-full relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 text-teodora-gold text-sm pointer-events-none"></i>
+            <input type="text" 
+                   id="headerDesktopSearch" 
+                   oninput="handleQuickSearch(this.value)"
+                   placeholder="Buscar por perfumes, óleos, skincare ou notas..." 
+                   class="w-full pl-11 pr-4 py-2.5 bg-teodora-bgLight/80 border border-teodora-border rounded-full text-xs text-teodora-text placeholder:text-teodora-textMuted/70 focus:outline-none focus:border-teodora-gold focus:bg-white transition-all">
+          </div>
+        </div>
+
+        <!-- Logotipo Teodora mais forte e presente -->
+        <div class="flex flex-col items-center cursor-pointer text-center group py-2" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <div class="flex items-center gap-2">
+            <svg class="w-8 h-8 text-teodora-gold transition-transform group-hover:scale-105 duration-300" viewBox="0 0 100 80" fill="none">
+              <path d="M50 8C50 8 40 28 40 45C40 55 45 62 50 62C55 62 60 55 60 45C60 28 50 8 50 8Z" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M50 62C38 62 18 52 16 34C15 23 23 18 23 18C23 18 28 35 42 46" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M50 62C62 62 82 52 84 34C85 23 77 18 77 18C77 18 72 35 58 46" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M28 60C34 65 42 67 50 67C58 67 66 65 72 60" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span class="font-heading text-2xl sm:text-3xl tracking-[0.26em] font-semibold text-teodora-text uppercase leading-none mt-1">TEODORA</span>
+          <span class="text-[10px] tracking-[0.45em] text-teodora-gold font-semibold uppercase mt-0.5">Perfumes &amp; Cosméticos</span>
+        </div>
+
+        <!-- Right Quick Actions (Wishlist & Cart) -->
+        <div class="flex items-center justify-end space-x-3 sm:space-x-4 flex-1 max-w-sm">
+          <button onclick="openSearchModal()" class="sm:hidden p-2 text-teodora-text hover:text-teodora-gold" aria-label="Pesquisar">
+            <i class="fa-solid fa-magnifying-glass text-lg"></i>
+          </button>
+
+          <button onclick="openWishlistModal()" class="flex items-center gap-1.5 p-2.5 text-teodora-text hover:text-teodora-gold rounded-full hover:bg-teodora-roseLight transition relative" aria-label="Lista de Desejos">
+            <i class="fa-regular fa-heart text-xl"></i>
+            <span id="wishlistCountBadge" class="absolute top-1 right-1 w-4 h-4 rounded-full bg-teodora-roseMedium text-white text-[10px] font-bold flex items-center justify-center">0</span>
+          </button>
+
+          <!-- Sacola de Compras com visual refinado -->
+          <button onclick="toggleCartDrawer(true)" class="flex items-center gap-3 px-4 py-2.5 rounded-full bg-teodora-text text-white hover:bg-black transition shadow-sm" aria-label="Ver Sacola">
+            <div class="relative flex items-center">
+              <i class="fa-solid fa-bag-shopping text-sm text-teodora-gold"></i>
+              <span id="cartCountBadge" class="absolute -top-2 -right-2.5 w-4 h-4 rounded-full bg-teodora-gold text-white text-[9px] font-bold flex items-center justify-center">0</span>
+            </div>
+            <div class="hidden md:flex flex-col text-left">
+              <span class="text-[9px] uppercase tracking-wider text-teodora-roseSoft font-medium leading-none">Minha Sacola</span>
+              <span id="headerCartTotal" class="text-xs font-semibold text-white leading-tight">R$ 0,00</span>
+            </div>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Barra de Navegação Horizontal das Categorias Principais -->
+      <nav class="hidden lg:flex items-center justify-center border-t border-teodora-border/80 py-3 gap-8 text-xs font-medium uppercase tracking-[0.16em] text-teodora-text">
+        <button onclick="setCategoryFilter('todos')" data-nav-cat="todos" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Todos</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setCategoryFilter('perfumes')" data-nav-cat="perfumes" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Perfumes</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setCategoryFilter('skincare')" data-nav-cat="skincare" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Skincare</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setCategoryFilter('maquiagem')" data-nav-cat="maquiagem" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Maquiagem</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setCategoryFilter('cabelos')" data-nav-cat="cabelos" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Cabelos</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setCategoryFilter('corpo')" data-nav-cat="corpo" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Corpo &amp; Banho</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setCategoryFilter('kits')" data-nav-cat="kits" class="nav-cat-btn py-1 border-b-2 border-transparent hover:text-teodora-gold transition flex items-center gap-1">Kits de Presente</button>
+        <span class="text-teodora-border">•</span>
+        <button onclick="setSpecialFilter('Edição Especial')" class="hover:text-teodora-goldDark text-teodora-gold font-semibold transition flex items-center gap-1">
+          <i class="fa-solid fa-crown text-[10px]"></i> Linha Privée
+        </button>
+      </nav>
+
+    </div>
+  </header>
+
+  <section class="relative bg-gradient-to-b from-white via-teodora-bgLight to-teodora-bgLight border-b border-teodora-border overflow-hidden">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-18">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        
+        <!-- Hero Textual Completo (Sem sensação de vazio) -->
+        <div class="lg:col-span-6 space-y-6 text-center lg:text-left">
+          
+          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-teodora-border shadow-subtle text-xs uppercase tracking-widest text-teodora-gold font-bold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Perfumes • Cosméticos • Cremes Corporais
+          </div>
+
+          <!-- Título marcante mantendo o slogan -->
+          <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl text-teodora-text font-normal leading-[1.12]">
+            Mais que beleza,<br>
+            <span class="italic font-serif font-medium text-teodora-text">é sobre você.</span>
+          </h1>
+
+          <p class="text-base sm:text-lg text-teodora-textMuted max-w-xl mx-auto lg:mx-0 font-light leading-relaxed">
+            Produtos que realçam o que há de mais lindo em você, todos os dias. Fórmulas delicadas e fragrâncias que acompanham você em todos os momentos.
+          </p>
+
+          <!-- Destaques da marca sem promessas irreais -->
+          <div class="grid grid-cols-3 gap-4 pt-2 border-t border-b border-teodora-border py-4 max-w-lg mx-auto lg:mx-0 text-left">
+            <div>
+              <span class="text-xs font-bold text-teodora-gold block uppercase tracking-wider">Fórmulas Nobres</span>
+              <span class="text-xs text-teodora-textMuted">Textura aveludada</span>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-teodora-gold block uppercase tracking-wider">Cruelty-Free</span>
+              <span class="text-xs text-teodora-textMuted">Não testado em animais</span>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-teodora-gold block uppercase tracking-wider">Envio Seguro</span>
+              <span class="text-xs text-teodora-textMuted">Para todo o Brasil</span>
+            </div>
+          </div>
+
+          <!-- Botões de Ação Imediata -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+            <a href="#catalogo" class="w-full sm:w-auto px-9 py-4 bg-teodora-text hover:bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-full shadow-lg transition flex items-center justify-center gap-3">
+              <span>Conheça Nossos Produtos</span>
+              <i class="fa-solid fa-arrow-down text-xs text-teodora-gold"></i>
+            </a>
+
+            <button onclick="setSpecialFilter('Mais Vendido')" class="w-full sm:w-auto px-8 py-4 bg-white hover:bg-teodora-roseLight border border-teodora-border text-teodora-text text-xs uppercase tracking-[0.16em] font-medium rounded-full transition shadow-sm">
+              Mais Desejados
+            </button>
+          </div>
+
+          <!-- Assinatura autêntica da marca -->
+          <div class="flex items-center justify-center lg:justify-start gap-3 text-xs text-teodora-textMuted">
+            <div class="flex text-teodora-gold text-xs">
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+              <i class="fa-solid fa-star"></i>
+            </div>
+            <span class="font-signature text-xl text-teodora-gold">Beleza que te acompanha em todos os momentos ♡</span>
+          </div>
+        </div>
+
+        <!-- Hero Visual: Imagem aproximadamente 20% maior com composição rica -->
+        <div class="lg:col-span-6 relative flex justify-center">
+          <div class="relative w-full max-w-xl rounded-3xl overflow-hidden bg-white border border-teodora-border p-4 shadow-subtle">
+            <div class="aspect-[4/3] sm:aspect-[16/11] rounded-2xl overflow-hidden relative group">
+              <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1400&q=85" 
+                   alt="Teodora Rose Éternelle" 
+                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+              
+              <div class="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent"></div>
+              
+              <!-- Selo Flutuante de Coleção -->
+              <span class="absolute top-4 left-4 px-3.5 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
+                Fragrância Assinatura
+              </span>
+
+              <!-- Cartão de Ação Rápida no Hero -->
+              <div class="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-teodora-border flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+                <div class="text-left w-full sm:w-auto">
+                  <span class="text-[10px] uppercase tracking-widest text-teodora-gold font-bold">Eau de Parfum • 100ml</span>
+                  <h4 class="font-heading text-base font-semibold text-teodora-text">Rose Éternelle &amp; Peônia Francesa</h4>
+                  <p class="text-xs text-teodora-text font-bold mt-0.5">R$ 349,00 <span class="text-[10px] text-teodora-textMuted font-normal">ou 6x de R$ 58,16 sem juros</span></p>
+                </div>
+                <button onclick="quickAddToCart(1)" class="w-full sm:w-auto px-5 py-2.5 bg-teodora-text hover:bg-black text-white text-xs uppercase tracking-wider font-semibold rounded-xl transition flex items-center justify-center gap-2">
+                  <i class="fa-solid fa-bag-shopping text-teodora-gold"></i>
+                  <span>Comprar Agora</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white border-b border-teodora-border py-8">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <span class="text-[11px] uppercase tracking-[0.25em] text-teodora-gold font-bold">Explore por Universo</span>
+          <h2 class="font-heading text-xl sm:text-2xl text-teodora-text font-semibold">Nossas Categorias Principais</h2>
+        </div>
+        <button onclick="setCategoryFilter('todos')" class="text-xs font-semibold text-teodora-text hover:text-teodora-gold underline uppercase tracking-wider">
+          Ver Todo o Catálogo
+        </button>
+      </div>
+
+      <!-- 7 Categorias Visuais com Fotografia e Nome -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+        
+        <!-- Categoria 1: Perfumes -->
+        <button onclick="setCategoryFilter('perfumes')" data-circle-cat="perfumes" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=300&q=80" alt="Perfumes" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Perfumes</span>
+          <span class="text-[10px] text-teodora-textMuted">Fragrâncias nobres</span>
+        </button>
+
+        <!-- Categoria 2: Skincare -->
+        <button onclick="setCategoryFilter('skincare')" data-circle-cat="skincare" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=300&q=80" alt="Skincare" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Skincare</span>
+          <span class="text-[10px] text-teodora-textMuted">Séruns &amp; Elixires</span>
+        </button>
+
+        <!-- Categoria 3: Maquiagem -->
+        <button onclick="setCategoryFilter('maquiagem')" data-circle-cat="maquiagem" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=300&q=80" alt="Maquiagem" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Maquiagem</span>
+          <span class="text-[10px] text-teodora-textMuted">Realce natural</span>
+        </button>
+
+        <!-- Categoria 4: Cabelos -->
+        <button onclick="setCategoryFilter('cabelos')" data-circle-cat="cabelos" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=300&q=80" alt="Cabelos" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Cabelos</span>
+          <span class="text-[10px] text-teodora-textMuted">Óleos &amp; Máscaras</span>
+        </button>
+
+        <!-- Categoria 5: Corpo & Banho -->
+        <button onclick="setCategoryFilter('corpo')" data-circle-cat="corpo" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=300&q=80" alt="Corpo e Banho" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Corpo &amp; Banho</span>
+          <span class="text-[10px] text-teodora-textMuted">Hidratação sedosa</span>
+        </button>
+
+        <!-- Categoria 6: Kits -->
+        <button onclick="setCategoryFilter('kits')" data-circle-cat="kits" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1512290900672-1f557342674e?auto=format&fit=crop&w=300&q=80" alt="Kits" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Kits &amp; Presentes</span>
+          <span class="text-[10px] text-teodora-textMuted">Caixas laqueadas</span>
+        </button>
+
+        <!-- Categoria 7: Marcas / Exclusividades -->
+        <button onclick="setSpecialFilter('Edição Especial')" data-circle-cat="especial" class="cat-circle-card group p-3 rounded-2xl bg-teodora-bgLight hover:bg-teodora-roseLight/60 border border-teodora-border hover:border-teodora-gold/50 transition-all text-center flex flex-col items-center">
+          <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden mb-2.5 border-2 border-white shadow-sm group-hover:scale-105 transition-transform">
+            <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=300&q=80" alt="Marcas" class="w-full h-full object-cover">
+          </div>
+          <span class="text-xs font-semibold text-teodora-text uppercase tracking-wider group-hover:text-teodora-gold transition">Coleções Privée</span>
+          <span class="text-[10px] text-teodora-textMuted">Edições limitadas</span>
+        </button>
+
+      </div>
+
+    </div>
+  </section>
+
+  <section class="bg-teodora-bgLight border-b border-teodora-border py-4">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center divide-y md:divide-y-0 md:divide-x divide-teodora-border/80">
+        
+        <div class="py-2 flex items-center justify-center gap-3">
+          <i class="fa-solid fa-award text-teodora-gold text-xl"></i>
+          <div class="text-left">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-teodora-text">Produtos Originais</h5>
+            <p class="text-xs text-teodora-textMuted">Fórmulas autênticas e selecionadas</p>
+          </div>
+        </div>
+
+        <div class="py-2 flex items-center justify-center gap-3">
+          <i class="fa-solid fa-truck-fast text-teodora-gold text-xl"></i>
+          <div class="text-left">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-teodora-text">Envio Rápido e Seguro</h5>
+            <p class="text-xs text-teodora-textMuted">Embalagem protegida e com rastreio</p>
+          </div>
+        </div>
+
+        <div class="py-2 flex items-center justify-center gap-3">
+          <i class="fa-solid fa-headset text-teodora-gold text-xl"></i>
+          <div class="text-left">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-teodora-text">Atendimento Especializado</h5>
+            <p class="text-xs text-teodora-textMuted">Suporte humanizado via WhatsApp</p>
+          </div>
+        </div>
+
+        <div class="py-2 flex items-center justify-center gap-3">
+          <i class="fa-solid fa-credit-card text-teodora-gold text-xl"></i>
+          <div class="text-left">
+            <h5 class="text-xs font-bold uppercase tracking-wider text-teodora-text">Pagamento Facilitado</h5>
+            <p class="text-xs text-teodora-textMuted">Até 6x sem juros ou 5% no Pix</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <main id="catalogo" class="flex-1 py-12 max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+    
+    <!-- FLUXO DO CATÁLOGO PRINCIPAL -->
+    <div id="catalogMainFlow" class="space-y-8">
+      
+      <!-- Topo do Catálogo: Filtros Ativos e Ordenação com Escala Balanceada -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between pb-6 border-b border-teodora-border gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-[0.25em] text-teodora-gold font-bold">Catálogo Oficial</span>
+            <span id="productResultsCount" class="text-xs px-2.5 py-0.5 rounded-full bg-white border border-teodora-border text-teodora-text font-semibold">12 produtos</span>
+          </div>
+          <h2 class="font-heading text-2xl sm:text-3xl text-teodora-text font-normal mt-1">Criações Nobres &amp; Rituais Diários</h2>
+        </div>
+
+        <!-- Ordenação & Controle de Visualização -->
+        <div class="flex items-center gap-3">
+          <button onclick="toggleMobileFilter()" class="lg:hidden px-4 py-2.5 rounded-xl border border-teodora-border bg-white flex items-center gap-2 text-xs font-semibold text-teodora-text shadow-sm">
+            <i class="fa-solid fa-sliders text-teodora-gold"></i> Filtros
+          </button>
+
+          <div class="flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-xl border border-teodora-border shadow-sm">
+            <label for="sortSelect" class="text-teodora-textMuted uppercase text-[10px] tracking-wider font-bold">Ordenar:</label>
+            <select id="sortSelect" onchange="applySorting(this.value)" class="bg-transparent text-xs font-medium text-teodora-text focus:outline-none cursor-pointer">
+              <option value="populares">Mais Desejados</option>
+              <option value="preco-crescente">Menor Preço</option>
+              <option value="preco-decrescente">Maior Preço</option>
+              <option value="avaliacao">Mais Bem Avaliados</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Filter Tags Row -->
+      <div class="flex flex-wrap items-center justify-between gap-2 py-3 border-b border-teodora-border/80 text-xs">
+        <div class="flex flex-wrap items-center gap-2" id="activeFilterTags">
+          <!-- Injetado dinamicamente -->
+        </div>
+        <button onclick="resetAllFilters()" class="text-xs text-teodora-gold hover:underline font-semibold ml-auto">Limpar filtros</button>
+      </div>
+
+      <!-- Layout Grid: Sidebar de Filtros Expandida + Grade de Produtos -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8 items-start">
+        
+        <!-- Filtros Laterais com Seleção Dinâmica por Categoria -->
+        <aside class="hidden lg:block lg:col-span-3 sticky top-28 space-y-6 bg-white p-6 rounded-3xl border border-teodora-border shadow-subtle">
+          
+          <div class="flex items-center justify-between pb-3 border-b border-teodora-border">
+            <div>
+              <span id="sidebarCategoryEyebrow" class="text-[10px] uppercase tracking-widest text-teodora-gold font-bold block">Alta Perfumaria ✦</span>
+              <h3 id="sidebarCategoryTitle" class="text-xs uppercase tracking-[0.2em] font-bold text-teodora-text flex items-center gap-2">
+                <i class="fa-solid fa-sliders text-teodora-gold"></i> Filtros de Seleção
+              </h3>
+            </div>
+            <button onclick="resetAllFilters()" class="text-xs text-teodora-gold hover:underline font-medium">Limpar</button>
+          </div>
+
+          <!-- Grupos Dinâmicos Injetados via JavaScript de acordo com o universo ativo -->
+          <div id="dynamicSidebarFilterGroups" class="space-y-4"></div>
+
+          <!-- Slider de Preço com Atalhos Rápidos -->
+          <div class="space-y-3 pt-5 border-t border-teodora-border">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Preço Máximo</h4>
+              <span id="priceDisplayLabel" class="text-sm font-bold text-teodora-text">R$ 500,00</span>
+            </div>
+            <input type="range" id="priceRangeInput" min="70" max="500" step="10" value="500" oninput="handlePriceRangeChange(this.value)" class="w-full cursor-pointer">
+            <div class="flex gap-1.5 pt-1">
+              <button onclick="setPriceShortcut(100)" class="flex-1 py-1 rounded-lg border border-teodora-border hover:border-teodora-gold text-[10px] font-semibold text-teodora-text">Até R$ 100</button>
+              <button onclick="setPriceShortcut(250)" class="flex-1 py-1 rounded-lg border border-teodora-border hover:border-teodora-gold text-[10px] font-semibold text-teodora-text">Até R$ 250</button>
+              <button onclick="setPriceShortcut(500)" class="flex-1 py-1 rounded-lg border border-teodora-border hover:border-teodora-gold text-[10px] font-semibold text-teodora-text">Todos</button>
+            </div>
+          </div>
+
+          <!-- Curadoria Exclusiva -->
+          <div class="space-y-3 pt-5 border-t border-teodora-border">
+            <h4 class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Curadoria Exclusiva</h4>
+            <div class="space-y-2 text-xs">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="radio" name="badgeFilter" value="" checked onchange="setSpecialFilter('')" class="accent-teodora-gold">
+                <span class="text-teodora-text">Todos os Destaques</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="radio" name="badgeFilter" value="Mais Vendido" onchange="setSpecialFilter('Mais Vendido')" class="accent-teodora-gold">
+                <span class="text-teodora-text">Mais Vendidos</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="radio" name="badgeFilter" value="Lançamento" onchange="setSpecialFilter('Lançamento')" class="accent-teodora-gold">
+                <span class="text-teodora-text">Lançamentos</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="radio" name="badgeFilter" value="Edição Especial" onchange="setSpecialFilter('Edição Especial')" class="accent-teodora-gold">
+                <span class="text-teodora-text">Coleções Privée</span>
+              </label>
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input type="radio" name="badgeFilter" value="Presente Perfeito" onchange="setSpecialFilter('Presente Perfeito')" class="accent-teodora-gold">
+                <span class="text-teodora-text">Kits Presente</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Box Caixa Laqueada -->
+          <div class="pt-5 border-t border-teodora-border">
+            <div class="p-4 rounded-2xl bg-teodora-roseLight/70 border border-teodora-border text-center space-y-2">
+              <i class="fa-solid fa-gift text-teodora-gold text-2xl"></i>
+              <h5 class="text-xs font-bold text-teodora-text">Embalagem Especial para Presente</h5>
+              <p class="text-xs text-teodora-textMuted leading-relaxed">Caixas sofisticadas e laços elegantes disponíveis para encantar quem você ama.</p>
+            </div>
+          </div>
+
+        </aside>
+
+        <!-- Grade Principal de Produtos -->
+        <section class="col-span-1 lg:col-span-9">
+          
+          <div id="productGridContainer" class="space-y-10">
+            <!-- Popula produtos e banner editorial via JS -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyCatalogState" class="hidden text-center py-16 bg-white rounded-3xl border border-teodora-border p-8 space-y-4">
+            <div class="w-16 h-16 rounded-full bg-teodora-roseLight text-teodora-gold flex items-center justify-center mx-auto text-2xl">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+            <h4 class="font-heading text-xl text-teodora-text font-medium">Nenhum produto encontrado com estes filtros</h4>
+            <p class="text-xs text-teodora-textMuted max-w-sm mx-auto">Ajuste os filtros de família olfativa ou aumente o valor máximo da faixa de preço.</p>
+            <button onclick="resetAllFilters()" class="px-7 py-3 bg-teodora-text text-white text-xs uppercase tracking-wider rounded-full hover:bg-black transition font-semibold">
+              Ver Todos os Produtos
+            </button>
+          </div>
+
+        </section>
+
+      </div>
+
+    </div>
+
+    <!-- ================= PÁGINA DE DETALHE DO PRODUTO (PDP) ================= -->
+    <div id="productPageView" class="hidden space-y-12">
+      
+      <!-- Navegação Superior / Breadcrumb & Voltar -->
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-teodora-border">
+        <button onclick="closeProductPage()" class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-teodora-text hover:text-teodora-gold transition group">
+          <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1 text-teodora-gold"></i>
+          <span>Voltar para o Catálogo</span>
+        </button>
+
+        <nav class="flex items-center gap-2 text-xs text-teodora-textMuted" aria-label="Breadcrumb">
+          <button onclick="closeProductPage()" class="hover:text-teodora-gold">Início</button>
+          <span>/</span>
+          <span id="pdpBreadcrumbCategory" class="capitalize">Perfumes</span>
+          <span>/</span>
+          <span id="pdpBreadcrumbTitle" class="text-teodora-text font-semibold truncate max-w-xs">Rose Éternelle</span>
+        </nav>
+      </div>
+
+      <!-- Grade Principal da PDP: Galeria + Informações de Compra -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        
+        <!-- Coluna Esquerda: Galeria de Imagens -->
+        <div class="lg:col-span-6 space-y-4">
+          <div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-white border border-teodora-border shadow-subtle group">
+            <img id="pdpMainImage" src="" alt="Produto Teodora" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+            <span id="pdpBadgeTag" class="absolute top-4 left-4 px-3.5 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
+              Mais Vendido
+            </span>
+          </div>
+
+          <!-- Miniaturas / Galeria -->
+          <div id="pdpThumbnailRow" class="grid grid-cols-4 gap-3">
+            <!-- Injetado dinamicamente via JS -->
+          </div>
+        </div>
+
+        <!-- Coluna Direita: Informações, Variações, Preço e Compra -->
+        <div class="lg:col-span-6 space-y-6">
+          
+          <div>
+            <span id="pdpBrandTag" class="text-[10px] uppercase tracking-[0.25em] text-teodora-gold font-bold block mb-1">
+              TEODORA • ALTA PERFUMARIA
+            </span>
+            <h1 id="pdpTitle" class="font-heading text-3xl sm:text-4xl text-teodora-text font-normal leading-tight">
+              Rose Éternelle &amp; Peônia Francesa
+            </h1>
+
+            <div class="flex items-center gap-3 mt-2 text-xs">
+              <div class="flex text-teodora-gold text-xs">
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <span id="pdpRating" class="font-bold text-teodora-text">4.9</span>
+              <span class="text-teodora-border">•</span>
+              <span id="pdpReviewsCount" class="text-teodora-textMuted">142 avaliações verificadas</span>
+            </div>
+          </div>
+
+          <!-- Preço com Destaque & Parcelamento -->
+          <div class="p-5 rounded-3xl bg-teodora-bgLight border border-teodora-border space-y-2">
+            <div class="flex items-baseline gap-3 flex-wrap">
+              <span id="pdpCurrentPrice" class="font-heading text-3xl sm:text-4xl font-bold text-teodora-text tracking-tight">R$ 349,00</span>
+              <span id="pdpOldPrice" class="text-sm text-teodora-textMuted line-through">R$ 389,00</span>
+              <span id="pdpDiscountBadge" class="text-[11px] font-bold text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-2.5 py-0.5 rounded-full">OFERTA EXCLUSIVA</span>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-teodora-border/70 text-xs">
+              <p class="text-teodora-textMuted">
+                ou em até 6x de <strong id="pdpInstallmentPrice" class="text-teodora-text font-semibold">R$ 58,16</strong> sem juros
+              </p>
+              <div class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
+                <i class="fa-brands fa-pix text-emerald-600"></i>
+                <span>R$ <span id="pdpPixPrice">331,55</span> no Pix (5% OFF)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seletor de Tamanho / Variação -->
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-teodora-text uppercase tracking-wider">Volume / Apresentação:</span>
+              <span id="pdpSelectedVolumeLabel" class="text-teodora-textMuted font-medium">Frasco 100ml (Assinatura)</span>
+            </div>
+            <div id="pdpVariantSelector" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <!-- Botões de variantes injetados via JS -->
+            </div>
+          </div>
+
+          <!-- Quantidade e Botões de Ação (Comprar Agora + Sacola + Wishlist) -->
+          <div class="space-y-3 pt-2">
+            <div class="flex items-center gap-3">
+              <!-- Seletor de Quantidade -->
+              <div class="flex items-center border border-teodora-border bg-white rounded-2xl p-1 shrink-0">
+                <button onclick="changePdpQuantity(-1)" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold hover:bg-teodora-roseLight transition" aria-label="Diminuir quantidade">-</button>
+                <span id="pdpQuantityCount" class="w-10 text-center font-bold text-sm text-teodora-text">1</span>
+                <button onclick="changePdpQuantity(1)" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold hover:bg-teodora-roseLight transition" aria-label="Aumentar quantidade">+</button>
+              </div>
+
+              <!-- Botão Adicionar à Sacola -->
+              <button onclick="addToCartFromPdp()" class="flex-1 py-4 px-6 bg-white hover:bg-teodora-roseLight/70 border border-teodora-border hover:border-teodora-gold text-teodora-text text-xs uppercase tracking-[0.16em] font-semibold rounded-2xl transition flex items-center justify-center gap-2 shadow-sm">
+                <i class="fa-solid fa-bag-shopping text-teodora-gold"></i>
+                <span>Adicionar à Sacola</span>
+              </button>
+
+              <!-- Botão Wishlist -->
+              <button onclick="toggleWishlistFromPdp()" class="w-14 h-14 rounded-2xl border border-teodora-border bg-white hover:bg-teodora-roseLight flex items-center justify-center text-teodora-text transition shrink-0" aria-label="Favoritar Produto">
+                <i id="pdpWishlistIcon" class="fa-regular fa-heart text-lg"></i>
+              </button>
+            </div>
+
+            <!-- Botão Comprar Agora (Checkout Direto) -->
+            <button onclick="buyNowFromPdp()" class="w-full py-4 px-8 bg-teodora-text hover:bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-bolt text-teodora-gold"></i>
+              <span>Comprar Agora • Checkout Seguro</span>
+            </button>
+          </div>
+
+          <!-- Cálculo de Frete e Prazos com ViaCEP -->
+          <div class="p-4 rounded-2xl bg-white border border-teodora-border space-y-2.5">
+            <div class="flex items-center justify-between text-xs font-semibold text-teodora-text">
+              <span class="flex items-center gap-2">
+                <i class="fa-solid fa-truck-fast text-teodora-gold"></i>
+                <span>Calcular Frete e Prazo de Entrega</span>
+              </span>
+              <span class="text-[10px] text-teodora-gold font-bold">Envio para todo o Brasil</span>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" id="pdpCepInput" maxlength="9" placeholder="Digite seu CEP (ex: 01001-000)" class="w-full px-3.5 py-2.5 text-xs rounded-xl border border-teodora-border focus:outline-none focus:border-teodora-gold bg-teodora-bgLight">
+              <button onclick="calculateFreightForPdp()" class="px-5 py-2.5 bg-teodora-text hover:bg-black text-white rounded-xl text-xs font-semibold shrink-0 transition">
+                Calcular
+              </button>
+            </div>
+            <div id="pdpShippingResults" class="hidden text-xs pt-1"></div>
+          </div>
+
+          <!-- Pirâmide Olfativa Detalhada -->
+          <div class="p-5 rounded-3xl bg-teodora-bgLight border border-teodora-border space-y-4">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-feather-pointed text-teodora-gold"></i>
+              <h4 class="text-xs uppercase tracking-[0.2em] font-bold text-teodora-text">Arquitetura Olfativa &amp; Notas</h4>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div class="p-3 bg-white rounded-2xl border border-teodora-border space-y-1">
+                <span class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Topo</span>
+                <p id="pdpTopNotes" class="text-teodora-textMuted text-[11px] leading-relaxed">Mandarina e Rosas</p>
+                <span class="text-[9px] text-teodora-textMuted/70 block">Primeiros 15 minutos</span>
+              </div>
+              <div class="p-3 bg-white rounded-2xl border border-teodora-border space-y-1">
+                <span class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Coração</span>
+                <p id="pdpHeartNotes" class="text-teodora-textMuted text-[11px] leading-relaxed">Peônia e Magnólia</p>
+                <span class="text-[9px] text-teodora-textMuted/70 block">Corpo da fragrância (6h)</span>
+              </div>
+              <div class="p-3 bg-white rounded-2xl border border-teodora-border space-y-1">
+                <span class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Fundo</span>
+                <p id="pdpBaseNotes" class="text-teodora-textMuted text-[11px] leading-relaxed">Almíscar e Âmbar</p>
+                <span class="text-[9px] text-teodora-textMuted/70 block">Fixação na pele (+16h)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Abas Descritivas: Ritual, Ingredientes e Avaliações -->
+      <div class="bg-white rounded-3xl border border-teodora-border p-6 sm:p-8 shadow-subtle space-y-6">
+        <div class="flex border-b border-teodora-border gap-6 sm:gap-8 text-xs font-semibold uppercase tracking-wider">
+          <button id="tabBtnRitual" onclick="switchPdpTab('ritual')" class="pdp-tab-btn pb-3 border-b-2 border-teodora-gold text-teodora-text font-bold transition">
+            Ritual de Aplicação
+          </button>
+          <button id="tabBtnAtivos" onclick="switchPdpTab('ativos')" class="pdp-tab-btn pb-3 border-b-2 border-transparent text-teodora-textMuted hover:text-teodora-text transition">
+            Ingredientes &amp; Botânica
+          </button>
+          <button id="tabBtnAvaliacoes" onclick="switchPdpTab('avaliacoes')" class="pdp-tab-btn pb-3 border-b-2 border-transparent text-teodora-textMuted hover:text-teodora-text transition">
+            Avaliações &amp; Experiências
+          </button>
+        </div>
+
+        <div id="pdpTabContentRitual" class="text-xs sm:text-sm text-teodora-textMuted leading-relaxed space-y-3">
+          <p id="pdpDescription" class="text-teodora-text font-medium"></p>
+          <p id="pdpRitualAdvice"></p>
+        </div>
+
+        <div id="pdpTabContentAtivos" class="hidden text-xs sm:text-sm text-teodora-textMuted leading-relaxed space-y-3">
+          <p class="font-bold text-teodora-text">Composição Botânica e Ativos Nobres:</p>
+          <p id="pdpIngredients" class="font-mono text-xs text-teodora-textMuted bg-teodora-bgLight p-4 rounded-2xl border border-teodora-border"></p>
+          <div class="flex flex-wrap gap-4 pt-2 text-xs text-teodora-text">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-leaf text-emerald-600"></i> 100% Vegano</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-heart text-teodora-roseMedium"></i> Cruelty-Free</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-droplet text-teodora-gold"></i> Sem Parabenos</span>
+          </div>
+        </div>
+
+        <div id="pdpTabContentAvaliacoes" class="hidden space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="p-4 rounded-2xl bg-teodora-bgLight border border-teodora-border space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-teodora-text">Helena Guimarães</span>
+                <span class="text-teodora-gold"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+              </div>
+              <p class="text-teodora-textMuted leading-relaxed">"A fixação é surreal! Apliquei pela manhã e à noite ainda sentia a nuance floral deliciosa. O frasco é uma joia na penteadeira."</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-teodora-bgLight border border-teodora-border space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-teodora-text">Camila Albuquerque</span>
+                <span class="text-teodora-gold"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+              </div>
+              <p class="text-teodora-textMuted leading-relaxed">"Entrega super rápida e a embalagem laqueada com o laço rosé foi uma experiência à parte. Virou minha assinatura olfativa."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seção: Você Também Pode Amar (Produtos Similares) -->
+      <div class="space-y-6 pt-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <span class="text-[11px] uppercase tracking-[0.25em] text-teodora-gold font-bold">Harmonização Olfativa</span>
+            <h3 class="font-heading text-2xl text-teodora-text font-semibold">Você Também Pode Amar</h3>
+          </div>
+          <button onclick="closeProductPage()" class="text-xs font-semibold text-teodora-text hover:text-teodora-gold underline uppercase tracking-wider">
+            Ver Todo o Catálogo
+          </button>
+        </div>
+
+        <div id="pdpSimilarProductsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Injetado dinamicamente via JS -->
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <div id="mobileFilterDrawer" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="mobileFilterPanel" class="fixed inset-y-0 left-0 max-w-xs w-full bg-white p-6 overflow-y-auto transform -translate-x-full transition-transform duration-300 space-y-6">
+      
+      <div class="flex items-center justify-between pb-4 border-b border-teodora-border">
+        <div>
+          <span id="mobileCategoryEyebrow" class="text-[10px] uppercase tracking-widest text-teodora-gold font-bold block">Universo Teodora ✦</span>
+          <h3 id="mobileCategoryTitle" class="font-heading text-lg font-semibold text-teodora-text">Filtros de Catálogo</h3>
+        </div>
+        <button onclick="toggleMobileFilter()" class="p-2 text-teodora-textMuted hover:text-teodora-text">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Categorias no Mobile -->
+      <div class="space-y-2">
+        <span class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Categorias</span>
+        <div class="flex flex-col gap-1.5 text-xs font-medium">
+          <button onclick="setCategoryFilter('todos'); toggleMobileFilter();" data-mobile-cat="todos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Todos os Produtos</button>
+          <button onclick="setCategoryFilter('perfumes'); toggleMobileFilter();" data-mobile-cat="perfumes" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Perfumes</button>
+          <button onclick="setCategoryFilter('skincare'); toggleMobileFilter();" data-mobile-cat="skincare" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Skincare</button>
+          <button onclick="setCategoryFilter('maquiagem'); toggleMobileFilter();" data-mobile-cat="maquiagem" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Maquiagem</button>
+          <button onclick="setCategoryFilter('cabelos'); toggleMobileFilter();" data-mobile-cat="cabelos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Cabelos</button>
+          <button onclick="setCategoryFilter('corpo'); toggleMobileFilter();" data-mobile-cat="corpo" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Corpo &amp; Banho</button>
+          <button onclick="setCategoryFilter('kits'); toggleMobileFilter();" data-mobile-cat="kits" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Kits de Presente</button>
+        </div>
+      </div>
+
+      <!-- Grupos Dinâmicos Mobile -->
+      <div id="dynamicMobileFilterGroups" class="space-y-4 pt-3 border-t border-teodora-border"></div>
+
+      <!-- Slider de Preço no Mobile -->
+      <div class="space-y-3 pt-4 border-t border-teodora-border">
+        <div class="flex justify-between items-center">
+          <span class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Preço Máximo</span>
+          <span id="mobilePriceLabel" class="text-xs font-bold text-teodora-text">R$ 500,00</span>
+        </div>
+        <input type="range" min="70" max="500" step="10" value="500" oninput="handlePriceRangeChange(this.value)" class="w-full">
+      </div>
+
+      <div class="pt-6 border-t border-teodora-border">
+        <button onclick="toggleMobileFilter()" class="w-full py-3.5 bg-teodora-text text-white text-xs uppercase tracking-widest font-semibold rounded-xl shadow-md">
+          Aplicar e Ver Resultados
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="cartDrawerBackdrop" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="cartDrawerPanel" class="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-drawer p-6 flex flex-col justify-between transform translate-x-full transition-transform duration-300 ease-in-out">
+      
+      <!-- Drawer Header -->
+      <div>
+        <div class="flex items-center justify-between pb-4 border-b border-teodora-border">
+          <div class="flex items-center gap-2.5">
+            <i class="fa-solid fa-bag-shopping text-teodora-gold text-lg"></i>
+            <h3 class="font-heading text-xl font-semibold tracking-wide text-teodora-text">Sua Sacola Teodora</h3>
+            <span id="cartHeaderBadge" class="text-xs bg-teodora-roseSoft px-2.5 py-0.5 rounded-full font-bold text-teodora-text">0</span>
+          </div>
+          <button onclick="toggleCartDrawer(false)" class="text-teodora-textMuted hover:text-teodora-text p-2" aria-label="Fechar Sacola">
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <!-- Informações de Envio & Segurança -->
+        <div class="mt-4 p-3.5 rounded-2xl bg-teodora-roseLight/80 border border-teodora-border flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-white text-teodora-gold flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-box-open text-xs"></i>
+          </div>
+          <div class="text-xs">
+            <span class="font-bold text-teodora-text block">Envio Seguro para Todo o Brasil</span>
+            <span class="text-teodora-textMuted text-[11px]">Calcule seu frete abaixo para visualizar prazos e valores</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de Itens da Sacola -->
+      <div id="cartItemList" class="my-4 overflow-y-auto flex-1 space-y-3 pr-1">
+        <!-- Injetado dinamicamente -->
+      </div>
+
+      <!-- Rodapé da Sacola: Frete ViaCEP, Cupom e Checkout -->
+      <div class="pt-4 border-t border-teodora-border space-y-3 bg-white">
+        
+        <!-- Cálculo de Frete ViaCEP -->
+        <div class="p-3.5 bg-teodora-bgLight rounded-2xl border border-teodora-border space-y-2">
+          <div class="flex items-center justify-between text-xs font-semibold text-teodora-text">
+            <span class="flex items-center gap-1.5">
+              <i class="fa-solid fa-truck text-teodora-gold"></i> Simulação de Frete
+            </span>
+            <span id="cepResultLabel" class="text-[11px] text-teodora-gold font-normal"></span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" id="cepInput" maxlength="9" placeholder="Digite seu CEP (ex: 01001-000)" class="w-full px-3 py-2 text-xs rounded-xl border border-teodora-border focus:outline-none focus:border-teodora-gold bg-white">
+            <button onclick="calculateFreightViaCEP()" class="px-4 py-2 bg-teodora-text hover:bg-black text-white rounded-xl text-xs font-semibold shrink-0 transition">
+              Calcular
+            </button>
+          </div>
+          <div id="shippingRatesBox" class="hidden space-y-1 text-xs pt-1"></div>
+        </div>
+
+        <!-- Cupom de Desconto -->
+        <div class="flex gap-2">
+          <input type="text" id="cartCouponInput" placeholder="CUPOM (ex: TEODORA10)" class="uppercase w-full px-3.5 py-2 text-xs rounded-xl border border-teodora-border focus:outline-none focus:border-teodora-gold bg-white">
+          <button onclick="applyDiscountCoupon()" class="px-4 py-2 bg-teodora-roseSoft hover:bg-teodora-roseMedium text-teodora-text rounded-xl text-xs font-bold transition">
+            Aplicar
+          </button>
+        </div>
+
+        <!-- Resumo de Valores -->
+        <div class="space-y-1.5 text-xs text-teodora-text pt-2 border-t border-teodora-border">
+          <div class="flex justify-between">
+            <span class="text-teodora-textMuted">Subtotal:</span>
+            <span id="summarySubtotal" class="font-semibold">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between" id="summaryDiscountRow" style="display:none;">
+            <span class="text-emerald-700 font-semibold">Desconto Cupom (10%):</span>
+            <span id="summaryDiscount" class="text-emerald-700 font-semibold">- R$ 0,00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-teodora-textMuted">Frete:</span>
+            <span id="summaryShipping" class="font-semibold">Informe seu CEP</span>
+          </div>
+          <div class="flex justify-between text-base font-bold pt-2 border-t border-teodora-border">
+            <span>Total da Compra:</span>
+            <span id="summaryTotal" class="text-teodora-text font-heading text-2xl">R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Botão Principal de Finalização Mercado Pago -->
+        <button onclick="openMercadoPagoModal()" class="w-full py-4 bg-teodora-text hover:bg-black text-white rounded-2xl text-xs uppercase tracking-[0.2em] font-semibold flex items-center justify-center gap-2 shadow-lg transition">
+          <i class="fa-solid fa-lock text-teodora-gold"></i>
+          <span>Finalizar Compra Segura</span>
+        </button>
+
+        <div class="flex items-center justify-center gap-3 text-teodora-textMuted text-[10px] pt-1">
+          <span class="flex items-center gap-1"><i class="fa-brands fa-pix text-emerald-600"></i> Pix com 5% OFF</span>
+          <span>•</span>
+          <span class="flex items-center gap-1"><i class="fa-solid fa-shield-halved text-teodora-gold"></i> Mercado Pago Oficial</span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div id="mercadoPagoModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-teodora-border my-8 relative">
+      
+      <button onclick="closeMercadoPagoModal()" class="absolute top-6 right-6 text-teodora-textMuted hover:text-teodora-text p-2" aria-label="Fechar">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-3 pb-6 border-b border-teodora-border">
+        <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl font-bold">
+          <i class="fa-brands fa-mercadopago"></i>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase tracking-widest text-sky-600 font-bold">Ambiente Criptografado &amp; Oficial</span>
+          <h3 class="font-heading text-2xl font-bold text-teodora-text">Checkout Mercado Pago</h3>
+        </div>
+      </div>
+
+      <!-- Formulário de Finalização -->
+      <div id="checkoutFormPanel" class="mt-6 space-y-6">
+        
+        <!-- Passo 1: Dados do Cliente -->
+        <div class="space-y-3">
+          <h4 class="text-xs uppercase tracking-wider text-teodora-gold font-bold flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-teodora-gold text-white flex items-center justify-center text-[10px]">1</span>
+            Destinatário &amp; Endereço de Envio
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <input type="text" id="buyerName" placeholder="Nome Completo" value="Ana Beatriz Vasconcelos" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="email" id="buyerEmail" placeholder="E-mail para Rastreio" value="anabeatriz@email.com" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerDoc" placeholder="CPF (Obrigatório para NF-e)" value="123.456.789-00" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="tel" id="buyerPhone" placeholder="WhatsApp para Notificações" value="(11) 98765-4321" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <div class="sm:col-span-2">
+              <input type="text" id="buyerAddress" placeholder="Endereço Completo (Rua, Número, Bairro, Compl.)" value="Avenida Paulista, 1500 - Apto 82" class="w-full p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Passo 2: Método de Pagamento -->
+        <div class="space-y-4 pt-4 border-t border-teodora-border">
+          <h4 class="text-xs uppercase tracking-wider text-teodora-gold font-bold flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-teodora-gold text-white flex items-center justify-center text-[10px]">2</span>
+            Forma de Pagamento Segura
+          </h4>
+
+          <div class="grid grid-cols-3 gap-3">
+            <button onclick="changePaymentOption('pix')" id="payTabPix" class="pay-tab p-3.5 rounded-2xl border-2 border-teodora-gold bg-teodora-roseLight flex flex-col items-center justify-center gap-1 transition">
+              <i class="fa-brands fa-pix text-emerald-600 text-2xl"></i>
+              <span class="text-xs font-bold text-teodora-text">Pix</span>
+              <span class="text-[9px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">+5% OFF</span>
+            </button>
+
+            <button onclick="changePaymentOption('card')" id="payTabCard" class="pay-tab p-3.5 rounded-2xl border border-teodora-border bg-white flex flex-col items-center justify-center gap-1 transition">
+              <i class="fa-regular fa-credit-card text-teodora-text text-2xl"></i>
+              <span class="text-xs font-bold text-teodora-text">Cartão</span>
+              <span class="text-[9px] text-teodora-textMuted">Até 6x Sem Juros</span>
+            </button>
+
+            <button onclick="changePaymentOption('boleto')" id="payTabBoleto" class="pay-tab p-3.5 rounded-2xl border border-teodora-border bg-white flex flex-col items-center justify-center gap-1 transition">
+              <i class="fa-solid fa-barcode text-teodora-text text-2xl"></i>
+              <span class="text-xs font-bold text-teodora-text">Boleto</span>
+              <span class="text-[9px] text-teodora-textMuted">Compensa em 24h</span>
+            </button>
+          </div>
+
+          <!-- Pix Painel -->
+          <div id="panelPix" class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs space-y-2">
+            <div class="flex items-center gap-2 text-emerald-800 font-bold">
+              <i class="fa-solid fa-bolt text-emerald-600"></i>
+              <span>Aprovação instantânea &amp; Desconto de 5% aplicado no total</span>
+            </div>
+            <p class="text-teodora-textMuted text-xs">
+              O QR Code e a chave Pix copia-e-cola são gerados instantaneamente pelo Mercado Pago com validade de 30 minutos.
+            </p>
+          </div>
+
+          <!-- Cartão Painel -->
+          <div id="panelCard" class="hidden p-4 rounded-2xl bg-teodora-bgLight border border-teodora-border text-xs space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Número do Cartão de Crédito</label>
+                <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Titular (como impresso)</label>
+                <input type="text" placeholder="Ex: ANA B VASCONCELOS" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Validade</label>
+                  <input type="text" placeholder="MM/AA" maxlength="5" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">CVV</label>
+                  <input type="text" placeholder="123" maxlength="4" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
+                </div>
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Opções de Parcelamento Mercado Pago</label>
+                <select id="checkoutInstallments" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none"></select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Boleto Painel -->
+          <div id="panelBoleto" class="hidden p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs space-y-2">
+            <p class="text-amber-900 font-bold">Boleto Bancário Mercado Pago</p>
+            <p class="text-xs text-teodora-textMuted">Gera código de barras e link em PDF após a confirmação para pagamento em qualquer banco.</p>
+          </div>
+
+        </div>
+
+        <!-- Total e CTA Final -->
+        <div class="p-4 bg-teodora-roseLight/70 rounded-2xl border border-teodora-border flex items-center justify-between">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-teodora-textMuted font-bold">Total do Pedido</span>
+            <p id="checkoutFinalTotal" class="font-heading text-2xl sm:text-3xl font-bold text-teodora-text">R$ 0,00</p>
+          </div>
+          <button onclick="executePaymentTransaction()" id="btnSubmitPayment" class="px-8 py-4 bg-teodora-text hover:bg-black text-white font-semibold text-xs uppercase tracking-widest rounded-xl transition shadow-lg flex items-center gap-2">
+            <span>Confirmar Pedido Pix</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Painel de Sucesso com QR Code Pix -->
+      <div id="checkoutSuccessPanel" class="hidden text-center py-6 space-y-5">
+        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        
+        <div>
+          <span class="text-xs uppercase tracking-widest text-emerald-700 font-bold">Transação Mercado Pago Confirmada</span>
+          <h3 class="font-heading text-2xl sm:text-3xl font-bold text-teodora-text mt-1">Pedido Gerado com Sucesso!</h3>
+          <p class="text-xs text-teodora-textMuted mt-1">Identificador da compra: <strong class="text-teodora-text font-mono" id="displayOrderNumber">#TEO-89210</strong></p>
+        </div>
+
+        <div class="p-6 bg-teodora-bgLight rounded-2xl border border-teodora-border inline-block max-w-sm mx-auto shadow-sm">
+          <img id="pixGeneratedQr" src="" alt="QR Code Pix" class="w-48 h-48 mx-auto border p-2 bg-white rounded-xl shadow-sm">
+          <p class="text-xs text-teodora-text font-semibold mt-3">Escaneie o QR Code no app do seu banco</p>
+          <p class="text-[10px] text-teodora-textMuted mt-0.5">Tempo limite: 30 minutos para compensação imediata</p>
+          
+          <div class="mt-3 flex gap-2">
+            <input type="text" id="pixCodeText" readonly value="" class="w-full text-xs p-2.5 bg-white border border-teodora-border rounded-lg font-mono text-gray-600 truncate">
+            <button onclick="copyPixToClipboard()" class="px-4 py-2 bg-teodora-gold text-white text-xs rounded-lg font-bold shrink-0 hover:bg-teodora-goldDark transition">
+              Copiar
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <button onclick="resetStoreAfterPurchase()" class="px-8 py-3.5 bg-teodora-text text-white text-xs uppercase tracking-widest rounded-full hover:bg-black transition font-semibold">
+            Continuar Explorando a Teodora
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal de Espiar Rápido -->
+  <div id="quickModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-teodora-border relative">
+      <button onclick="closeQuickModal()" class="absolute top-6 right-6 text-teodora-textMuted hover:text-teodora-text p-2" aria-label="Fechar">
+        <i class="fa-solid fa-xmark text-xl"></i>
+      </button>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center" id="quickModalContent"></div>
+    </div>
+  </div>
+
+  <!-- Modal de Lista de Desejos -->
+  <div id="wishlistModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-teodora-border">
+      <div class="flex items-center justify-between pb-4 border-b border-teodora-border">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-heart text-teodora-gold"></i>
+          <h3 class="font-heading text-lg font-semibold text-teodora-text">Lista de Desejos</h3>
+        </div>
+        <button onclick="closeWishlistModal()" class="text-teodora-textMuted hover:text-teodora-text p-2">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="wishlistItemsContainer" class="my-4 max-h-80 overflow-y-auto space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- Modal de Busca Mobile -->
+  <div id="searchOverlay" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden items-start justify-center pt-24 px-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-teodora-border">
+      <div class="flex items-center justify-between pb-3 border-b border-teodora-border">
+        <div class="flex items-center gap-3 w-full">
+          <i class="fa-solid fa-magnifying-glass text-teodora-gold"></i>
+          <input type="text" id="liveSearchInput" oninput="executeLiveSearch(this.value)" placeholder="Buscar perfumes, cremes, maquiagem..." class="w-full bg-transparent text-sm focus:outline-none text-teodora-text">
+        </div>
+        <button onclick="closeSearchModal()" class="text-teodora-textMuted hover:text-teodora-text p-2">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="liveSearchResults" class="mt-4 max-h-64 overflow-y-auto space-y-2">
+        <p class="text-xs text-teodora-textMuted text-center py-4">Digite ao menos 2 caracteres...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Outlet -->
+  <div id="toastOutlet" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <footer class="bg-white border-t border-teodora-border pt-12 pb-8 text-xs text-teodora-textMuted">
+    <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Linhas Principais: 4 Colunas Equilibradas com Menos Espaço Ocioso -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-8 border-b border-teodora-border">
+        
+        <!-- Col 1: Marca & Manifesto -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 text-teodora-gold" viewBox="0 0 100 80" fill="none">
+              <path d="M50 8C50 8 40 28 40 45C40 55 45 62 50 62C55 62 60 55 60 45C60 28 50 8 50 8Z" stroke="currentColor" stroke-width="3"/>
+              <path d="M50 62C38 62 18 52 16 34C15 23 23 18 23 18C23 18 28 35 42 46" stroke="currentColor" stroke-width="3"/>
+              <path d="M50 62C62 62 82 52 84 34C85 23 77 18 77 18C77 18 72 35 58 46" stroke="currentColor" stroke-width="3"/>
+            </svg>
+            <span class="font-heading text-xl tracking-[0.22em] font-semibold text-teodora-text uppercase">TEODORA</span>
+          </div>
+          <p class="font-signature text-2xl text-teodora-gold">Beleza que te acompanha em todos os momentos ♡</p>
+          <p class="text-xs text-teodora-textMuted leading-relaxed">
+            Alta perfumaria autoral, cuidados botânicos nobres e cosméticos pensados para tocar a alma com elegância e sensorialidade.
+          </p>
+          <div class="flex items-center gap-2.5 pt-1 text-teodora-text">
+            <a href="#" class="w-8 h-8 rounded-full border border-teodora-border flex items-center justify-center hover:bg-teodora-roseLight transition"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="w-8 h-8 rounded-full border border-teodora-border flex items-center justify-center hover:bg-teodora-roseLight transition"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" class="w-8 h-8 rounded-full border border-teodora-border flex items-center justify-center hover:bg-teodora-roseLight transition"><i class="fa-brands fa-pinterest"></i></a>
+          </div>
+        </div>
+
+        <!-- Col 2: Linhas Principais -->
+        <div>
+          <h5 class="uppercase tracking-widest text-teodora-text font-bold text-xs mb-3">Coleções &amp; Linhas</h5>
+          <ul class="space-y-2 text-xs">
+            <li><button onclick="setCategoryFilter('perfumes')" class="hover:text-teodora-gold transition">Alta Perfumaria Francesa</button></li>
+            <li><button onclick="setCategoryFilter('skincare')" class="hover:text-teodora-gold transition">Skincare &amp; Vitamina C</button></li>
+            <li><button onclick="setCategoryFilter('corpo')" class="hover:text-teodora-gold transition">Manteigas Corporais &amp; Karité</button></li>
+            <li><button onclick="setCategoryFilter('kits')" class="hover:text-teodora-gold transition">Kits &amp; Caixas Laqueadas</button></li>
+            <li><button onclick="setSpecialFilter('Edição Especial')" class="hover:text-teodora-gold transition">Coleção Privée</button></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Atendimento e Segurança -->
+        <div>
+          <h5 class="uppercase tracking-widest text-teodora-text font-bold text-xs mb-3">Atendimento VIP</h5>
+          <ul class="space-y-2 text-xs">
+            <li><a href="javascript:void(0)" onclick="displayToast('WhatsApp Concierge: (11) 98765-4321')" class="hover:text-teodora-gold transition">Concierge WhatsApp</a></li>
+            <li><a href="javascript:void(0)" onclick="displayToast('Código de rastreamento é enviado por e-mail após a postagem.')" class="hover:text-teodora-gold transition">Rastrear Meu Pedido</a></li>
+            <li><a href="javascript:void(0)" onclick="displayToast('Primeira troca grátis em até 30 dias após o recebimento.')" class="hover:text-teodora-gold transition">Política de Trocas</a></li>
+            <li><a href="javascript:void(0)" onclick="displayToast('Ambiente 100% protegido com certificação SSL e Mercado Pago.')" class="hover:text-teodora-gold transition">Privacidade &amp; Termos</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Mercado Pago e Pagamento -->
+        <div>
+          <h5 class="uppercase tracking-widest text-teodora-text font-bold text-xs mb-3">Pagamento Seguro</h5>
+          <div class="space-y-2">
+            <div class="flex items-center gap-1.5 text-teodora-text font-semibold text-xs">
+              <i class="fa-solid fa-lock text-teodora-gold"></i>
+              <span>Mercado Pago Oficial</span>
+            </div>
+            <div class="flex items-center gap-3 text-2xl text-teodora-text pt-1">
+              <i class="fa-brands fa-pix text-emerald-600" title="Pix"></i>
+              <i class="fa-brands fa-cc-mastercard text-teodora-textMuted" title="Mastercard"></i>
+              <i class="fa-brands fa-cc-visa text-teodora-textMuted" title="Visa"></i>
+              <i class="fa-solid fa-barcode text-teodora-textMuted" title="Boleto"></i>
+            </div>
+            <p class="text-xs text-teodora-textMuted leading-relaxed">
+              Até 6x sem juros no cartão ou 5% de desconto automático no Pix imediato.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Copyright e Identidade -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <p>© 2026 TEODORA COSMÉTICOS LTDA. CNPJ 00.000.000/0001-00. Todos os direitos reservados.</p>
+        <span class="font-signature text-xl text-teodora-gold">Teodora Cosméticos ♡</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const APP_STATE = {
+      activeProductId: null,
+      selectedPdpVariantIdx: 0,
+      pdpQuantity: 1,
+      products: [
+        {
+          id: 1,
+          title: "Rose Éternelle & Peônia Francesa",
+          brandTag: "TEODORA • ALTA PERFUMARIA",
+          volume: "Eau de Parfum • 100ml",
+          category: "perfumes",
+          family: "floral",
+          intensity: "edp",
+          occasion: "dia",
+          sensation: "romantico",
+          price: 349.00,
+          oldPrice: 389.00,
+          badge: "Mais Vendido",
+          rating: 4.9,
+          reviews: 142,
+          image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Pétalas de Rosa Búlgara, Peônia Orvalhada e Almíscar Branco",
+          pyramid: {
+            top: "Mandarina Italiana, Orvalho e Pétalas de Rosa Damascena",
+            heart: "Peônia Francesa Aveludada, Jasmim Sambac e Magnólia",
+            base: "Almíscar Branco Limpo, Âmbar Dourado e Madeira de Cedro"
+          },
+          variants: [
+            { size: "50ml", price: 249.00, label: "Frasco 50ml" },
+            { size: "100ml", price: 349.00, label: "Frasco 100ml (Assinatura)" },
+            { size: "Kit 100ml + Creme 200ml", price: 419.00, label: "Coffret Luxo" }
+          ],
+          description: "Fragrância icônica que une o frescor matinal das rosas à elegância aveludada da peônia. Elaborada com maceração botânica e álcool de cereais nobre, proporcionando fixação contínua de até 18 horas na pele.",
+          ritual: "Borrife a 15cm nas áreas de maior pulsação térmica: pulsos, nuca e colo. Para um rastro ainda mais envolvente, aplique após o Creme Corporal Hidratação Intensa.",
+          ingredients: "Alcohol Denat de Cereais Orgânico, Parfum (Fragrance), Aqua, Rosa Damascena Flower Oil, Paeonia Albiflora Flower Extract, Benzyl Salicylate, Linalool, Alpha-Isomethyl Ionone (100% Vegano e Cruelty-Free).",
+          similarIds: [4, 11, 2, 5]
+        },
+        {
+          id: 2,
+          title: "Creme Corporal Hidratação Intensa",
+          brandTag: "TEODORA • CUIDADOS NOBRES",
+          volume: "Bisnaga Rosé Sublime • 200ml",
+          category: "corpo",
+          texture: "creme",
+          bodyActive: "karite",
+          sensation: "hidratacao",
+          scent: "floral",
+          price: 98.00,
+          oldPrice: 119.00,
+          badge: "Destaque Teodora",
+          rating: 4.9,
+          reviews: 218,
+          image: "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1608248597359-59752b535d46?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1512290900672-1f557342674e?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Manteiga de Karité Pura, Ácido Hialurônico e Óleo de Rosa Mosqueta",
+          pyramid: {
+            top: "Flor de Pêssego e Notas Leves de Orvalho",
+            heart: "Pétalas Aveludadas e Rosa Mosqueta Chilena",
+            base: "Manteiga de Karité Concentrada e Fava de Baunilha"
+          },
+          variants: [
+            { size: "200ml", price: 98.00, label: "Bisnaga 200ml" },
+            { size: "400ml", price: 159.00, label: "Eco-Refil 400ml" }
+          ],
+          description: "Absorção rápida com toque aveludado de pétala. Hidratação contínua por 24h sem residual oleoso, deixando a pele perfumada com nuances florais delicadas.",
+          ritual: "Aplique massageando suavemente em movimentos circulares sobre a pele limpa e seca após o banho, concentrando em cotovelos e pernas.",
+          ingredients: "Aqua, Butyrospermum Parkii Butter (Karité), Sodium Hyaluronate, Rosa Moschata Seed Oil, Glycerin Vegetal, Parfum, Tocopheryl Acetate.",
+          similarIds: [6, 1, 5, 10]
+        },
+        {
+          id: 3,
+          title: "Sérum Iluminador Vitamina C & Rosa Mosqueta",
+          brandTag: "TEODORA • BIODERMOCOSMÉTICA",
+          volume: "Elixir Facial Uniformizador • 30ml",
+          category: "skincare",
+          skinType: "todas",
+          skinActive: "vitamina-c",
+          benefit: "glow",
+          routineStep: "serum",
+          sensation: "glow",
+          price: 179.00,
+          oldPrice: 199.00,
+          badge: "Mais Vendido",
+          rating: 4.9,
+          reviews: 130,
+          image: "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Vitamina C Estabilizada 15%, Niacinamida e Rosa Mosqueta Orgânica",
+          pyramid: {
+            top: "Gotas Cítricas de Laranja Doce",
+            heart: "Niacinamida Pura e Extrato Botânico",
+            base: "Óleo Puro de Rosa Mosqueta Chilena Prensada a Frio"
+          },
+          variants: [
+            { size: "30ml", price: 179.00, label: "Frasco Conta-Gotas 30ml" },
+            { size: "60ml", price: 289.00, label: "Edição Especial 60ml" }
+          ],
+          description: "Uniformiza o tom da pele, neutraliza radicais livres e desperta a luminosidade natural instantânea sem obstruir poros.",
+          ritual: "Pela manhã, aplique 4 a 5 gotas sobre a face limpa antes do filtro solar diário.",
+          ingredients: "Sodium Ascorbyl Phosphate 15%, Niacinamide 5%, Rosa Canina Fruit Oil, Hyaluronic Acid, Aqua.",
+          similarIds: [8, 12, 9, 2]
+        },
+        {
+          id: 4,
+          title: "Santal & Cèdre Blanc Privée",
+          brandTag: "TEODORA • COLEÇÃO PRIVÉE",
+          volume: "Eau de Parfum • 100ml",
+          category: "perfumes",
+          family: "amadeirado",
+          intensity: "edp",
+          occasion: "noite",
+          sensation: "marcante",
+          price: 369.00,
+          oldPrice: 410.00,
+          badge: "Edição Especial",
+          rating: 4.8,
+          reviews: 62,
+          image: "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1512290900672-1f557342674e?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Sândalo Cremoso, Cedro Branco e Cardamomo Dourado",
+          pyramid: {
+            top: "Cardamomo da Guatemala e Folhas de Violeta",
+            heart: "Íris Florentina e Papiro Nobre",
+            base: "Sândalo de Mysore, Cedro do Atlas e Couro Macio"
+          },
+          variants: [
+            { size: "50ml", price: 269.00, label: "Frasco 50ml" },
+            { size: "100ml", price: 369.00, label: "Frasco 100ml Privée" }
+          ],
+          description: "Madeiras nobres lapidadas com notas balsâmicas e calor acolhedor. Rastro magnético, sofisticado e memorável.",
+          ritual: "Perfeito para eventos noturnos, jantares e climas amenos. Borrife no colarinho e nuca.",
+          ingredients: "Alcohol Denat, Santalum Album Wood Extract, Cedrus Atlantica Oil, Coumarin, Limonene.",
+          similarIds: [11, 1, 5, 7]
+        },
+        {
+          id: 5,
+          title: "Coffret Privée — Caixa Laqueada com Fita",
+          brandTag: "TEODORA • PRESENTE SUPREMO",
+          volume: "1 Perfume 50ml + 1 Creme 200ml + Sabonete",
+          category: "kits",
+          giftPackaging: "caixa-luxo",
+          giftOccasion: "amor",
+          sensation: "romantico",
+          price: 459.00,
+          oldPrice: 520.00,
+          badge: "Presente Perfeito",
+          rating: 5.0,
+          reviews: 84,
+          image: "https://images.unsplash.com/photo-1512290900672-1f557342674e?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1512290900672-1f557342674e?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1608248597359-59752b535d46?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Trio Harmonizado de Rosa e Peônia com Embalagem de Luxo",
+          pyramid: {
+            top: "Rosas Búlgaras e Flor de Pêssego",
+            heart: "Peônia Francesa e Manteiga de Karité",
+            base: "Almíscar Branco Sedoso e Baunilha"
+          },
+          variants: [
+            { size: "Coffret Completo", price: 459.00, label: "Caixa Laqueada Completa" }
+          ],
+          description: "O presente supremo da Teodora. Acondicionado em caixa rígida rosé laqueada com berço aveludado, fita de cetim e cartão personalizado.",
+          ritual: "Inicie o ritual com o sabonete cremoso no banho, hidrate com o creme aveludado e finalize borrifando o Eau de Parfum.",
+          ingredients: "Composição harmônica dos itens Rose Éternelle com fórmula enriquecida de manteigas botânicas.",
+          similarIds: [10, 1, 2, 4]
+        },
+        {
+          id: 6,
+          title: "Manteiga Nutritiva Flor de Algodão & Murumuru",
+          brandTag: "TEODORA • CUIDADOS NOBRES",
+          volume: "Pote Vidro Rosé • 250g",
+          category: "corpo",
+          texture: "manteiga",
+          bodyActive: "murumuru",
+          sensation: "hidratacao",
+          scent: "algodao",
+          price: 129.00,
+          oldPrice: 145.00,
+          badge: "Lançamento",
+          rating: 4.8,
+          reviews: 95,
+          image: "https://images.unsplash.com/photo-1608248597359-59752b535d46?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1608248597359-59752b535d46?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Karité Concentrado, Manteiga de Murumuru e Flor de Algodão",
+          pyramid: {
+            top: "Algodão Suave e Flores Brancas",
+            heart: "Manteiga Pura de Murumuru Amazônico",
+            base: "Karité Prensado e Almíscar Leve"
+          },
+          variants: [
+            { size: "250g", price: 129.00, label: "Pote 250g" }
+          ],
+          description: "Tratamento de alta nutrição para peles ressecadas. Barreira protetora que restaura o manto hidrolipídico instantaneamente.",
+          ritual: "Aplique massageando suavemente antes de dormir ou após o banho morno.",
+          ingredients: "Astrocaryum Murumuru Butter, Butyrospermum Parkii Butter, Gossypium Herbaceum Extract.",
+          similarIds: [2, 14, 5, 8]
+        },
+        {
+          id: 7,
+          title: "Óleo Reparador Sublime & Brilho Espelhado",
+          brandTag: "TEODORA • CABELOS NOBRES",
+          volume: "Elixir Capilar Multifuncional • 60ml",
+          category: "cabelos",
+          hairBenefit: "brilho",
+          hairActive: "argan",
+          hairType: "secos",
+          sensation: "glow",
+          price: 139.00,
+          oldPrice: 160.00,
+          badge: "Lançamento",
+          rating: 4.9,
+          reviews: 77,
+          image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Óleo de Argan Puro, Camélia Japonesa e Filtro Térmico",
+          pyramid: {
+            top: "Flor de Cerejeira e Notas Florais",
+            heart: "Camélia Japonesa e Óleo de Argan",
+            base: "Madeira Clara e Âmbar Suave"
+          },
+          variants: [
+            { size: "60ml", price: 139.00, label: "Frasco 60ml" }
+          ],
+          description: "Sela as pontas, elimina o frizz e confere toque de seda aos fios sem pesar, com proteção térmica até 230°C.",
+          ritual: "Espalhe 2 a 3 gotas nas palmas das mãos e distribua do comprimento às pontas nos fios secos ou úmidos.",
+          ingredients: "Argania Spinosa Kernel Oil, Camellia Japonica Seed Oil, Cyclopentasiloxane, Parfum.",
+          similarIds: [14, 3, 2, 8]
+        },
+        {
+          id: 8,
+          title: "Bruma Facial Revitalizante & Hidratante",
+          brandTag: "TEODORA • CUIDADOS DIÁRIOS",
+          volume: "Água Facial com Niacinamida • 120ml",
+          category: "skincare",
+          skinType: "sensivel",
+          skinActive: "niacinamida",
+          benefit: "calmante",
+          routineStep: "bruma",
+          sensation: "hidratacao",
+          price: 89.00,
+          oldPrice: null,
+          badge: "Dia a Dia",
+          rating: 4.8,
+          reviews: 89,
+          image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Extrato de Camomila, Niacinamida e Flor de Laranjeira",
+          pyramid: {
+            top: "Flor de Laranjeira e Bergamota Fresca",
+            heart: "Camomila Romana e Niacinamida",
+            base: "Minerais Puros e Água Pura Purificada"
+          },
+          variants: [
+            { size: "120ml", price: 89.00, label: "Spray 120ml" }
+          ],
+          description: "Microgotas refrescantes que auxiliam na hidratação, acalmam a pele e preparam o rosto para a maquiagem ou rotina de cuidados.",
+          ritual: "Borrife no rosto a qualquer hora do dia para reidratar ou antes e depois da maquiagem.",
+          ingredients: "Aqua, Niacinamide, Chamomilla Recutita Extract, Citrus Aurantium Dulcis Flower Water.",
+          similarIds: [3, 12, 9, 2]
+        },
+        {
+          id: 9,
+          title: "Lip Elixir Tint Velvet & Ácido Hialurônico",
+          brandTag: "TEODORA • REALCE NATURAL",
+          volume: "Bálsamo Labial Cor Rosé Seda • 8ml",
+          category: "maquiagem",
+          makeupArea: "labios",
+          makeupFinish: "velvet",
+          makeupBenefit: "hialuronico",
+          sensation: "romantico",
+          price: 79.00,
+          oldPrice: 95.00,
+          badge: "Mais Vendido",
+          rating: 4.9,
+          reviews: 164,
+          image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Esqualano Vegetal, Ácido Hialurônico e Pigmentos Minerais",
+          pyramid: {
+            top: "Framboesa Selvagem e Baunilha Fava",
+            heart: "Esqualano Botânico e Ácido Hialurônico",
+            base: "Manteiga de Karité e Pigmento Rosé Translúcido"
+          },
+          variants: [
+            { size: "8ml", price: 79.00, label: "Tubo Rosé 8ml" }
+          ],
+          description: "Realce natural dos lábios com hidratação nutritiva, ação preenchedora suave e acabamento acetinado elegante.",
+          ritual: "Aplique diretamente nos lábios sempre que desejar cor suave e hidratação acetinada.",
+          ingredients: "Plant-derived Squalane, Hyaluronic Spheres, Ricinus Communis Seed Oil, Mineral Pigments.",
+          similarIds: [13, 3, 8, 1]
+        },
+        {
+          id: 10,
+          title: "Kit Essenciais Viagem Teodora",
+          brandTag: "TEODORA • KITS & PRESENTES",
+          volume: "Nécessaire Rosé + 3 Miniaturas de 30ml",
+          category: "kits",
+          giftPackaging: "necessaire",
+          giftOccasion: "viagem",
+          sensation: "hidratacao",
+          price: 189.00,
+          oldPrice: 220.00,
+          badge: "Lançamento",
+          rating: 4.9,
+          reviews: 51,
+          image: "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1512290900672-1f557342674e?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Fragrância de Bolsa, Loção Hidratante e Sabonete Cremoso",
+          pyramid: {
+            top: "Rosas Frescas e Bergamota",
+            heart: "Peônia e Amêndoas Doces",
+            base: "Almíscar e Madeiras Suaves"
+          },
+          variants: [
+            { size: "Trio Viagem", price: 189.00, label: "Nécessaire + 3 Frascos 30ml" }
+          ],
+          description: "A sofisticação Teodora para levar na mala de bordo ou na bolsa do dia a dia, com nécessaire rosé texturizada.",
+          ritual: "Itens no tamanho ideal para levar na cabine de avião ou em viagens de final de semana.",
+          ingredients: "Fórmulas dermatologicamente testadas das linhas Rose Éternelle e Karité.",
+          similarIds: [5, 1, 2, 6]
+        },
+        {
+          id: 11,
+          title: "Chypre Sublime & Jasmim Imperial",
+          brandTag: "TEODORA • ALTA PERFUMARIA",
+          volume: "Eau de Parfum • 100ml",
+          category: "perfumes",
+          family: "oriental",
+          intensity: "edp",
+          occasion: "festa",
+          sensation: "marcante",
+          price: 359.00,
+          oldPrice: 395.00,
+          badge: "Edição Especial",
+          rating: 5.0,
+          reviews: 48,
+          image: "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1547887537-6158d64c35b3?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Jasmim da Noite, Patchouli Dourado e Fava Tonka",
+          pyramid: {
+            top: "Bergamota Nobre e Pera Francesa",
+            heart: "Jasmim Imperial Grandiflorum e Flor de Íris",
+            base: "Patchouli Macio, Baunilha Bourbon e Musgo de Carvalho"
+          },
+          variants: [
+            { size: "50ml", price: 259.00, label: "Frasco 50ml" },
+            { size: "100ml", price: 359.00, label: "Frasco 100ml" }
+          ],
+          description: "Fragrância envolvente com assinatura chypre moderna. Notas florais opulentas sobre base aveludada de patchouli e tonka.",
+          ritual: "Aplique nas zonas de pulsação e deixe secar naturalmente sem friccionar a pele.",
+          ingredients: "Alcohol Denat Orgânico, Jasminum Grandiflorum Extract, Pogostemon Cablin Oil, Parfum.",
+          similarIds: [1, 4, 5, 2]
+        },
+        {
+          id: 12,
+          title: "Elixir Noturno Ácido Hialurônico Puro 2%",
+          brandTag: "TEODORA • BIODERMOCOSMÉTICA",
+          volume: "Concentrado Facial Pró-Idade • 30ml",
+          category: "skincare",
+          skinType: "madura",
+          skinActive: "hialuronico",
+          benefit: "firmeza",
+          routineStep: "noturno",
+          sensation: "hidratacao",
+          price: 169.00,
+          oldPrice: 189.00,
+          badge: "Lançamento",
+          rating: 4.9,
+          reviews: 58,
+          image: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Triplo Peso Molecular de Hialurônico e Peptídeos Nobres",
+          pyramid: {
+            top: "Água Termal Pura e Minerais",
+            heart: "Ácido Hialurônico Reticulado e Biopeptídeos",
+            base: "Esqualano Vegetal e Vitamina E"
+          },
+          variants: [
+            { size: "30ml", price: 169.00, label: "Frasco 30ml" }
+          ],
+          description: "Tratamento intensivo noturno que preenche linhas finas e devolve o viço e a densidade da pele ao despertar.",
+          ritual: "Aplique 3 gotas à noite no rosto e pescoço após a higienização com movimentos ascendentes.",
+          ingredients: "Aqua, Multi-Molecular Hyaluronic Acid 2%, Palmitoyl Tripeptide-5, Squalane, Tocopherol.",
+          similarIds: [3, 8, 2, 9]
+        },
+        {
+          id: 13,
+          title: "Iluminador Facial Seda Líquida Golden Glow",
+          brandTag: "TEODORA • REALCE NATURAL",
+          volume: "Glow Multifuncional em Gotas • 20ml",
+          category: "maquiagem",
+          makeupArea: "rosto",
+          makeupFinish: "glow",
+          makeupBenefit: "esqualano",
+          sensation: "glow",
+          price: 119.00,
+          oldPrice: 135.00,
+          badge: "Lançamento",
+          rating: 4.8,
+          reviews: 43,
+          image: "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Pérolas Champanhe Finíssimas e Óleo de Rosa Mosqueta",
+          pyramid: {
+            top: "Reflexos Dourados Translúcidos",
+            heart: "Esqualano Vegetal Iluminador",
+            base: "Toque Seco Sedoso e Acetinado"
+          },
+          variants: [
+            { size: "20ml", price: 119.00, label: "Gotas Iluminadoras 20ml" }
+          ],
+          description: "Luminosidade orvalhada e elegante. Pode ser usado puro nos pontos altos do rosto ou misturado ao creme hidratante diário.",
+          ritual: "Deposite 1 ou 2 gotas nas têmporas, arco do cupido e osso nasal com leves batidinhas dos dedos.",
+          ingredients: "Mica Mineral, Plant Squalane, Rosa Canina Seed Oil, Silica, Parfum.",
+          similarIds: [9, 3, 7, 8]
+        },
+        {
+          id: 14,
+          title: "Máscara de Nutrição Capilar Camélia & Karité",
+          brandTag: "TEODORA • CABELOS NOBRES",
+          volume: "Pote de Tratamento Profundo • 200g",
+          category: "cabelos",
+          hairBenefit: "nutricao",
+          hairActive: "camelia",
+          hairType: "danificados",
+          sensation: "hidratacao",
+          price: 125.00,
+          oldPrice: 145.00,
+          badge: "Destaque Teodora",
+          rating: 4.9,
+          reviews: 67,
+          image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85",
+          gallery: [
+            "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1200&q=85",
+            "https://images.unsplash.com/photo-1608248597359-59752b535d46?auto=format&fit=crop&w=1200&q=85"
+          ],
+          notes: "Manteiga Botânica, Óleo de Camélia e Aminoácidos de Seda",
+          pyramid: {
+            top: "Flor de Cerejeira e Notas Verdes",
+            heart: "Extrato Puro de Camélia Japonesa",
+            base: "Karité Nutritivo e Madeira Aveludada"
+          },
+          variants: [
+            { size: "200g", price: 125.00, label: "Pote 200g" }
+          ],
+          description: "Restauração profunda do córtex capilar. Recupera a elasticidade, devolve maciez instantânea e sela as cutículas.",
+          ritual: "Após lavar, retire o excesso de água e enluve mecha por mecha. Deixe agir por 5 a 10 minutos e enxágue abundantemente.",
+          ingredients: "Camellia Japonica Seed Oil, Butyrospermum Parkii Butter, Hydrolyzed Silk, Cetearyl Alcohol.",
+          similarIds: [7, 6, 2, 10]
+        }
+      ],
+      filters: {
+        category: 'todos',
+        maxPrice: 500,
+        badge: '',
+        search: '',
+        sortBy: 'populares',
+        // Dicionário dinâmico de sub-filtros específicos da categoria ativa:
+        activeCategoryFilters: {}
+      },
+      cart: [],
+      wishlist: [],
+      shippingCost: 0,
+      shippingOptionName: '',
+      shippingInfo: null,
+      couponCode: '',
+      paymentMethod: 'pix'
+    };
+
+    const CATEGORY_FILTER_CONFIGS = {
+      todos: {
+        eyebrow: "Universo Completo ✦",
+        title: "Todos os Produtos",
+        groups: [
+          {
+            id: "universos",
+            name: "Ir para Universo",
+            type: "shortcuts",
+            options: [
+              { value: "perfumes", label: "Perfumes Nobres", icon: "fa-solid fa-wine-bottle" },
+              { value: "skincare", label: "Skincare & Tratamento", icon: "fa-solid fa-droplet" },
+              { value: "maquiagem", label: "Maquiagem & Glow", icon: "fa-solid fa-wand-magic-sparkles" },
+              { value: "cabelos", label: "Cabelos & Brilho", icon: "fa-solid fa-feather-pointed" },
+              { value: "corpo", label: "Corpo & Banho", icon: "fa-solid fa-spa" },
+              { value: "kits", label: "Kits de Presente", icon: "fa-solid fa-gift" }
+            ]
+          },
+          {
+            id: "sensation",
+            name: "Sensação Desejada",
+            type: "checkbox",
+            options: [
+              { value: "romantico", label: "Romântico & Floral Suave" },
+              { value: "marcante", label: "Marcante & Amadeirado" },
+              { value: "glow", label: "Luminosidade & Glow" },
+              { value: "hidratacao", label: "Hidratação & Seda" }
+            ]
+          },
+          {
+            id: "occasion",
+            name: "Ocasião Sugerida",
+            type: "pills",
+            options: [
+              { value: "dia", label: "Dia a Dia" },
+              { value: "noite", label: "Noite Romântica" },
+              { value: "festa", label: "Festas & Eventos" }
+            ]
+          }
+        ]
+      },
+      perfumes: {
+        eyebrow: "Alta Perfumaria ✦",
+        title: "Filtros de Perfumes",
+        groups: [
+          {
+            id: "family",
+            name: "Família Olfativa",
+            type: "checkbox",
+            options: [
+              { value: "floral", label: "Floral Nobre & Peônia Francesa" },
+              { value: "amadeirado", label: "Amadeirado & Sândalo Cremoso" },
+              { value: "oriental", label: "Oriental Especiado & Baunilha" }
+            ]
+          },
+          {
+            id: "intensity",
+            name: "Concentração & Fixação",
+            type: "checkbox",
+            options: [
+              { value: "edp", label: "Eau de Parfum (Fixação até 18h)" },
+              { value: "edt", label: "Brumas & Águas de Colônia" }
+            ]
+          },
+          {
+            id: "occasion",
+            name: "Ocasião de Uso",
+            type: "pills",
+            options: [
+              { value: "dia", label: "Dia a Dia" },
+              { value: "noite", label: "Noite & Jantares" },
+              { value: "festa", label: "Grandes Eventos" }
+            ]
+          }
+        ]
+      },
+      skincare: {
+        eyebrow: "Biodermocosmética 🌿",
+        title: "Filtros de Skincare",
+        groups: [
+          {
+            id: "skinType",
+            name: "Tipo de Pele",
+            type: "checkbox",
+            options: [
+              { value: "todas", label: "Todos os Tipos de Pele" },
+              { value: "sensivel", label: "Pele Sensível & Seca" },
+              { value: "madura", label: "Pele Madura & Linhas" }
+            ]
+          },
+          {
+            id: "skinActive",
+            name: "Ativo Botânico Principal",
+            type: "checkbox",
+            options: [
+              { value: "vitamina-c", label: "Vitamina C Pura Estabilizada" },
+              { value: "hialuronico", label: "Ácido Hialurônico Puro 2%" },
+              { value: "niacinamida", label: "Niacinamida Calmante" }
+            ]
+          },
+          {
+            id: "benefit",
+            name: "Benefício Esperado",
+            type: "checkbox",
+            options: [
+              { value: "glow", label: "Glow & Uniformização de Tom" },
+              { value: "firmeza", label: "Firmeza & Preenchimento" },
+              { value: "calmante", label: "Ação Calmante & Barreira" }
+            ]
+          },
+          {
+            id: "routineStep",
+            name: "Etapa do Ritual",
+            type: "pills",
+            options: [
+              { value: "serum", label: "Sérum Diurno" },
+              { value: "noturno", label: "Elixir Noturno" },
+              { value: "bruma", label: "Bruma Hidratante" }
+            ]
+          }
+        ]
+      },
+      maquiagem: {
+        eyebrow: "Realce Natural ✨",
+        title: "Filtros de Maquiagem",
+        groups: [
+          {
+            id: "makeupArea",
+            name: "Região de Aplicação",
+            type: "checkbox",
+            options: [
+              { value: "labios", label: "Lábios & Bálsamos Coloridos" },
+              { value: "rosto", label: "Rosto & Iluminadores Glow" }
+            ]
+          },
+          {
+            id: "makeupFinish",
+            name: "Acabamento na Pele",
+            type: "pills",
+            options: [
+              { value: "velvet", label: "Velvet Acetinado" },
+              { value: "glow", label: "Glow Iluminado" }
+            ]
+          },
+          {
+            id: "makeupBenefit",
+            name: "Ativo de Tratamento",
+            type: "checkbox",
+            options: [
+              { value: "hialuronico", label: "Com Esferas de Hialurônico" },
+              { value: "esqualano", label: "Com Esqualano Vegetal Nutritivo" }
+            ]
+          }
+        ]
+      },
+      cabelos: {
+        eyebrow: "Cabelos Nobres 💎",
+        title: "Filtros de Cabelos",
+        groups: [
+          {
+            id: "hairBenefit",
+            name: "Benefício Desejado",
+            type: "checkbox",
+            options: [
+              { value: "brilho", label: "Brilho Espelhado & Antifrizz" },
+              { value: "nutricao", label: "Nutrição & Reparação Profunda" }
+            ]
+          },
+          {
+            id: "hairActive",
+            name: "Óleo & Ativo Nobre",
+            type: "checkbox",
+            options: [
+              { value: "argan", label: "Óleo de Argan Puro Orgânico" },
+              { value: "camelia", label: "Camélia Japonesa Imperial" }
+            ]
+          },
+          {
+            id: "hairType",
+            name: "Necessidade dos Fios",
+            type: "pills",
+            options: [
+              { value: "secos", label: "Pontas Secas" },
+              { value: "danificados", label: "Fios Danificados" }
+            ]
+          }
+        ]
+      },
+      corpo: {
+        eyebrow: "Cuidados Nobres 🤍",
+        title: "Filtros de Corpo & Banho",
+        groups: [
+          {
+            id: "texture",
+            name: "Textura & Toque",
+            type: "checkbox",
+            options: [
+              { value: "creme", label: "Creme Fluido Toque de Seda" },
+              { value: "manteiga", label: "Manteiga Concentrada Restauradora" }
+            ]
+          },
+          {
+            id: "bodyActive",
+            name: "Manteiga ou Ativo Concentrado",
+            type: "checkbox",
+            options: [
+              { value: "karite", label: "Manteiga Pura de Karité" },
+              { value: "murumuru", label: "Murumuru da Amazônia" }
+            ]
+          },
+          {
+            id: "scent",
+            name: "Aroma Corporal",
+            type: "pills",
+            options: [
+              { value: "floral", label: "Floral Rosa & Peônia" },
+              { value: "algodao", label: "Flor de Algodão Fresca" }
+            ]
+          }
+        ]
+      },
+      kits: {
+        eyebrow: "Presente Perfeito 🎁",
+        title: "Filtros de Kits & Caixas",
+        groups: [
+          {
+            id: "giftPackaging",
+            name: "Apresentação & Embalagem",
+            type: "checkbox",
+            options: [
+              { value: "caixa-luxo", label: "Caixa Laqueada com Fita de Cetim" },
+              { value: "necessaire", label: "Nécessaire Rosé com Miniaturas" }
+            ]
+          },
+          {
+            id: "giftOccasion",
+            name: "Ocasião para Presentear",
+            type: "pills",
+            options: [
+              { value: "amor", label: "Romântico & Luxo" },
+              { value: "viagem", label: "Viagens & Mala de Mão" }
+            ]
+          }
+        ]
+      }
+    };
+
+    function formatBRL(val) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
+    }
+
+    function getFilteredProducts() {
+      let result = [...APP_STATE.products];
+
+      // Filtro por Categoria principal
+      if (APP_STATE.filters.category !== 'todos') {
+        result = result.filter(p => p.category === APP_STATE.filters.category);
+      }
+
+      // Filtro por Preço Máximo
+      result = result.filter(p => p.price <= APP_STATE.filters.maxPrice);
+
+      // Filtro por Curadoria Especial (Badge)
+      if (APP_STATE.filters.badge) {
+        result = result.filter(p => p.badge === APP_STATE.filters.badge);
+      }
+
+      // Filtros Dinâmicos específicos do Menu ativo
+      for (const [groupId, selectedVals] of Object.entries(APP_STATE.filters.activeCategoryFilters)) {
+        if (selectedVals && selectedVals.length > 0) {
+          result = result.filter(p => {
+            const prodVal = p[groupId];
+            if (Array.isArray(prodVal)) {
+              return selectedVals.some(v => prodVal.includes(v));
+            }
+            return selectedVals.includes(prodVal);
+          });
+        }
+      }
+
+      // Busca textual
+      if (APP_STATE.filters.search) {
+        const q = APP_STATE.filters.search.toLowerCase();
+        result = result.filter(p => 
+          p.title.toLowerCase().includes(q) || 
+          p.notes.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q) ||
+          p.description.toLowerCase().includes(q)
+        );
+      }
+
+      // Ordenação
+      switch (APP_STATE.filters.sortBy) {
+        case 'preco-crescente':
+          result.sort((a, b) => a.price - b.price);
+          break;
+        case 'preco-decrescente':
+          result.sort((a, b) => b.price - a.price);
+          break;
+        case 'avaliacao':
+          result.sort((a, b) => b.rating - a.rating);
+          break;
+        default:
+          result.sort((a, b) => b.reviews - a.reviews);
+          break;
+      }
+
+      return result;
+    }
+
+    function renderDynamicFilters() {
+      const activeCat = APP_STATE.filters.category;
+      const config = CATEGORY_FILTER_CONFIGS[activeCat] || CATEGORY_FILTER_CONFIGS['todos'];
+
+      // Atualiza cabeçalho do filtro no Desktop
+      const sideEyebrow = document.getElementById('sidebarCategoryEyebrow');
+      if (sideEyebrow) sideEyebrow.innerText = config.eyebrow;
+
+      const sideTitle = document.getElementById('sidebarCategoryTitle');
+      if (sideTitle) sideTitle.innerHTML = `<i class="fa-solid fa-sliders text-teodora-gold"></i> ${config.title}`;
+
+      // Atualiza cabeçalho no Mobile
+      const mobEyebrow = document.getElementById('mobileCategoryEyebrow');
+      if (mobEyebrow) mobEyebrow.innerText = config.eyebrow;
+
+      const mobTitle = document.getElementById('mobileCategoryTitle');
+      if (mobTitle) mobTitle.innerText = config.title;
+
+      // Renderiza grupos de filtros para desktop
+      const desktopContainer = document.getElementById('dynamicSidebarFilterGroups');
+      if (desktopContainer) {
+        desktopContainer.innerHTML = config.groups.map(group => renderFilterGroupHTML(group, false)).join('');
+      }
+
+      // Renderiza grupos de filtros para mobile
+      const mobileContainer = document.getElementById('dynamicMobileFilterGroups');
+      if (mobileContainer) {
+        mobileContainer.innerHTML = config.groups.map(group => renderFilterGroupHTML(group, true)).join('');
+      }
+    }
+
+    function renderFilterGroupHTML(group, isMobile) {
+      const activeVals = APP_STATE.filters.activeCategoryFilters[group.id] || [];
+
+      if (group.type === 'shortcuts') {
+        return `
+          <div class="space-y-2 pt-2">
+            <h4 class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">${group.name}</h4>
+            <div class="grid grid-cols-2 gap-1.5 text-xs">
+              ${group.options.map(opt => `
+                <button onclick="setCategoryFilter('${opt.value}')" class="p-2 rounded-xl border border-teodora-border hover:border-teodora-gold bg-teodora-bgLight text-left text-teodora-text font-medium flex items-center gap-2 transition">
+                  <i class="${opt.icon} text-teodora-gold text-[11px]"></i>
+                  <span class="truncate">${opt.label}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      if (group.type === 'pills') {
+        return `
+          <div class="space-y-2 pt-4 border-t border-teodora-border">
+            <h4 class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">${group.name}</h4>
+            <div class="flex flex-wrap gap-2 text-xs">
+              ${group.options.map(opt => {
+                const isSelected = activeVals.includes(opt.value);
+                return `
+                  <button onclick="toggleDynamicFilter('${group.id}', '${opt.value}')" class="px-3 py-1.5 rounded-xl border ${isSelected ? 'border-teodora-gold bg-teodora-roseLight/70 font-bold text-teodora-text' : 'border-teodora-border bg-white text-teodora-textMuted hover:border-teodora-gold'} text-center transition">
+                    ${opt.label}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Tipo padrão: Checkbox com rótulo
+      return `
+        <div class="space-y-2.5 pt-3 border-t border-teodora-border">
+          <h4 class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">${group.name}</h4>
+          <div class="space-y-2 text-xs">
+            ${group.options.map(opt => {
+              const isChecked = activeVals.includes(opt.value);
+              return `
+                <label class="flex items-center gap-2.5 cursor-pointer hover:text-teodora-gold transition">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleDynamicFilter('${group.id}', '${opt.value}')" class="accent-teodora-gold w-4 h-4 rounded">
+                  <span class="text-teodora-text">${opt.label}</span>
+                </label>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleDynamicFilter(groupId, value) {
+      if (!APP_STATE.filters.activeCategoryFilters[groupId]) {
+        APP_STATE.filters.activeCategoryFilters[groupId] = [];
+      }
+
+      const list = APP_STATE.filters.activeCategoryFilters[groupId];
+      const idx = list.indexOf(value);
+
+      if (idx > -1) {
+        list.splice(idx, 1);
+        if (list.length === 0) {
+          delete APP_STATE.filters.activeCategoryFilters[groupId];
+        }
+      } else {
+        list.push(value);
+      }
+
+      renderDynamicFilters();
+      renderProducts();
+    }
+
+    function setCategoryFilter(category) {
+      APP_STATE.filters.category = category;
+      // Reseta os sub-filtros específicos ao alternar de universo
+      APP_STATE.filters.activeCategoryFilters = {};
+
+      if (APP_STATE.activeProductId) {
+        closeProductPage();
+      }
+
+      updateNavigationUI(category);
+      renderDynamicFilters();
+      renderProducts();
+
+      const catalogEl = document.getElementById('catalogo');
+      if (catalogEl) {
+        catalogEl.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function updateNavigationUI(activeCategory) {
+      // 1. Atualiza botões da barra superior de navegação
+      document.querySelectorAll('.nav-cat-btn').forEach(btn => {
+        const cat = btn.getAttribute('data-nav-cat');
+        if (cat === activeCategory) {
+          btn.classList.add('text-teodora-gold', 'border-teodora-gold', 'font-bold');
+          btn.classList.remove('border-transparent');
+        } else {
+          btn.classList.remove('text-teodora-gold', 'border-teodora-gold', 'font-bold');
+          btn.classList.add('border-transparent');
+        }
+      });
+
+      // 2. Atualiza círculos visuais das 7 categorias
+      document.querySelectorAll('.cat-circle-card').forEach(card => {
+        const cat = card.getAttribute('data-circle-cat');
+        if (cat === activeCategory) {
+          card.classList.add('border-teodora-gold', 'bg-teodora-roseLight/70', 'shadow-sm');
+        } else {
+          card.classList.remove('border-teodora-gold', 'bg-teodora-roseLight/70', 'shadow-sm');
+        }
+      });
+
+      // 3. Atualiza botões no menu mobile
+      document.querySelectorAll('.mobile-cat-pill').forEach(btn => {
+        const cat = btn.getAttribute('data-mobile-cat');
+        if (cat === activeCategory) {
+          btn.classList.add('border-teodora-gold', 'bg-teodora-roseLight/70', 'font-bold');
+        } else {
+          btn.classList.remove('border-teodora-gold', 'bg-teodora-roseLight/70', 'font-bold');
+        }
+      });
+    }
+
+    function resetCategoryFilters() {
+      APP_STATE.filters.activeCategoryFilters = {};
+      renderDynamicFilters();
+      renderProducts();
+    }
+
+    function renderActiveFilterTags() {
+      const container = document.getElementById('activeFilterTags');
+      if (!container) return;
+
+      let tags = [];
+
+      // Tag da categoria selecionada
+      if (APP_STATE.filters.category !== 'todos') {
+        tags.push({
+          label: `Universo: ${APP_STATE.filters.category.toUpperCase()}`,
+          clear: () => setCategoryFilter('todos')
+        });
+      }
+
+      // Tags de sub-filtros dinâmicos ativos
+      const activeCat = APP_STATE.filters.category;
+      const config = CATEGORY_FILTER_CONFIGS[activeCat] || CATEGORY_FILTER_CONFIGS['todos'];
+
+      for (const [groupId, vals] of Object.entries(APP_STATE.filters.activeCategoryFilters)) {
+        const groupDef = config.groups.find(g => g.id === groupId);
+        if (groupDef && vals) {
+          vals.forEach(val => {
+            const optDef = groupDef.options.find(o => o.value === val);
+            const label = optDef ? optDef.label : val;
+            tags.push({
+              label: `${groupDef.name}: ${label}`,
+              clear: () => toggleDynamicFilter(groupId, val)
+            });
+          });
+        }
+      }
+
+      // Preço Máximo
+      if (APP_STATE.filters.maxPrice < 500) {
+        tags.push({
+          label: `Até ${formatBRL(APP_STATE.filters.maxPrice)}`,
+          clear: () => handlePriceRangeChange(500)
+        });
+      }
+
+      // Curadoria / Badge
+      if (APP_STATE.filters.badge) {
+        tags.push({
+          label: `Destaque: ${APP_STATE.filters.badge}`,
+          clear: () => setSpecialFilter('')
+        });
+      }
+
+      // Busca
+      if (APP_STATE.filters.search) {
+        tags.push({
+          label: `Busca: "${APP_STATE.filters.search}"`,
+          clear: () => {
+            APP_STATE.filters.search = '';
+            const input = document.getElementById('headerDesktopSearch');
+            if (input) input.value = '';
+            renderProducts();
+          }
+        });
+      }
+
+      if (tags.length === 0) {
+        container.innerHTML = `<span class="text-teodora-textMuted text-xs">Exibindo criações nobres da curadoria Teodora</span>`;
+        return;
+      }
+
+      container.innerHTML = tags.map((t, idx) => `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white text-teodora-text text-xs font-semibold border border-teodora-border shadow-sm">
+          <span>${t.label}</span>
+          <button onclick="tagClearActions[${idx}]()" class="hover:text-red-500 ml-0.5"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+        </span>
+      `).join('');
+
+      window.tagClearActions = tags.map(t => t.clear);
+    }
+
+    function resetAllFilters() {
+      APP_STATE.filters.category = 'todos';
+      APP_STATE.filters.maxPrice = 500;
+      APP_STATE.filters.badge = '';
+      APP_STATE.filters.search = '';
+      APP_STATE.filters.sortBy = 'populares';
+      APP_STATE.filters.activeCategoryFilters = {};
+
+      const dSearch = document.getElementById('headerDesktopSearch');
+      if (dSearch) dSearch.value = '';
+
+      const priceSlider = document.getElementById('priceRangeInput');
+      if (priceSlider) priceSlider.value = 500;
+
+      const priceLabel = document.getElementById('priceDisplayLabel');
+      if (priceLabel) priceLabel.innerText = "R$ 500,00";
+
+      const badgeDefault = document.querySelector('input[name="badgeFilter"][value=""]');
+      if (badgeDefault) badgeDefault.checked = true;
+
+      updateNavigationUI('todos');
+      renderDynamicFilters();
+      renderProducts();
+    }
+
+    function handlePriceRangeChange(val) {
+      const num = Number(val);
+      APP_STATE.filters.maxPrice = num;
+      const formatted = formatBRL(num);
+      
+      const desktopLabel = document.getElementById('priceDisplayLabel');
+      if (desktopLabel) desktopLabel.innerText = formatted;
+      
+      const mobileLabel = document.getElementById('mobilePriceLabel');
+      if (mobileLabel) mobileLabel.innerText = formatted;
+      
+      const rangeInput = document.getElementById('priceRangeInput');
+      if (rangeInput && rangeInput.value !== val) rangeInput.value = val;
+      
+      renderProducts();
+    }
+
+    function toggleFamilyFilter(family, checked) {
+      if (checked) {
+        if (!APP_STATE.filters.families.includes(family)) {
+          APP_STATE.filters.families.push(family);
+        }
+      } else {
+        APP_STATE.filters.families = APP_STATE.filters.families.filter(f => f !== family);
+      }
+      renderProducts();
+    }
+
+    function setSpecialFilter(badge) {
+      APP_STATE.filters.badge = badge;
+      if (APP_STATE.activeProductId) {
+        closeProductPage();
+      }
+      const radios = document.querySelectorAll('input[name="badgeFilter"]');
+      radios.forEach(r => {
+        r.checked = (r.value === badge);
+      });
+      renderProducts();
+    }
+
+    function applySorting(val) {
+      APP_STATE.filters.sortBy = val;
+      renderProducts();
+    }
+
+    function handleQuickSearch(val) {
+      APP_STATE.filters.search = val.trim();
+      renderProducts();
+    }
+
+    function openProductPage(productId) {
+      const product = APP_STATE.products.find(p => p.id === productId);
+      if (!product) return;
+
+      APP_STATE.activeProductId = productId;
+      APP_STATE.selectedPdpVariantIdx = 0;
+      APP_STATE.pdpQuantity = 1;
+
+      // Oculta catálogo principal e exibe tela de produto
+      const mainFlow = document.getElementById('catalogMainFlow');
+      if (mainFlow) mainFlow.classList.add('hidden');
+
+      const pdp = document.getElementById('productPageView');
+      if (pdp) pdp.classList.remove('hidden');
+
+      // Preenche Breadcrumbs & Cabeçalho com verificações defensivas
+      const breadCat = document.getElementById('pdpBreadcrumbCategory');
+      if (breadCat) breadCat.innerText = product.category;
+      const breadTitle = document.getElementById('pdpBreadcrumbTitle');
+      if (breadTitle) breadTitle.innerText = product.title;
+      const brandTag = document.getElementById('pdpBrandTag');
+      if (brandTag) brandTag.innerText = product.brandTag;
+      const pdpTitle = document.getElementById('pdpTitle');
+      if (pdpTitle) pdpTitle.innerText = product.title;
+      const badgeTag = document.getElementById('pdpBadgeTag');
+      if (badgeTag) badgeTag.innerText = product.badge || 'Criação Nobre';
+      const ratingEl = document.getElementById('pdpRating');
+      if (ratingEl) ratingEl.innerText = product.rating.toFixed(1);
+      const reviewsCount = document.getElementById('pdpReviewsCount');
+      if (reviewsCount) reviewsCount.innerText = `${product.reviews} avaliações verificadas`;
+
+      // Imagem principal e galeria
+      const mainImg = document.getElementById('pdpMainImage');
+      if (mainImg) mainImg.src = product.gallery && product.gallery.length > 0 ? product.gallery[0] : product.image;
+
+      const thumbBox = document.getElementById('pdpThumbnailRow');
+      if (thumbBox) {
+        const galleryList = product.gallery || [product.image];
+        thumbBox.innerHTML = galleryList.map((src, idx) => `
+          <button onclick="changePdpGalleryImage('${src}', this)" class="pdp-thumb-item rounded-2xl overflow-hidden aspect-[4/5] border-2 ${idx === 0 ? 'border-teodora-gold' : 'border-teodora-border'} bg-white hover:border-teodora-gold transition">
+            <img src="${src}" alt="${product.title}" class="w-full h-full object-cover">
+          </button>
+        `).join('');
+      }
+
+      // Preços e Parcelamento com null-checks seguros
+      updatePdpPriceDisplay(product);
+
+      // Seletor de Variantes
+      const variantBox = document.getElementById('pdpVariantSelector');
+      const volumeLabel = document.getElementById('pdpSelectedVolumeLabel');
+      if (variantBox) {
+        if (product.variants && product.variants.length > 0) {
+          variantBox.innerHTML = product.variants.map((v, idx) => `
+            <button onclick="selectPdpVariant(${idx})" class="pdp-var-btn p-2.5 rounded-2xl border ${idx === 0 ? 'border-teodora-gold bg-teodora-roseLight/70' : 'border-teodora-border bg-white'} text-center transition">
+              <span class="block text-xs font-bold text-teodora-text">${v.size}</span>
+              <span class="block text-[10px] text-teodora-textMuted">${formatBRL(v.price)}</span>
+            </button>
+          `).join('');
+          if (volumeLabel) volumeLabel.innerText = product.variants[0].label;
+        } else {
+          variantBox.innerHTML = `<span class="text-xs text-teodora-textMuted col-span-3">${product.volume}</span>`;
+          if (volumeLabel) volumeLabel.innerText = product.volume;
+        }
+      }
+
+      // Pirâmide Olfativa
+      const topNotes = document.getElementById('pdpTopNotes');
+      if (topNotes) topNotes.innerText = product.pyramid ? product.pyramid.top : product.notes;
+      const heartNotes = document.getElementById('pdpHeartNotes');
+      if (heartNotes) heartNotes.innerText = product.pyramid ? product.pyramid.heart : product.notes;
+      const baseNotes = document.getElementById('pdpBaseNotes');
+      if (baseNotes) baseNotes.innerText = product.pyramid ? product.pyramid.base : 'Almíscar Nobre e Âmbar';
+
+      // Abas descritivas
+      const descEl = document.getElementById('pdpDescription');
+      if (descEl) descEl.innerText = product.description;
+      const ritualEl = document.getElementById('pdpRitualAdvice');
+      if (ritualEl) ritualEl.innerText = product.ritual || 'Borrife nas áreas de maior pulsação sanguínea.';
+      const ingrEl = document.getElementById('pdpIngredients');
+      if (ingrEl) ingrEl.innerText = product.ingredients || 'Fórmula pura com óleos botânicos nobres.';
+      switchPdpTab('ritual');
+
+      // Quantidade
+      const qEl = document.getElementById('pdpQuantityCount');
+      if (qEl) qEl.innerText = '1';
+
+      // Ícone Favorito
+      const isFav = APP_STATE.wishlist.some(w => w.id === product.id);
+      const favIcon = document.getElementById('pdpWishlistIcon');
+      if (favIcon) favIcon.className = isFav ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart text-lg';
+
+      // Renderiza Produtos Similares
+      renderSimilarProducts(product);
+
+      // Rola suavemente ao topo
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeProductPage() {
+      const pdp = document.getElementById('productPageView');
+      if (pdp) pdp.classList.add('hidden');
+      const mainFlow = document.getElementById('catalogMainFlow');
+      if (mainFlow) mainFlow.classList.remove('hidden');
+      APP_STATE.activeProductId = null;
+    }
+
+    function changePdpGalleryImage(src, btnEl) {
+      const mainImg = document.getElementById('pdpMainImage');
+      if (mainImg) mainImg.src = src;
+      document.querySelectorAll('.pdp-thumb-item').forEach(b => {
+        b.classList.remove('border-teodora-gold');
+        b.classList.add('border-teodora-border');
+      });
+      if (btnEl) {
+        btnEl.classList.remove('border-teodora-border');
+        btnEl.classList.add('border-teodora-gold');
+      }
+    }
+
+    function selectPdpVariant(idx) {
+      APP_STATE.selectedPdpVariantIdx = idx;
+      const product = APP_STATE.products.find(p => p.id === APP_STATE.activeProductId);
+      if (!product || !product.variants) return;
+
+      const variant = product.variants[idx];
+      const volEl = document.getElementById('pdpSelectedVolumeLabel');
+      if (volEl) volEl.innerText = variant.label;
+
+      document.querySelectorAll('.pdp-var-btn').forEach((b, i) => {
+        if (i === idx) {
+          b.classList.add('border-teodora-gold', 'bg-teodora-roseLight/70');
+          b.classList.remove('border-teodora-border', 'bg-white');
+        } else {
+          b.classList.remove('border-teodora-gold', 'bg-teodora-roseLight/70');
+          b.classList.add('border-teodora-border', 'bg-white');
+        }
+      });
+
+      updatePdpPriceDisplay(product);
+    }
+
+    function updatePdpPriceDisplay(product) {
+      if (!product) return;
+      const price = product.variants && product.variants[APP_STATE.selectedPdpVariantIdx] 
+        ? product.variants[APP_STATE.selectedPdpVariantIdx].price 
+        : product.price;
+
+      const installment = price / 6;
+      const pixPrice = price * 0.95;
+
+      const curPriceEl = document.getElementById('pdpCurrentPrice');
+      if (curPriceEl) curPriceEl.innerText = formatBRL(price);
+
+      const oldPriceEl = document.getElementById('pdpOldPrice');
+      const discountEl = document.getElementById('pdpDiscountBadge');
+      if (oldPriceEl && discountEl) {
+        if (product.oldPrice) {
+          oldPriceEl.style.display = 'inline';
+          oldPriceEl.innerText = formatBRL(product.oldPrice);
+          discountEl.style.display = 'inline';
+        } else {
+          oldPriceEl.style.display = 'none';
+          discountEl.style.display = 'none';
+        }
+      }
+
+      const instEl = document.getElementById('pdpInstallmentPrice');
+      if (instEl) instEl.innerText = formatBRL(installment);
+
+      const pixEl = document.getElementById('pdpPixPrice');
+      if (pixEl) pixEl.innerText = pixPrice.toFixed(2).replace('.', ',');
+    }
+
+    function changePdpQuantity(delta) {
+      let current = APP_STATE.pdpQuantity + delta;
+      if (current < 1) current = 1;
+      if (current > 10) current = 10;
+      APP_STATE.pdpQuantity = current;
+      const qEl = document.getElementById('pdpQuantityCount');
+      if (qEl) qEl.innerText = current;
+    }
+
+    function addToCartFromPdp() {
+      const product = APP_STATE.products.find(p => p.id === APP_STATE.activeProductId);
+      if (!product) return;
+
+      const variant = product.variants ? product.variants[APP_STATE.selectedPdpVariantIdx] : null;
+      const finalPrice = variant ? variant.price : product.price;
+      const finalVolume = variant ? variant.size : product.volume;
+
+      const cartItem = {
+        ...product,
+        price: finalPrice,
+        volume: finalVolume,
+        quantity: APP_STATE.pdpQuantity
+      };
+
+      const existing = APP_STATE.cart.find(i => i.id === product.id && i.volume === finalVolume);
+      if (existing) {
+        existing.quantity += APP_STATE.pdpQuantity;
+      } else {
+        APP_STATE.cart.push(cartItem);
+      }
+
+      updateCartUI();
+      displayToast(`<strong>${product.title} (${finalVolume})</strong> adicionado à sacola!`);
+      toggleCartDrawer(true);
+    }
+
+    function buyNowFromPdp() {
+      addToCartFromPdp();
+      openMercadoPagoModal();
+    }
+
+    function toggleWishlistFromPdp() {
+      if (!APP_STATE.activeProductId) return;
+      toggleWishlist(APP_STATE.activeProductId);
+      const isFav = APP_STATE.wishlist.some(w => w.id === APP_STATE.activeProductId);
+      const favIcon = document.getElementById('pdpWishlistIcon');
+      if (favIcon) favIcon.className = isFav ? 'fa-solid fa-heart text-red-500' : 'fa-regular fa-heart text-lg';
+    }
+
+    function setPriceShortcut(val) {
+      handlePriceRangeChange(val);
+    }
+
+    function switchPdpTab(tab) {
+      document.querySelectorAll('.pdp-tab-btn').forEach(b => {
+        b.classList.remove('border-teodora-gold', 'text-teodora-text', 'font-bold');
+        b.classList.add('border-transparent', 'text-teodora-textMuted');
+      });
+
+      const tabRitual = document.getElementById('pdpTabContentRitual');
+      const tabAtivos = document.getElementById('pdpTabContentAtivos');
+      const tabAval = document.getElementById('pdpTabContentAvaliacoes');
+
+      if (tabRitual) tabRitual.classList.add('hidden');
+      if (tabAtivos) tabAtivos.classList.add('hidden');
+      if (tabAval) tabAval.classList.add('hidden');
+
+      const btnRitual = document.getElementById('tabBtnRitual');
+      const btnAtivos = document.getElementById('tabBtnAtivos');
+      const btnAval = document.getElementById('tabBtnAvaliacoes');
+
+      if (tab === 'ritual') {
+        if (btnRitual) {
+          btnRitual.classList.add('border-teodora-gold', 'text-teodora-text', 'font-bold');
+          btnRitual.classList.remove('border-transparent', 'text-teodora-textMuted');
+        }
+        if (tabRitual) tabRitual.classList.remove('hidden');
+      } else if (tab === 'ativos') {
+        if (btnAtivos) {
+          btnAtivos.classList.add('border-teodora-gold', 'text-teodora-text', 'font-bold');
+          btnAtivos.classList.remove('border-transparent', 'text-teodora-textMuted');
+        }
+        if (tabAtivos) tabAtivos.classList.remove('hidden');
+      } else {
+        if (btnAval) {
+          btnAval.classList.add('border-teodora-gold', 'text-teodora-text', 'font-bold');
+          btnAval.classList.remove('border-transparent', 'text-teodora-textMuted');
+        }
+        if (tabAval) tabAval.classList.remove('hidden');
+      }
+    }
+
+    async function calculateFreightForPdp() {
+      const raw = document.getElementById('pdpCepInput').value.replace(/\D/g, '');
+      const box = document.getElementById('pdpShippingResults');
+
+      if (raw.length !== 8) {
+        displayToast('Informe um CEP válido com 8 dígitos.');
+        return;
+      }
+
+      if (box) {
+        box.classList.remove('hidden');
+        box.innerHTML = `<span class="text-teodora-gold"><i class="fa-solid fa-spinner fa-spin"></i> Consultando Correios...</span>`;
+      }
+
+      try {
+        const resp = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+        const data = await resp.json();
+
+        if (data.erro) {
+          if (box) box.innerHTML = `<span class="text-red-500">CEP não encontrado.</span>`;
+          return;
+        }
+
+        if (box) {
+          box.innerHTML = `
+            <div class="p-2.5 rounded-xl bg-teodora-bgLight border border-teodora-border space-y-1">
+              <p class="text-[11px] font-bold text-teodora-text">${data.localidade} - ${data.uf} (${data.bairro || 'Região'})</p>
+              <div class="flex justify-between text-[11px]">
+                <span class="text-teodora-textMuted">Sedex Express (1 a 3 dias úteis):</span>
+                <span class="font-bold text-teodora-text">R$ 24,90</span>
+              </div>
+              <div class="flex justify-between text-[11px]">
+                <span class="text-teodora-textMuted">PAC Econômico (4 a 8 dias úteis):</span>
+                <span class="font-bold text-teodora-text">R$ 14,50</span>
+              </div>
+            </div>
+          `;
+        }
+      } catch (e) {
+        if (box) box.innerHTML = `<span class="text-red-500">Erro ao consultar CEP.</span>`;
+      }
+    }
+
+    function renderSimilarProducts(product) {
+      const container = document.getElementById('pdpSimilarProductsGrid');
+      if (!container) return;
+      
+      const similarList = (product.similarIds || [2, 3, 4])
+        .map(id => APP_STATE.products.find(p => p.id === id))
+        .filter(Boolean)
+        .slice(0, 4);
+
+      container.innerHTML = similarList.map(item => `
+        <article class="group bg-white rounded-3xl border border-teodora-border hover:border-teodora-gold/50 shadow-card-clean hover:shadow-card-hover transition-all duration-300 flex flex-col h-full overflow-hidden p-4">
+          <div onclick="openProductPage(${item.id})" class="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-teodora-bgLight mb-4 flex-shrink-0 cursor-pointer">
+            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            ${item.badge ? `
+              <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
+                ${item.badge}
+              </span>
+            ` : ''}
+          </div>
+          <div class="flex-1 flex flex-col justify-between space-y-3">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-teodora-gold block mb-1">${item.brandTag}</span>
+              <h3 onclick="openProductPage(${item.id})" class="font-heading text-base font-semibold text-teodora-text group-hover:text-teodora-gold transition-colors leading-tight line-clamp-1 cursor-pointer">
+                ${item.title}
+              </h3>
+              <div class="flex items-center gap-1.5 text-xs mt-1.5">
+                <span class="text-teodora-gold text-xs"><i class="fa-solid fa-star"></i></span>
+                <span class="font-bold text-teodora-text">${item.rating.toFixed(1)}</span>
+                <span class="text-teodora-textMuted">(${item.reviews})</span>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-teodora-border space-y-2">
+              <span class="text-lg font-bold text-teodora-text block">${formatBRL(item.price)}</span>
+              <button onclick="openProductPage(${item.id})" class="w-full py-2.5 px-3 rounded-xl bg-white border border-teodora-border hover:border-teodora-gold text-teodora-text text-[11px] font-semibold uppercase tracking-wider transition">
+                Conhecer Criação
+              </button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function toggleIntensityFilter(intensity, checked) {
+      if (checked) {
+        if (!APP_STATE.filters.intensities.includes(intensity)) APP_STATE.filters.intensities.push(intensity);
+      } else {
+        APP_STATE.filters.intensities = APP_STATE.filters.intensities.filter(i => i !== intensity);
+      }
+      renderProducts();
+    }
+
+    function toggleOccasionShortcut(occ) {
+      const idx = APP_STATE.filters.occasions.indexOf(occ);
+      const btn = document.getElementById(`occBtn-${occ}`);
+      if (idx > -1) {
+        APP_STATE.filters.occasions.splice(idx, 1);
+        if (btn) btn.classList.remove('border-teodora-gold', 'bg-teodora-roseLight/70', 'font-bold');
+      } else {
+        APP_STATE.filters.occasions.push(occ);
+        if (btn) btn.classList.add('border-teodora-gold', 'bg-teodora-roseLight/70', 'font-bold');
+      }
+      renderProducts();
+    }
+
+    function toggleActiveFilter(active, checked) {
+      if (checked) {
+        if (!APP_STATE.filters.actives.includes(active)) APP_STATE.filters.actives.push(active);
+      } else {
+        APP_STATE.filters.actives = APP_STATE.filters.actives.filter(a => a !== active);
+      }
+      renderProducts();
+    }
+
+    function createProductCardHTML(item) {
+      const isFav = APP_STATE.wishlist.some(w => w.id === item.id);
+      const installment = item.price / 6;
+
+      return `
+        <article class="group bg-white rounded-3xl border border-teodora-border hover:border-teodora-gold/50 shadow-card-clean hover:shadow-card-hover transition-all duration-300 flex flex-col h-full overflow-hidden p-4">
+          
+          <!-- Imagem Dominante (~65% da área visual do card) - Clicável para abrir Página do Produto -->
+          <div onclick="openProductPage(${item.id})" class="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-teodora-bgLight mb-4 flex-shrink-0 cursor-pointer">
+            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+            
+            <!-- Badge Discreto -->
+            ${item.badge ? `
+              <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
+                ${item.badge}
+              </span>
+            ` : ''}
+
+            <!-- Botões Flutuantes (Wishlist e Quick View) -->
+            <div class="absolute top-3 right-3 flex flex-col gap-2" onclick="event.stopPropagation()">
+              <button onclick="toggleWishlist(${item.id})" class="w-9 h-9 rounded-full bg-white/95 text-teodora-text hover:text-red-500 shadow-sm flex items-center justify-center transition" aria-label="Favoritar">
+                <i class="${isFav ? 'fa-solid text-red-500' : 'fa-regular'} fa-heart text-sm"></i>
+              </button>
+              <button onclick="openQuickModal(${item.id})" class="w-9 h-9 rounded-full bg-white/95 text-teodora-text hover:text-teodora-gold shadow-sm flex items-center justify-center transition" aria-label="Espiar Detalhes">
+                <i class="fa-regular fa-eye text-sm"></i>
+              </button>
+            </div>
+
+            <!-- Faixa com Notas Olfativas -->
+            <div class="absolute bottom-0 inset-x-0 bg-white/95 backdrop-blur-sm px-3.5 py-2 border-t border-teodora-border text-xs text-teodora-textMuted truncate">
+              <i class="fa-solid fa-feather-pointed text-teodora-gold mr-1.5"></i> ${item.notes}
+            </div>
+          </div>
+
+          <!-- Hierarquia Clara e Altura Padronizada -->
+          <div class="flex-1 flex flex-col justify-between space-y-3">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-teodora-gold block mb-1">${item.brandTag}</span>
+              
+              <h3 onclick="openProductPage(${item.id})" class="font-heading text-lg font-semibold text-teodora-text group-hover:text-teodora-gold transition-colors leading-tight line-clamp-1 cursor-pointer">
+                ${item.title}
+              </h3>
+              
+              <div class="flex items-center gap-1.5 text-xs mt-1.5">
+                <div class="flex text-teodora-gold text-xs">
+                  <i class="fa-solid fa-star"></i>
+                </div>
+                <span class="font-bold text-teodora-text">${item.rating.toFixed(1)}</span>
+                <span class="text-teodora-textMuted">(${item.reviews} avaliações)</span>
+              </div>
+            </div>
+
+            <!-- Preço com Alto Contraste & Botão Comprar Sofisticado -->
+            <div class="pt-3 border-t border-teodora-border space-y-3">
+              <div onclick="openProductPage(${item.id})" class="cursor-pointer">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-2xl font-bold text-teodora-text tracking-tight">${formatBRL(item.price)}</span>
+                  ${item.oldPrice ? `<span class="text-xs text-teodora-textMuted line-through">${formatBRL(item.oldPrice)}</span>` : ''}
+                </div>
+                <p class="text-xs text-teodora-textMuted mt-0.5">ou 6x de <strong class="text-teodora-text font-semibold">${formatBRL(installment)}</strong> sem juros</p>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <button onclick="quickAddToCart(${item.id})" class="py-3 px-3 rounded-xl bg-teodora-text hover:bg-black text-white text-[11px] font-semibold uppercase tracking-[0.14em] transition-all flex items-center justify-center gap-2 shadow-md">
+                  <i class="fa-solid fa-bag-shopping text-xs text-teodora-gold"></i>
+                  <span>Comprar</span>
+                </button>
+                <button onclick="openProductPage(${item.id})" class="py-3 px-3 rounded-xl bg-white hover:bg-teodora-roseLight border border-teodora-border text-teodora-text text-[11px] font-semibold uppercase tracking-[0.14em] transition-all text-center">
+                  Ver Detalhes
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </article>
+      `;
+    }
+
+    function renderProducts() {
+      const items = getFilteredProducts();
+      const countEl = document.getElementById('productResultsCount');
+      if (countEl) {
+        countEl.innerText = `${items.length} ${items.length === 1 ? 'criação' : 'criações'}`;
+      }
+
+      renderActiveFilterTags();
+
+      const container = document.getElementById('productGridContainer');
+      const emptyState = document.getElementById('emptyCatalogState');
+
+      if (!container) return;
+
+      if (items.length === 0) {
+        container.innerHTML = '';
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      // Separa os primeiros produtos para intercalar o banner editorial horizontal
+      const firstBatch = items.slice(0, 3);
+      const remainingBatch = items.slice(3);
+
+      let html = `
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          ${firstBatch.map(item => createProductCardHTML(item)).join('')}
+        </div>
+      `;
+
+      // Banner Editorial horizontal no meio da vitrine
+      html += `
+        <div class="my-8 rounded-3xl overflow-hidden relative bg-gradient-to-r from-teodora-text via-stone-900 to-black text-white p-8 sm:p-12 shadow-card-clean border border-teodora-border/20">
+          <div class="relative z-10 max-w-xl space-y-3">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[10px] uppercase font-bold tracking-widest text-teodora-gold border border-white/10">
+              <i class="fa-solid fa-sparkles"></i> Criação Autoral Teodora
+            </span>
+            <h3 class="font-heading text-2xl sm:text-3xl lg:text-4xl font-normal leading-tight">
+              Fragrâncias que despertam o melhor em você.
+            </h3>
+            <p class="text-xs sm:text-sm text-stone-300 font-light leading-relaxed">
+              Notas florais, texturas aveludadas e cosméticos pensados para celebrar sua beleza e acompanhar cada momento do seu dia.
+            </p>
+            <div class="pt-2">
+              <button onclick="setCategoryFilter('perfumes')" class="px-6 py-3 rounded-full bg-white text-teodora-text hover:bg-teodora-gold hover:text-white transition-all text-xs uppercase tracking-widest font-semibold inline-flex items-center gap-2 shadow-lg">
+                <span>Ver Perfumes</span>
+                <i class="fa-solid fa-arrow-right text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+          <div class="absolute -right-10 -bottom-10 w-80 h-80 bg-teodora-gold/15 rounded-full blur-3xl pointer-events-none"></div>
+        </div>
+      `;
+
+      if (remainingBatch.length > 0) {
+        html += `
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            ${remainingBatch.map(item => createProductCardHTML(item)).join('')}
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function quickAddToCart(id) {
+      const product = APP_STATE.products.find(p => p.id === id);
+      if (!product) return;
+
+      const existing = APP_STATE.cart.find(i => i.id === id);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        APP_STATE.cart.push({ ...product, quantity: 1 });
+      }
+
+      updateCartUI();
+      displayToast(`<strong>${product.title}</strong> adicionado à sacola!`);
+      toggleCartDrawer(true);
+    }
+
+    function updateCartQuantity(id, delta) {
+      const idx = APP_STATE.cart.findIndex(i => i.id === id);
+      if (idx === -1) return;
+
+      APP_STATE.cart[idx].quantity += delta;
+      if (APP_STATE.cart[idx].quantity <= 0) {
+        APP_STATE.cart.splice(idx, 1);
+      }
+      updateCartUI();
+    }
+
+    function removeFromCart(id) {
+      APP_STATE.cart = APP_STATE.cart.filter(i => i.id !== id);
+      updateCartUI();
+      displayToast('Item removido da sacola.');
+    }
+
+    function updateCartUI() {
+      const totalCount = APP_STATE.cart.reduce((sum, item) => sum + item.quantity, 0);
+      const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+      const cartCountEl = document.getElementById('cartCountBadge');
+      if (cartCountEl) cartCountEl.innerText = totalCount;
+      const cartHeaderEl = document.getElementById('cartHeaderBadge');
+      if (cartHeaderEl) cartHeaderEl.innerText = totalCount;
+      const headerTotalEl = document.getElementById('headerCartTotal');
+      if (headerTotalEl) headerTotalEl.innerText = formatBRL(subtotal);
+
+      const listEl = document.getElementById('cartItemList');
+      if (APP_STATE.cart.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-center py-14 text-teodora-textMuted space-y-2">
+            <i class="fa-solid fa-bag-shopping text-4xl text-teodora-roseSoft"></i>
+            <p class="text-xs">Sua sacola de compras está vazia.</p>
+            <button onclick="toggleCartDrawer(false)" class="mt-2 text-xs uppercase tracking-wider text-teodora-gold font-bold underline">Explorar fragrâncias</button>
+          </div>
+        `;
+      } else {
+        listEl.innerHTML = APP_STATE.cart.map(item => `
+          <div class="flex items-center gap-3 p-3 bg-teodora-bgLight rounded-2xl border border-teodora-border">
+            <img src="${item.image}" alt="${item.title}" class="w-16 h-16 rounded-xl object-cover bg-white border border-teodora-border">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-heading text-xs font-semibold text-teodora-text truncate">${item.title}</h4>
+              <p class="text-[10px] text-teodora-textMuted">${item.volume}</p>
+              <div class="flex items-center justify-between mt-2">
+                <div class="flex items-center border border-teodora-border rounded-lg bg-white">
+                  <button onclick="updateCartQuantity(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center text-xs font-semibold hover:bg-teodora-roseLight">-</button>
+                  <span class="w-6 text-center text-xs font-semibold">${item.quantity}</span>
+                  <button onclick="updateCartQuantity(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center text-xs font-semibold hover:bg-teodora-roseLight">+</button>
+                </div>
+                <span class="text-xs font-bold text-teodora-text">${formatBRL(item.price * item.quantity)}</span>
+              </div>
+            </div>
+            <button onclick="removeFromCart(${item.id})" class="text-teodora-textMuted hover:text-red-500 p-1" aria-label="Remover">
+              <i class="fa-regular fa-trash-can text-xs"></i>
+            </button>
+          </div>
+        `).join('');
+      }
+
+      let discount = 0;
+      if (APP_STATE.couponCode === 'TEODORA10') {
+        discount = subtotal * 0.10;
+        document.getElementById('summaryDiscountRow').style.display = 'flex';
+        document.getElementById('summaryDiscount').innerText = `- ${formatBRL(discount)}`;
+      } else {
+        document.getElementById('summaryDiscountRow').style.display = 'none';
+      }
+
+      const total = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
+      document.getElementById('summarySubtotal').innerText = formatBRL(subtotal);
+      document.getElementById('summaryShipping').innerText = APP_STATE.shippingCost === 0 && APP_STATE.shippingOptionName ? 'GRÁTIS' : (APP_STATE.shippingCost > 0 ? formatBRL(APP_STATE.shippingCost) : 'Informe seu CEP');
+      document.getElementById('summaryTotal').innerText = formatBRL(total);
+    }
+
+    function toggleCartDrawer(open) {
+      const backdrop = document.getElementById('cartDrawerBackdrop');
+      const panel = document.getElementById('cartDrawerPanel');
+      if (open) {
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+        panel.classList.remove('translate-x-full');
+      } else {
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+        panel.classList.add('translate-x-full');
+      }
+    }
+
+    async function calculateFreightViaCEP() {
+      const raw = document.getElementById('cepInput').value.replace(/\D/g, '');
+      const label = document.getElementById('cepResultLabel');
+      const box = document.getElementById('shippingRatesBox');
+
+      if (raw.length !== 8) {
+        displayToast('Informe um CEP válido com 8 dígitos.');
+        return;
+      }
+
+      label.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-teodora-gold"></i> Buscando Correios...`;
+
+      try {
+        const resp = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+        const data = await resp.json();
+
+        if (data.erro) {
+          label.innerText = 'CEP não encontrado.';
+          displayToast('CEP não localizado nos Correios.');
+          return;
+        }
+
+        APP_STATE.shippingInfo = data;
+        label.innerText = `${data.localidade} - ${data.uf}`;
+
+        const sedexVal = 23.90;
+        const pacVal = 13.50;
+
+        box.classList.remove('hidden');
+        box.innerHTML = `
+          <label class="flex items-center justify-between p-2.5 rounded-xl border border-teodora-border bg-white cursor-pointer hover:border-teodora-gold transition">
+            <div class="flex items-center gap-2">
+              <input type="radio" name="shippingRate" checked onchange="setShippingChoice(${sedexVal}, 'Sedex Express')" class="accent-teodora-gold">
+              <span class="text-xs font-medium text-teodora-text">Sedex Express (1 a 3 dias úteis)</span>
+            </div>
+            <span class="font-bold text-xs">${formatBRL(sedexVal)}</span>
+          </label>
+
+          <label class="flex items-center justify-between p-2.5 rounded-xl border border-teodora-border bg-white cursor-pointer hover:border-teodora-gold transition">
+            <div class="flex items-center gap-2">
+              <input type="radio" name="shippingRate" onchange="setShippingChoice(${pacVal}, 'PAC Econômico')" class="accent-teodora-gold">
+              <span class="text-xs font-medium text-teodora-text">PAC Econômico (4 a 8 dias úteis)</span>
+            </div>
+            <span class="font-bold text-xs">${formatBRL(pacVal)}</span>
+          </label>
+        `;
+
+        setShippingChoice(sedexVal, 'Sedex Express');
+        displayToast(`Entrega calculada para ${data.localidade}/${data.uf}`);
+      } catch (err) {
+        label.innerText = 'Erro ao consultar CEP.';
+      }
+    }
+
+    function setShippingChoice(cost, name) {
+      APP_STATE.shippingCost = cost;
+      APP_STATE.shippingOptionName = name;
+      updateCartUI();
+    }
+
+    function applyDiscountCoupon() {
+      const code = document.getElementById('cartCouponInput').value.trim().toUpperCase();
+      if (code === 'TEODORA10') {
+        APP_STATE.couponCode = 'TEODORA10';
+        updateCartUI();
+        displayToast('Cupom <strong>TEODORA10</strong> ativado: 10% de desconto!');
+      } else {
+        displayToast('Cupom inválido ou expirado.');
+      }
+    }
+
+    function openMercadoPagoModal() {
+      if (APP_STATE.cart.length === 0) {
+        displayToast('Sua sacola está vazia. Adicione criações antes de comprar.');
+        return;
+      }
+      toggleCartDrawer(false);
+
+      const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
+      let finalTotal = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
+
+      if (APP_STATE.paymentMethod === 'pix') {
+        finalTotal *= 0.95;
+      }
+
+      document.getElementById('checkoutFinalTotal').innerText = formatBRL(finalTotal);
+
+      const sel = document.getElementById('checkoutInstallments');
+      sel.innerHTML = '';
+      for (let i = 1; i <= 6; i++) {
+        sel.innerHTML += `<option value="${i}">${i}x de ${formatBRL(finalTotal / i)} sem juros no Mercado Pago</option>`;
+      }
+
+      if (APP_STATE.shippingInfo) {
+        document.getElementById('buyerAddress').value = `${APP_STATE.shippingInfo.logradouro || 'Rua das Acácias, 180'}, Bairro ${APP_STATE.shippingInfo.bairro || 'Jardins'} - ${APP_STATE.shippingInfo.localidade}/${APP_STATE.shippingInfo.uf}`;
+      }
+
+      document.getElementById('checkoutFormPanel').style.display = 'block';
+      document.getElementById('checkoutSuccessPanel').classList.add('hidden');
+      document.getElementById('mercadoPagoModal').classList.remove('hidden');
+      document.getElementById('mercadoPagoModal').classList.add('flex');
+    }
+
+    function closeMercadoPagoModal() {
+      document.getElementById('mercadoPagoModal').classList.add('hidden');
+      document.getElementById('mercadoPagoModal').classList.remove('flex');
+    }
+
+    function changePaymentOption(method) {
+      APP_STATE.paymentMethod = method;
+      document.querySelectorAll('.pay-tab').forEach(t => {
+        t.classList.remove('border-teodora-gold', 'bg-teodora-roseLight');
+        t.classList.add('border-teodora-border', 'bg-white');
+      });
+
+      document.getElementById('panelPix').classList.add('hidden');
+      document.getElementById('panelCard').classList.add('hidden');
+      document.getElementById('panelBoleto').classList.add('hidden');
+
+      const btnTxt = document.querySelector('#btnSubmitPayment span');
+
+      if (method === 'pix') {
+        document.getElementById('payTabPix').classList.add('border-teodora-gold', 'bg-teodora-roseLight');
+        document.getElementById('panelPix').classList.remove('hidden');
+        btnTxt.innerText = "Confirmar Pedido Pix";
+      } else if (method === 'card') {
+        document.getElementById('payTabCard').classList.add('border-teodora-gold', 'bg-teodora-roseLight');
+        document.getElementById('panelCard').classList.remove('hidden');
+        btnTxt.innerText = "Pagar com Cartão";
+      } else {
+        document.getElementById('payTabBoleto').classList.add('border-teodora-gold', 'bg-teodora-roseLight');
+        document.getElementById('panelBoleto').classList.remove('hidden');
+        btnTxt.innerText = "Emitir Boleto Bancário";
+      }
+
+      const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
+      let total = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
+      if (method === 'pix') total *= 0.95;
+
+      document.getElementById('checkoutFinalTotal').innerText = formatBRL(total);
+    }
+
+    function executePaymentTransaction() {
+      const btn = document.getElementById('btnSubmitPayment');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Conectando Mercado Pago...`;
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Confirmar Pedido</span>`;
+
+        document.getElementById('checkoutFormPanel').style.display = 'none';
+        document.getElementById('checkoutSuccessPanel').classList.remove('hidden');
+
+        const orderId = `#TEO-${Math.floor(10000 + Math.random() * 90000)}`;
+        document.getElementById('displayOrderNumber').innerText = orderId;
+
+        const fakePixPayload = `00020126580014br.gov.bcb.pix0136teodora-mercadopago-${Date.now()}5204000053039865405${orderId}5802BR5916TEODORA COSMETICOS6009SAO PAULO62070503***6304`;
+        document.getElementById('pixGeneratedQr').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(fakePixPayload)}`;
+        document.getElementById('pixCodeText').value = fakePixPayload;
+
+        displayToast('Transação gerada com sucesso no Mercado Pago!');
+      }, 1200);
+    }
+
+    function copyPixToClipboard() {
+      const field = document.getElementById("pixCodeText");
+      field.select();
+      field.setSelectionRange(0, 99999);
+      document.execCommand("copy");
+      displayToast('Código Pix copiado para a área de transferência!');
+    }
+
+    function resetStoreAfterPurchase() {
+      APP_STATE.cart = [];
+      updateCartUI();
+      closeMercadoPagoModal();
+      displayToast('Agradecemos por escolher Teodora Cosméticos ♡');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function openQuickModal(id) {
+      const p = APP_STATE.products.find(item => item.id === id);
+      if (!p) return;
+
+      const c = document.getElementById('quickModalContent');
+      c.innerHTML = `
+        <div class="rounded-2xl overflow-hidden aspect-[3/4] bg-teodora-bgLight border border-teodora-border">
+          <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
+        </div>
+        <div class="space-y-4">
+          <div>
+            <span class="text-xs uppercase tracking-widest text-teodora-gold font-bold">${p.brandTag}</span>
+            <h3 class="font-heading text-2xl font-bold text-teodora-text mt-1">${p.title}</h3>
+            <p class="text-xs text-teodora-textMuted">${p.volume}</p>
+          </div>
+          
+          <div class="p-3 rounded-2xl bg-teodora-roseLight/60 text-xs text-teodora-text space-y-1.5 border border-teodora-border">
+            <p class="font-bold text-teodora-gold"><i class="fa-solid fa-feather-pointed"></i> Pirâmide Olfativa / Ativos Principais:</p>
+            <p class="text-teodora-textMuted">${p.notes}</p>
+          </div>
+
+          <p class="text-xs text-teodora-text leading-relaxed font-light">${p.description}</p>
+          
+          <div class="pt-2 border-t border-teodora-border">
+            <span class="text-2xl font-bold text-teodora-text">${formatBRL(p.price)}</span>
+            <p class="text-xs text-teodora-textMuted">ou 6x de ${formatBRL(p.price / 6)} sem juros no Mercado Pago</p>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button onclick="quickAddToCart(${p.id}); closeQuickModal();" class="flex-1 py-3.5 bg-teodora-text hover:bg-black text-white rounded-xl text-xs uppercase tracking-widest font-semibold transition shadow-md">
+              Adicionar à Sacola
+            </button>
+            <button onclick="toggleWishlist(${p.id})" class="w-12 h-12 rounded-xl border border-teodora-border flex items-center justify-center text-teodora-text hover:text-red-500 transition">
+              <i class="fa-regular fa-heart text-base"></i>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('quickModal').classList.remove('hidden');
+      document.getElementById('quickModal').classList.add('flex');
+    }
+
+    function closeQuickModal() {
+      document.getElementById('quickModal').classList.add('hidden');
+      document.getElementById('quickModal').classList.remove('flex');
+    }
+
+    function toggleWishlist(id) {
+      const p = APP_STATE.products.find(item => item.id === id);
+      if (!p) return;
+
+      const idx = APP_STATE.wishlist.findIndex(i => i.id === id);
+      if (idx > -1) {
+        APP_STATE.wishlist.splice(idx, 1);
+        displayToast('Item removido dos favoritos.');
+      } else {
+        APP_STATE.wishlist.push(p);
+        displayToast(`<strong>${p.title}</strong> adicionado aos favoritos!`);
+      }
+
+      document.getElementById('wishlistCountBadge').innerText = APP_STATE.wishlist.length;
+      renderProducts();
+    }
+
+    function openWishlistModal() {
+      const list = document.getElementById('wishlistItemsContainer');
+      if (APP_STATE.wishlist.length === 0) {
+        list.innerHTML = '<p class="text-xs text-teodora-textMuted text-center py-6">Sua lista de desejos está vazia.</p>';
+      } else {
+        list.innerHTML = APP_STATE.wishlist.map(p => `
+          <div class="flex items-center justify-between p-3 bg-teodora-bgLight rounded-2xl border border-teodora-border">
+            <div class="flex items-center gap-3">
+              <img src="${p.image}" class="w-12 h-12 rounded-xl object-cover border border-teodora-border">
+              <div>
+                <p class="text-xs font-semibold text-teodora-text">${p.title}</p>
+                <p class="text-xs text-teodora-text font-bold">${formatBRL(p.price)}</p>
+              </div>
+            </div>
+            <button onclick="quickAddToCart(${p.id}); closeWishlistModal();" class="px-3.5 py-2 bg-teodora-text hover:bg-black text-white text-[10px] uppercase font-semibold rounded-lg shadow-sm">Comprar</button>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('wishlistModal').classList.remove('hidden');
+      document.getElementById('wishlistModal').classList.add('flex');
+    }
+
+    function closeWishlistModal() {
+      document.getElementById('wishlistModal').classList.add('hidden');
+      document.getElementById('wishlistModal').classList.remove('flex');
+    }
+
+    function toggleMobileFilter() {
+      const drawer = document.getElementById('mobileFilterDrawer');
+      const panel = document.getElementById('mobileFilterPanel');
+      const open = !drawer.classList.contains('pointer-events-none');
+      if (open) {
+        drawer.classList.add('opacity-0', 'pointer-events-none');
+        panel.classList.add('-translate-x-full');
+      } else {
+        drawer.classList.remove('opacity-0', 'pointer-events-none');
+        panel.classList.remove('-translate-x-full');
+      }
+    }
+
+    function openSearchModal() {
+      const modal = document.getElementById('searchOverlay');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => document.getElementById('liveSearchInput').focus(), 100);
+    }
+
+    function closeSearchModal() {
+      const modal = document.getElementById('searchOverlay');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function executeLiveSearch(query) {
+      const out = document.getElementById('liveSearchResults');
+      const clean = query.trim().toLowerCase();
+      if (clean.length < 2) {
+        out.innerHTML = '<p class="text-xs text-teodora-textMuted text-center py-4">Digite ao menos 2 caracteres...</p>';
+        return;
+      }
+
+      const matches = APP_STATE.products.filter(p => 
+        p.title.toLowerCase().includes(clean) || 
+        p.notes.toLowerCase().includes(clean) ||
+        p.category.toLowerCase().includes(clean)
+      );
+
+      if (matches.length === 0) {
+        out.innerHTML = '<p class="text-xs text-teodora-textMuted text-center py-4">Nenhum produto localizado.</p>';
+        return;
+      }
+
+      out.innerHTML = matches.map(m => `
+        <div onclick="openQuickModal(${m.id}); closeSearchModal();" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-teodora-roseLight cursor-pointer transition">
+          <div class="flex items-center gap-3">
+            <img src="${m.image}" class="w-11 h-11 rounded-lg object-cover border border-teodora-border">
+            <div>
+              <p class="text-xs font-semibold text-teodora-text">${m.title}</p>
+              <p class="text-[10px] text-teodora-textMuted">${m.volume}</p>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-teodora-text">${formatBRL(m.price)}</span>
+        </div>
+      `).join('');
+    }
+
+    function displayToast(htmlContent) {
+      const outlet = document.getElementById('toastOutlet');
+      const toast = document.createElement('div');
+      toast.className = "pointer-events-auto bg-teodora-text text-white text-xs px-4 py-3.5 rounded-2xl shadow-xl border border-teodora-gold/40 flex items-center gap-2.5 max-w-sm transition-all duration-300 transform translate-y-2 opacity-0";
+      toast.innerHTML = `<i class="fa-solid fa-sparkles text-teodora-gold"></i><div class="flex-1">${htmlContent}</div>`;
+      outlet.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateNavigationUI('todos');
+      renderDynamicFilters();
+      renderProducts();
+      updateCartUI();
+    });
+  </script>
+</body>
+</html>

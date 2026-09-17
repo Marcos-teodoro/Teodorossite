@@ -13,3 +13,16 @@ Desktop.ini
 *.log
 .env
 .env.*
+!**/.env.example
+
+# Node (legado)
+node_modules/
+server/node_modules/
+
+# Python
+server/.venv/
+server/teodora.db
+server/uploads/
+__pycache__/
+*.pyc
+

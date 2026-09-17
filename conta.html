@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — TEODORA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/tailwind-config.js"></script>
+  <script>window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://localhost:3001');</script>
+</head>
+<body class="min-h-screen bg-teodora-page text-teodora-text antialiased">
+  <header class="border-b border-teodora-border bg-white/90">
+    <div class="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="font-heading tracking-[0.28em] uppercase text-lg font-semibold">TEODORA</a>
+      <a href="/" class="text-xs uppercase tracking-wider text-teodora-textMuted hover:text-teodora-gold">Loja</a>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto px-4 py-12">
+    <h1 class="font-heading text-3xl mb-2">Sua conta</h1>
+    <p class="text-sm text-teodora-textMuted mb-8">Entre ou crie uma conta para acompanhar pedidos e endereços.</p>
+
+    <div class="flex gap-2 mb-6">
+      <button id="tabLogin" class="flex-1 py-2.5 text-xs uppercase tracking-wider border border-teodora-gold bg-teodora-cream font-semibold">Entrar</button>
+      <button id="tabRegister" class="flex-1 py-2.5 text-xs uppercase tracking-wider border border-teodora-border bg-white font-semibold">Cadastrar</button>
+    </div>
+
+    <form id="loginForm" class="space-y-3 bg-white border border-teodora-border p-6">
+      <input type="email" id="loginEmail" required placeholder="E-mail" class="w-full p-3 border border-teodora-border text-sm">
+      <input type="password" id="loginPassword" required placeholder="Senha" class="w-full p-3 border border-teodora-border text-sm">
+      <button type="submit" class="w-full py-3 bg-teodora-text text-white text-xs uppercase tracking-[0.16em] font-semibold">Entrar</button>
+    </form>
+
+    <form id="registerForm" class="hidden space-y-3 bg-white border border-teodora-border p-6">
+      <input type="text" id="regName" placeholder="Nome" class="w-full p-3 border border-teodora-border text-sm">
+      <input type="email" id="regEmail" required placeholder="E-mail" class="w-full p-3 border border-teodora-border text-sm">
+      <input type="tel" id="regPhone" placeholder="WhatsApp" class="w-full p-3 border border-teodora-border text-sm">
+      <input type="password" id="regPassword" required minlength="8" placeholder="Senha (mín. 8)" class="w-full p-3 border border-teodora-border text-sm">
+      <button type="submit" class="w-full py-3 bg-teodora-text text-white text-xs uppercase tracking-[0.16em] font-semibold">Criar conta</button>
+    </form>
+
+    <p id="authMsg" class="mt-4 text-sm text-red-600 hidden"></p>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script>
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const msg = document.getElementById('authMsg');
+
+    if (TeodoraAPI.getToken()) {
+      location.href = '/minha-conta.html';
+    }
+
+    function showMsg(text) {
+      msg.textContent = text;
+      msg.classList.remove('hidden');
+    }
+
+    tabLogin.onclick = () => {
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+      tabLogin.classList.add('border-teodora-gold', 'bg-teodora-cream');
+      tabRegister.classList.remove('border-teodora-gold', 'bg-teodora-cream');
+    };
+    tabRegister.onclick = () => {
+      registerForm.classList.remove('hidden');
+      loginForm.classList.add('hidden');
+      tabRegister.classList.add('border-teodora-gold', 'bg-teodora-cream');
+      tabLogin.classList.remove('border-teodora-gold', 'bg-teodora-cream');
+    };
+
+    loginForm.onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const data = await TeodoraAPI.api('/api/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value,
+          }),
+        });
+        TeodoraAPI.setSession(data.token, data.user);
+        location.href = data.user.role === 'admin' ? '/admin/' : '/minha-conta.html';
+      } catch (err) {
+        showMsg(err.message);
+      }
+    };
+
+    registerForm.onsubmit = async (e) => {
+      e.preventDefault();
+      try {
+        const data = await TeodoraAPI.api('/api/auth/register', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            phone: document.getElementById('regPhone').value,
+            password: document.getElementById('regPassword').value,
+          }),
+        });
+        TeodoraAPI.setSession(data.token, data.user);
+        location.href = '/minha-conta.html';
+      } catch (err) {
+        showMsg(err.message);
+      }
+    };
+  </script>
+</body>
+</html>

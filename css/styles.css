@@ -1,4 +1,14 @@
-/* Teodora Perfumes — estilos alinhados ao layout de referência */
+/* Teodora Perfumes — estilos premium de loja */
+
+:root {
+  --teodora-page: #FDFBF8;
+  --teodora-cream: #F8F4F1;
+  --teodora-blush: #F6EDEA;
+  --teodora-text: #1E1A1A;
+  --teodora-muted: #6E6565;
+  --teodora-border: #EDE4E0;
+  --teodora-gold: #C5A059;
+}
 
 @keyframes hero-in {
   from { opacity: 0; transform: translateY(12px); }
@@ -22,8 +32,8 @@
 }
 
 body {
-  background-color: #FDFBF8;
-  color: #1E1A1A;
+  background-color: var(--teodora-page);
+  color: var(--teodora-text);
   font-family: 'Montserrat', sans-serif;
   overflow-x: hidden;
 }
@@ -37,18 +47,18 @@ body {
 }
 
 .catalog-shell {
-  background-color: #FDFBF8;
+  background-color: var(--teodora-page);
 }
 
 .product-card {
   background: #FFFFFF;
   border: 1px solid #EDE6E1;
-  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
 }
 
 .product-card:hover {
   border-color: #E0D5CF;
-  box-shadow: 0 10px 28px -12px rgba(45, 38, 38, 0.12);
+  box-shadow: 0 14px 32px -14px rgba(45, 38, 38, 0.16);
 }
 
 .product-card__media {
@@ -63,14 +73,18 @@ body {
 }
 
 .btn-comprar {
-  background: linear-gradient(180deg, #F0E6D8 0%, #E8DCC8 100%);
-  color: #1E1A1A;
-  border: 1px solid #E2D6C6;
-  transition: filter 0.2s ease, transform 0.2s ease;
+  background: var(--teodora-text);
+  color: #FFFFFF;
+  border: 1px solid var(--teodora-text);
+  transition: background 0.2s ease, transform 0.15s ease;
 }
 
 .btn-comprar:hover {
-  filter: brightness(0.97);
+  background: #000000;
+}
+
+.btn-comprar:active {
+  transform: scale(0.98);
 }
 
 .badge-vendido {
@@ -90,12 +104,16 @@ body {
 
 .badge-default {
   background: #FFFFFF;
-  color: #1E1A1A;
-  border: 1px solid #EDE4E0;
+  color: var(--teodora-text);
+  border: 1px solid var(--teodora-border);
 }
 
 .filter-active {
   background: #F3EBE6;
+}
+
+.cat-circle-card img {
+  transition: transform 0.5s ease;
 }
 
 ::-webkit-scrollbar {
@@ -103,18 +121,18 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #FDFBF8;
+  background: var(--teodora-page);
 }
 ::-webkit-scrollbar-thumb {
   background: #D5B7B2;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #C5A059;
+  background: var(--teodora-gold);
 }
 
 input[type=range] {
-  accent-color: #C5A059;
+  accent-color: var(--teodora-gold);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -123,10 +141,4 @@ input[type=range] {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-@media (max-width: 640px) {
-  .product-card__media {
-    aspect-ratio: 4 / 3;
-  }
 }

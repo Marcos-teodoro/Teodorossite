@@ -1,0 +1,21 @@
+{
+  "name": "teodora-mercadopago-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend Checkout Pro Mercado Pago para Teodora",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js",
+    "build:catalog": "node build-catalog.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mercadopago": "^2.3.0"
+  }
+}

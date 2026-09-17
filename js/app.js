@@ -3,6 +3,10 @@ function formatBRL(val) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
 }
 
+function teodoraApiBase() {
+  return (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://localhost:3001').replace(/\/$/, '');
+}
+
 function getFilteredProducts() {
   let result = [...APP_STATE.products];
 
@@ -374,6 +378,14 @@ function handleQuickSearch(val) {
   renderProducts();
 }
 
+function setHomeLandingVisible(visible) {
+  ['homeHero', 'homeCategories', 'homeBenefits'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('hidden', !visible);
+  });
+}
+
 function openProductPage(productId) {
   const product = APP_STATE.products.find(p => p.id === productId);
   if (!product) return;
@@ -382,7 +394,8 @@ function openProductPage(productId) {
   APP_STATE.selectedPdpVariantIdx = 0;
   APP_STATE.pdpQuantity = 1;
 
-  // Oculta catálogo principal e exibe tela de produto
+  // Oculta home + catálogo e exibe só a página do produto
+  setHomeLandingVisible(false);
   const mainFlow = document.getElementById('catalogMainFlow');
   if (mainFlow) mainFlow.classList.add('hidden');
 
@@ -421,6 +434,7 @@ function openProductPage(productId) {
 
   // Preços e Parcelamento com null-checks seguros
   updatePdpPriceDisplay(product);
+
 
   // Seletor de Variantes
   const variantBox = document.getElementById('pdpVariantSelector');
@@ -478,6 +492,7 @@ function closeProductPage() {
   if (pdp) pdp.classList.add('hidden');
   const mainFlow = document.getElementById('catalogMainFlow');
   if (mainFlow) mainFlow.classList.remove('hidden');
+  setHomeLandingVisible(true);
   APP_STATE.activeProductId = null;
 }
 
@@ -531,10 +546,12 @@ function updatePdpPriceDisplay(product) {
   const oldPriceEl = document.getElementById('pdpOldPrice');
   const discountEl = document.getElementById('pdpDiscountBadge');
   if (oldPriceEl && discountEl) {
-    if (product.oldPrice) {
+    if (product.oldPrice && product.oldPrice > price) {
+      const savings = product.oldPrice - price;
       oldPriceEl.style.display = 'inline';
       oldPriceEl.innerText = formatBRL(product.oldPrice);
       discountEl.style.display = 'inline';
+      discountEl.innerText = `−${formatBRL(savings)}`;
     } else {
       oldPriceEl.style.display = 'none';
       discountEl.style.display = 'none';
@@ -643,6 +660,7 @@ function switchPdpTab(tab) {
 async function calculateFreightForPdp() {
   const raw = document.getElementById('pdpCepInput').value.replace(/\D/g, '');
   const box = document.getElementById('pdpShippingResults');
+  const product = APP_STATE.products.find((p) => p.id === APP_STATE.activeProductId);
 
   if (raw.length !== 8) {
     displayToast('Informe um CEP válido com 8 dígitos.');
@@ -651,35 +669,35 @@ async function calculateFreightForPdp() {
 
   if (box) {
     box.classList.remove('hidden');
-    box.innerHTML = `<span class="text-teodora-gold"><i class="fa-solid fa-spinner fa-spin"></i> Consultando Correios...</span>`;
+    box.innerHTML = `<span class="text-teodora-gold"><i class="fa-solid fa-spinner fa-spin"></i> Cotando CepCerto...</span>`;
   }
 
   try {
-    const resp = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+    const apiBase = teodoraApiBase();
+    const ids = product ? String(product.id) : '';
+    const declared = product ? product.price : 50;
+    const resp = await fetch(`${apiBase}/api/shipping/quote?cep=${raw}&product_ids=${ids}&declared_value=${declared}`);
     const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'Falha na cotação');
 
-    if (data.erro) {
-      if (box) box.innerHTML = `<span class="text-red-500">CEP não encontrado.</span>`;
-      return;
-    }
-
+    const addr = data.address || {};
+    const options = data.options || [];
     if (box) {
       box.innerHTML = `
         <div class="p-2.5 rounded-xl bg-teodora-bgLight border border-teodora-border space-y-1">
-          <p class="text-[11px] font-bold text-teodora-text">${data.localidade} - ${data.uf} (${data.bairro || 'Região'})</p>
-          <div class="flex justify-between text-[11px]">
-            <span class="text-teodora-textMuted">Sedex Express (1 a 3 dias úteis):</span>
-            <span class="font-bold text-teodora-text">R$ 24,90</span>
-          </div>
-          <div class="flex justify-between text-[11px]">
-            <span class="text-teodora-textMuted">PAC Econômico (4 a 8 dias úteis):</span>
-            <span class="font-bold text-teodora-text">R$ 14,50</span>
-          </div>
+          <p class="text-[11px] font-bold text-teodora-text">${addr.localidade || ''} - ${addr.uf || ''} (${addr.bairro || 'Região'})</p>
+          ${options.map((o) => `
+            <div class="flex justify-between text-[11px]">
+              <span class="text-teodora-textMuted">${o.name}${o.days ? ` (${o.days})` : ''}:</span>
+              <span class="font-bold text-teodora-text">${formatBRL(o.price)}</span>
+            </div>
+          `).join('') || '<span class="text-red-500 text-[11px]">Sem opções para este CEP.</span>'}
+          ${data.demo ? '<p class="text-[10px] text-amber-700">Estimativa local — configure CepCerto no servidor.</p>' : ''}
         </div>
       `;
     }
   } catch (e) {
-    if (box) box.innerHTML = `<span class="text-red-500">Erro ao consultar CEP.</span>`;
+    if (box) box.innerHTML = `<span class="text-red-500">${e.message || 'Erro ao cotar frete.'}</span>`;
   }
 }
 
@@ -759,6 +777,9 @@ function toggleActiveFilter(active, checked) {
 function createProductCardHTML(item) {
   const isFav = APP_STATE.wishlist.some(w => w.id === item.id);
   const installment = item.price / 6;
+  const savings = item.oldPrice && item.oldPrice > item.price
+    ? item.oldPrice - item.price
+    : 0;
   let badgeClass = 'badge-default';
   if (item.badge === 'Mais Vendido') badgeClass = 'badge-vendido';
   else if (item.badge === 'Lançamento') badgeClass = 'badge-lancamento';
@@ -769,11 +790,11 @@ function createProductCardHTML(item) {
       <div onclick="openProductPage(${item.id})" class="product-card__media relative w-full overflow-hidden cursor-pointer">
         <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
         ${item.badge ? `
-          <span class="absolute top-2.5 left-2.5 text-[9px] sm:text-[10px] uppercase tracking-[0.1em] font-semibold px-2 py-1 ${badgeClass}">
+          <span class="absolute top-2.5 left-2.5 text-[9px] sm:text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 ${badgeClass}">
             ${item.badge}
           </span>
         ` : ''}
-        <button onclick="event.stopPropagation(); toggleWishlist(${item.id})" class="absolute top-2.5 right-2.5 w-8 h-8 flex items-center justify-center text-teodora-text/80 hover:text-teodora-text bg-white/90 transition" aria-label="Favoritar">
+        <button onclick="event.stopPropagation(); toggleWishlist(${item.id})" class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full flex items-center justify-center text-teodora-text/80 hover:text-teodora-text bg-white/95 shadow-sm transition" aria-label="Favoritar">
           <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
         </button>
       </div>
@@ -788,12 +809,13 @@ function createProductCardHTML(item) {
         </div>
 
         <div class="mt-auto pt-2 space-y-2.5">
-          <div onclick="openProductPage(${item.id})" class="cursor-pointer">
+          <div onclick="openProductPage(${item.id})" class="cursor-pointer space-y-1">
             <div class="flex items-baseline gap-2 flex-wrap">
-              <span class="text-base font-semibold text-teodora-text tracking-tight">${formatBRL(item.price)}</span>
+              <span class="text-base sm:text-lg font-semibold text-teodora-text tracking-tight">${formatBRL(item.price)}</span>
               ${item.oldPrice ? `<span class="text-xs text-teodora-textMuted line-through">${formatBRL(item.oldPrice)}</span>` : ''}
+              ${savings ? `<span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5">−${formatBRL(savings)}</span>` : ''}
             </div>
-            <p class="text-[11px] text-teodora-textMuted mt-0.5">ou 6x de ${formatBRL(installment)}</p>
+            <p class="text-[11px] text-teodora-textMuted">ou 6x de ${formatBRL(installment)} sem juros</p>
           </div>
 
           <button onclick="quickAddToCart(${item.id})" class="btn-comprar w-full py-2.5 text-[11px] uppercase tracking-[0.16em] font-semibold">
@@ -827,30 +849,11 @@ function renderProducts() {
 
   if (emptyState) emptyState.classList.add('hidden');
 
-  const firstBatch = items.slice(0, 3);
-  const remainingBatch = items.slice(3);
-
-  let html = `
+  container.innerHTML = `
     <div class="product-grid grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-      ${firstBatch.map(item => createProductCardHTML(item)).join('')}
+      ${items.map(item => createProductCardHTML(item)).join('')}
     </div>
   `;
-
-  if (remainingBatch.length > 0) {
-    html += `
-      <div class="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-y border-teodora-border">
-        <p class="font-heading text-lg sm:text-xl text-teodora-text font-normal">Fragrâncias em destaque</p>
-        <button onclick="setCategoryFilter('perfumes')" class="text-[11px] uppercase tracking-[0.14em] text-teodora-gold hover:text-teodora-goldDark transition self-start sm:self-auto">
-          Ver mais opções →
-        </button>
-      </div>
-      <div class="product-grid grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
-        ${remainingBatch.map(item => createProductCardHTML(item)).join('')}
-      </div>
-    `;
-  }
-
-  container.innerHTML = html;
 }
 
 function quickAddToCart(id) {
@@ -965,54 +968,59 @@ async function calculateFreightViaCEP() {
     displayToast('Informe um CEP válido com 8 dígitos.');
     return;
   }
+  if (!APP_STATE.cart.length) {
+    displayToast('Adicione produtos à sacola para calcular o frete.');
+    return;
+  }
 
-  label.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-teodora-gold"></i> Buscando Correios...`;
+  label.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-teodora-gold"></i> Cotando CepCerto...`;
 
   try {
-    const resp = await fetch(`https://viacep.com.br/ws/${raw}/json/`);
+    const apiBase = teodoraApiBase();
+    const ids = APP_STATE.cart.map((i) => i.id).join(',');
+    const declared = APP_STATE.cart.reduce((s, i) => s + i.price * i.quantity, 0);
+    const url = `${apiBase}/api/shipping/quote?cep=${raw}&product_ids=${ids}&declared_value=${declared}`;
+    const resp = await fetch(url);
     const data = await resp.json();
+    if (!resp.ok) throw new Error(data.detail || 'Falha na cotação');
 
-    if (data.erro) {
-      label.innerText = 'CEP não encontrado.';
-      displayToast('CEP não localizado nos Correios.');
+    APP_STATE.shippingInfo = data.address || null;
+    const city = data.address?.localidade || '';
+    const uf = data.address?.uf || '';
+    label.innerText = city ? `${city} - ${uf}` : 'Frete disponível';
+
+    const options = data.options || [];
+    if (!options.length) {
+      box.classList.remove('hidden');
+      box.innerHTML = `<p class="text-xs text-red-600">Nenhuma opção de frete para este CEP.</p>`;
       return;
     }
 
-    APP_STATE.shippingInfo = data;
-    label.innerText = `${data.localidade} - ${data.uf}`;
-
-    const sedexVal = 23.90;
-    const pacVal = 13.50;
-
     box.classList.remove('hidden');
-    box.innerHTML = `
+    box.innerHTML = options.map((opt, idx) => `
       <label class="flex items-center justify-between p-2.5 rounded-xl border border-teodora-border bg-white cursor-pointer hover:border-teodora-gold transition">
         <div class="flex items-center gap-2">
-          <input type="radio" name="shippingRate" checked onchange="setShippingChoice(${sedexVal}, 'Sedex Express')" class="accent-teodora-gold">
-          <span class="text-xs font-medium text-teodora-text">Sedex Express (1 a 3 dias úteis)</span>
+          <input type="radio" name="shippingRate" ${idx === 0 ? 'checked' : ''}
+            onchange='setShippingChoice(${opt.price}, ${JSON.stringify(opt.name)}, ${JSON.stringify(opt)})'
+            class="accent-teodora-gold">
+          <span class="text-xs font-medium text-teodora-text">${opt.name}${opt.days ? ` (${opt.days})` : ''}</span>
         </div>
-        <span class="font-bold text-xs">${formatBRL(sedexVal)}</span>
+        <span class="font-bold text-xs">${formatBRL(opt.price)}</span>
       </label>
+    `).join('') + (data.demo ? `<p class="text-[10px] text-amber-700 pt-1">Cotação estimada — configure o token CepCerto no servidor.</p>` : '');
 
-      <label class="flex items-center justify-between p-2.5 rounded-xl border border-teodora-border bg-white cursor-pointer hover:border-teodora-gold transition">
-        <div class="flex items-center gap-2">
-          <input type="radio" name="shippingRate" onchange="setShippingChoice(${pacVal}, 'PAC Econômico')" class="accent-teodora-gold">
-          <span class="text-xs font-medium text-teodora-text">PAC Econômico (4 a 8 dias úteis)</span>
-        </div>
-        <span class="font-bold text-xs">${formatBRL(pacVal)}</span>
-      </label>
-    `;
-
-    setShippingChoice(sedexVal, 'Sedex Express');
-    displayToast(`Entrega calculada para ${data.localidade}/${data.uf}`);
+    setShippingChoice(options[0].price, options[0].name, options[0]);
+    displayToast(city ? `Frete calculado para ${city}/${uf}` : 'Frete calculado');
   } catch (err) {
-    label.innerText = 'Erro ao consultar CEP.';
+    label.innerText = 'Erro na cotação.';
+    displayToast(err.message || 'Erro ao cotar frete.');
   }
 }
 
-function setShippingChoice(cost, name) {
+function setShippingChoice(cost, name, option) {
   APP_STATE.shippingCost = cost;
   APP_STATE.shippingOptionName = name;
+  APP_STATE.shippingOption = option || { name, price: cost };
   updateCartUI();
 }
 
@@ -1027,9 +1035,9 @@ function applyDiscountCoupon() {
   }
 }
 
-function openMercadoPagoModal() {
+async function openMercadoPagoModal() {
   if (APP_STATE.cart.length === 0) {
-    displayToast('Sua sacola está vazia. Adicione criações antes de comprar.');
+    displayToast('Sua sacola está vazia. Adicione produtos antes de comprar.');
     return;
   }
   toggleCartDrawer(false);
@@ -1037,30 +1045,39 @@ function openMercadoPagoModal() {
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
   let finalTotal = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
-
-  if (APP_STATE.paymentMethod === 'pix') {
-    finalTotal *= 0.95;
-  }
+  if (APP_STATE.paymentMethod === 'pix') finalTotal *= 0.95;
 
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(finalTotal);
 
-  const sel = document.getElementById('checkoutInstallments');
-  sel.innerHTML = '';
-  for (let i = 1; i <= 6; i++) {
-    sel.innerHTML += `<option value="${i}">${i}x de ${formatBRL(finalTotal / i)} sem juros no Mercado Pago</option>`;
+  if (APP_STATE.shippingInfo) {
+    const info = APP_STATE.shippingInfo;
+    const parts = [info.logradouro, info.bairro, info.localidade && info.uf ? `${info.localidade}/${info.uf}` : ''].filter(Boolean);
+    if (parts.length) {
+      document.getElementById('buyerAddress').value = parts.join(', ');
+    }
   }
 
-  if (APP_STATE.shippingInfo) {
-    document.getElementById('buyerAddress').value = `${APP_STATE.shippingInfo.logradouro || 'Rua das Acácias, 180'}, Bairro ${APP_STATE.shippingInfo.bairro || 'Jardins'} - ${APP_STATE.shippingInfo.localidade}/${APP_STATE.shippingInfo.uf}`;
+  const user = window.TeodoraAPI?.getUser?.();
+  if (user) {
+    if (user.name) document.getElementById('buyerName').value = user.name;
+    if (user.email) document.getElementById('buyerEmail').value = user.email;
+    if (user.phone) document.getElementById('buyerPhone').value = user.phone;
   }
 
   document.getElementById('checkoutFormPanel').style.display = 'block';
   document.getElementById('checkoutSuccessPanel').classList.add('hidden');
+  document.getElementById('paymentBrick_container').innerHTML = '';
+  document.getElementById('paymentBrickWrap').classList.add('hidden');
+  document.getElementById('btnSubmitPayment').classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.add('flex');
 }
 
 function closeMercadoPagoModal() {
+  if (APP_STATE.mpBrickController?.unmount) {
+    try { APP_STATE.mpBrickController.unmount(); } catch (_) { /* ignore */ }
+  }
+  APP_STATE.mpBrickController = null;
   document.getElementById('mercadoPagoModal').classList.add('hidden');
   document.getElementById('mercadoPagoModal').classList.remove('flex');
 }
@@ -1068,7 +1085,7 @@ function closeMercadoPagoModal() {
 function changePaymentOption(method) {
   APP_STATE.paymentMethod = method;
   document.querySelectorAll('.pay-tab').forEach(t => {
-    t.classList.remove('border-teodora-gold', 'bg-teodora-roseLight');
+    t.classList.remove('border-teodora-gold', 'bg-teodora-cream');
     t.classList.add('border-teodora-border', 'bg-white');
   });
 
@@ -1076,66 +1093,227 @@ function changePaymentOption(method) {
   document.getElementById('panelCard').classList.add('hidden');
   document.getElementById('panelBoleto').classList.add('hidden');
 
-  const btnTxt = document.querySelector('#btnSubmitPayment span');
-
   if (method === 'pix') {
-    document.getElementById('payTabPix').classList.add('border-teodora-gold', 'bg-teodora-roseLight');
+    document.getElementById('payTabPix').classList.add('border-teodora-gold', 'bg-teodora-cream');
+    document.getElementById('payTabPix').classList.remove('border-teodora-border', 'bg-white');
     document.getElementById('panelPix').classList.remove('hidden');
-    btnTxt.innerText = "Confirmar Pedido Pix";
   } else if (method === 'card') {
-    document.getElementById('payTabCard').classList.add('border-teodora-gold', 'bg-teodora-roseLight');
+    document.getElementById('payTabCard').classList.add('border-teodora-gold', 'bg-teodora-cream');
+    document.getElementById('payTabCard').classList.remove('border-teodora-border', 'bg-white');
     document.getElementById('panelCard').classList.remove('hidden');
-    btnTxt.innerText = "Pagar com Cartão";
   } else {
-    document.getElementById('payTabBoleto').classList.add('border-teodora-gold', 'bg-teodora-roseLight');
+    document.getElementById('payTabBoleto').classList.add('border-teodora-gold', 'bg-teodora-cream');
+    document.getElementById('payTabBoleto').classList.remove('border-teodora-border', 'bg-white');
     document.getElementById('panelBoleto').classList.remove('hidden');
-    btnTxt.innerText = "Emitir Boleto Bancário";
   }
 
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
   let total = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
   if (method === 'pix') total *= 0.95;
-
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(total);
 }
 
-function executePaymentTransaction() {
+async function mountPaymentBrick(amount, publicKey, orderId) {
+  if (!window.MercadoPago) throw new Error('SDK Mercado Pago não carregou.');
+  if (!publicKey) throw new Error('MP_PUBLIC_KEY não configurada no servidor.');
+
+  const mp = new window.MercadoPago(publicKey, { locale: 'pt-BR' });
+  const bricksBuilder = mp.bricks();
+  const container = document.getElementById('paymentBrick_container');
+  container.innerHTML = '';
+
+  const paymentMethods = { maxInstallments: 6 };
+  if (APP_STATE.paymentMethod === 'pix') {
+    paymentMethods.creditCard = 'none';
+    paymentMethods.debitCard = 'none';
+    paymentMethods.ticket = 'none';
+  } else if (APP_STATE.paymentMethod === 'boleto') {
+    paymentMethods.creditCard = 'none';
+    paymentMethods.debitCard = 'none';
+    paymentMethods.bankTransfer = 'none';
+  } else {
+    paymentMethods.ticket = 'none';
+    paymentMethods.bankTransfer = 'none';
+  }
+
+  APP_STATE.mpBrickController = await bricksBuilder.create('payment', 'paymentBrick_container', {
+    initialization: {
+      amount: Number(amount),
+    },
+    customization: {
+      paymentMethods,
+    },
+    callbacks: {
+      onReady: () => {},
+      onSubmit: async ({ formData }) => {
+        try {
+          const headers = { 'Content-Type': 'application/json' };
+          const token = window.TeodoraAPI?.getToken?.();
+          if (token) headers.Authorization = `Bearer ${token}`;
+          const apiBase = teodoraApiBase();
+          const res = await fetch(`${apiBase}/api/payments`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ orderId, formData }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.detail || 'Pagamento recusado');
+
+          const status = data.status || 'pending';
+          if (status === 'approved') {
+            showCheckoutReturnPanel('success');
+          } else if (status === 'rejected') {
+            showCheckoutReturnPanel('failure');
+          } else {
+            showCheckoutReturnPanel('pending');
+          }
+          try { sessionStorage.setItem('teodora_last_order', orderId); } catch (_) { /* ignore */ }
+        } catch (err) {
+          displayToast(err.message || 'Erro no pagamento');
+          throw err;
+        }
+      },
+      onError: (error) => {
+        console.error(error);
+        displayToast('Erro no formulário de pagamento.');
+      },
+    },
+  });
+}
+
+async function executePaymentTransaction() {
+  const name = (document.getElementById('buyerName')?.value || '').trim();
+  const email = (document.getElementById('buyerEmail')?.value || '').trim();
+  const doc = (document.getElementById('buyerDoc')?.value || '').trim();
+  const phone = (document.getElementById('buyerPhone')?.value || '').trim();
+  const address = (document.getElementById('buyerAddress')?.value || '').trim();
+
+  if (!name || !email) {
+    displayToast('Informe nome e e-mail para continuar.');
+    return;
+  }
+  if (APP_STATE.cart.length === 0) {
+    displayToast('Sua sacola está vazia.');
+    return;
+  }
+
   const btn = document.getElementById('btnSubmitPayment');
+  const prevHtml = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Conectando Mercado Pago...`;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Preparando...`;
 
-  setTimeout(() => {
+  const apiBase = teodoraApiBase();
+
+  try {
+    const headers = { 'Content-Type': 'application/json' };
+    const token = window.TeodoraAPI?.getToken?.();
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const payload = {
+      items: APP_STATE.cart.map((item) => ({ id: item.id, quantity: item.quantity })),
+      shippingCost: APP_STATE.shippingCost || 0,
+      couponCode: APP_STATE.couponCode || '',
+      paymentHint: APP_STATE.paymentMethod || 'pix',
+      shippingOption: APP_STATE.shippingOption || null,
+      payer: { name, email, doc, phone, address },
+    };
+
+    const res = await fetch(`${apiBase}/api/checkout/prepare`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || 'Não foi possível preparar o pedido.');
+
+    APP_STATE.checkoutOrderId = data.orderId;
+    try { sessionStorage.setItem('teodora_last_order', data.orderId); } catch (_) { /* ignore */ }
+
+    document.getElementById('checkoutFinalTotal').innerText = formatBRL(data.amount);
+    document.getElementById('paymentBrickWrap').classList.remove('hidden');
+    btn.classList.add('hidden');
+
+    await mountPaymentBrick(data.amount, data.publicKey, data.orderId);
+    displayToast('Escolha a forma de pagamento abaixo.');
+  } catch (err) {
+    console.error(err);
+    displayToast(err.message || 'Erro ao conectar com o Mercado Pago.');
     btn.disabled = false;
-    btn.innerHTML = `<span>Confirmar Pedido</span>`;
-
-    document.getElementById('checkoutFormPanel').style.display = 'none';
-    document.getElementById('checkoutSuccessPanel').classList.remove('hidden');
-
-    const orderId = `#TEO-${Math.floor(10000 + Math.random() * 90000)}`;
-    document.getElementById('displayOrderNumber').innerText = orderId;
-
-    const fakePixPayload = `00020126580014br.gov.bcb.pix0136teodora-mercadopago-${Date.now()}5204000053039865405${orderId}5802BR5916TEODORA COSMETICOS6009SAO PAULO62070503***6304`;
-    document.getElementById('pixGeneratedQr').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(fakePixPayload)}`;
-    document.getElementById('pixCodeText').value = fakePixPayload;
-
-    displayToast('Transação gerada com sucesso no Mercado Pago!');
-  }, 1200);
+    btn.innerHTML = prevHtml;
+  }
 }
 
 function copyPixToClipboard() {
-  const field = document.getElementById("pixCodeText");
-  field.select();
-  field.setSelectionRange(0, 99999);
-  document.execCommand("copy");
-  displayToast('Código Pix copiado para a área de transferência!');
+  displayToast('O Pix oficial é gerado no Checkout Pro do Mercado Pago.');
+}
+
+function showCheckoutReturnPanel(status) {
+  document.getElementById('checkoutFormPanel').style.display = 'none';
+  const brickWrap = document.getElementById('paymentBrickWrap');
+  if (brickWrap) brickWrap.classList.add('hidden');
+  document.getElementById('checkoutSuccessPanel').classList.remove('hidden');
+  document.getElementById('mercadoPagoModal').classList.remove('hidden');
+  document.getElementById('mercadoPagoModal').classList.add('flex');
+
+  const eyebrow = document.getElementById('checkoutResultEyebrow');
+  const title = document.getElementById('checkoutResultTitle');
+  const message = document.getElementById('checkoutResultMessage');
+  const orderEl = document.getElementById('displayOrderNumber');
+
+  let ref = '—';
+  try {
+    ref = sessionStorage.getItem('teodora_last_order') || '—';
+  } catch (_) { /* ignore */ }
+  if (orderEl) orderEl.innerText = ref;
+
+  if (status === 'success') {
+    if (eyebrow) eyebrow.innerText = 'Pagamento aprovado';
+    if (title) title.innerText = 'Pedido confirmado';
+    if (message) message.innerText = 'Recebemos a confirmação do Mercado Pago. Obrigado por comprar na Teodora.';
+    APP_STATE.cart = [];
+    updateCartUI();
+    displayToast('Pagamento aprovado. Pedido registrado!');
+  } else if (status === 'pending') {
+    if (eyebrow) {
+      eyebrow.innerText = 'Pagamento pendente';
+      eyebrow.classList.remove('text-emerald-700');
+      eyebrow.classList.add('text-amber-700');
+    }
+    if (title) title.innerText = 'Aguardando confirmação';
+    if (message) message.innerText = 'Pix ou boleto ainda estão processando. Você recebe a confirmação por e-mail.';
+    displayToast('Pedido criado. Aguardando pagamento.');
+  } else {
+    if (eyebrow) {
+      eyebrow.innerText = 'Pagamento não concluído';
+      eyebrow.classList.remove('text-emerald-700');
+      eyebrow.classList.add('text-red-600');
+    }
+    if (title) title.innerText = 'Tente novamente';
+    if (message) message.innerText = 'O pagamento não foi finalizado. Sua sacola foi mantida — você pode tentar de novo.';
+    displayToast('Pagamento cancelado ou recusado.');
+  }
+}
+
+function handleCheckoutReturnFromQuery() {
+  const params = new URLSearchParams(window.location.search);
+  const status = params.get('checkout');
+  if (!status) return;
+
+  showCheckoutReturnPanel(status);
+
+  const url = new URL(window.location.href);
+  url.searchParams.delete('checkout');
+  window.history.replaceState({}, '', url.pathname + url.search + url.hash);
 }
 
 function resetStoreAfterPurchase() {
-  APP_STATE.cart = [];
-  updateCartUI();
+  if (APP_STATE.cart.length) {
+    APP_STATE.cart = [];
+    updateCartUI();
+  }
   closeMercadoPagoModal();
-  displayToast('Agradecemos por escolher Teodora Cosméticos ♡');
+  displayToast('Obrigado por escolher a Teodora.');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1308,9 +1486,25 @@ function displayToast(htmlContent) {
   }, 3500);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  updateHeaderAccountLink();
   updateNavigationUI('todos');
   renderDynamicFilters();
-  renderProducts();
   updateCartUI();
+  handleCheckoutReturnFromQuery();
+  try {
+    await loadCatalogFromApi();
+    renderProducts();
+  } catch (err) {
+    console.error(err);
+    displayToast('Não foi possível carregar o catálogo. Suba a API em :3001.');
+  }
 });
+
+function updateHeaderAccountLink() {
+  const btn = document.getElementById('headerAccountBtn');
+  if (!btn) return;
+  const user = window.TeodoraAPI?.getUser?.();
+  btn.setAttribute('href', user ? '/minha-conta.html' : '/conta.html');
+  btn.setAttribute('aria-label', user ? 'Minha conta' : 'Entrar');
+}

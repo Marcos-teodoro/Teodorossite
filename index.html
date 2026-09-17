@@ -19,11 +19,15 @@
   <!-- Estilos e tema Teodora -->
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/tailwind-config.js"></script>
+  <script>
+    // Mesma origem quando a loja é servida pelo FastAPI (:3001)
+    window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://localhost:3001');
+  </script>
 </head>
 <body class="antialiased selection:bg-teodora-roseSoft selection:text-teodora-text flex flex-col min-h-screen bg-teodora-page">
 
   <!-- ========== 1. BARRA PROMOCIONAL ========== -->
-  <aside class="bg-[#F3EBE4] text-teodora-text text-[11px] tracking-[0.12em] py-2.5 px-4 uppercase border-b border-teodora-border/70">
+  <aside class="bg-teodora-blush text-teodora-text text-[11px] tracking-[0.12em] py-2.5 px-4 uppercase border-b border-teodora-border/70">
     <div class="max-w-[1320px] mx-auto flex items-center justify-between gap-4">
       <span class="hidden md:flex items-center gap-2 text-teodora-textMuted font-medium">
         <i class="fa-solid fa-truck text-teodora-gold text-xs"></i> Frete grátis acima de R$ 299
@@ -58,7 +62,7 @@
 
         <div class="flex flex-col items-center cursor-pointer text-center shrink-0" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
           <span class="font-heading text-2xl sm:text-[1.75rem] tracking-[0.28em] font-semibold text-teodora-text uppercase leading-none">TEODORA</span>
-          <span class="text-[9px] sm:text-[10px] tracking-[0.35em] text-teodora-textMuted uppercase mt-1.5">Beleza que te completa</span>
+          <span class="text-[9px] sm:text-[10px] tracking-[0.28em] text-teodora-textMuted uppercase mt-1.5">Perfumes originais</span>
         </div>
 
         <div class="flex items-center justify-end gap-2 sm:gap-3 flex-1 max-w-xs">
@@ -71,11 +75,11 @@
             <span id="wishlistCountBadge" class="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-teodora-roseMedium text-white text-[9px] font-bold flex items-center justify-center">0</span>
           </button>
 
-          <button class="hidden sm:flex p-2 text-teodora-text hover:text-teodora-gold transition" aria-label="Minha conta">
+          <a href="/conta.html" id="headerAccountBtn" class="hidden sm:flex p-2 text-teodora-text hover:text-teodora-gold transition" aria-label="Minha conta">
             <i class="fa-regular fa-user text-lg"></i>
-          </button>
+          </a>
 
-          <button onclick="toggleCartDrawer(true)" class="flex items-center gap-2.5 px-3.5 sm:px-4 py-2 rounded-full bg-[#1E1A1A] text-white hover:bg-black transition" aria-label="Ver Sacola">
+          <button onclick="toggleCartDrawer(true)" class="flex items-center gap-2.5 px-3.5 sm:px-4 py-2 rounded-full bg-teodora-text text-white hover:bg-black transition" aria-label="Ver Sacola">
             <div class="relative">
               <i class="fa-solid fa-bag-shopping text-sm"></i>
               <span id="cartCountBadge" class="absolute -top-2 -right-2.5 w-4 h-4 rounded-full bg-teodora-gold text-white text-[9px] font-bold flex items-center justify-center">0</span>
@@ -88,7 +92,7 @@
         </div>
       </div>
 
-      <nav class="hidden lg:flex items-center justify-center border-t border-teodora-border/80 py-3 gap-7 text-[11px] font-medium uppercase tracking-[0.16em] text-teodora-text">
+      <nav class="hidden lg:flex items-center justify-center border-t border-teodora-border/80 py-3 gap-6 xl:gap-7 text-[11px] font-medium uppercase tracking-[0.16em] text-teodora-text">
         <button onclick="setCategoryFilter('todos')" data-nav-cat="todos" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Todos</button>
         <button onclick="setCategoryFilter('perfumes')" data-nav-cat="perfumes" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Perfumes</button>
         <button onclick="setCategoryFilter('skincare')" data-nav-cat="skincare" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Skincare</button>
@@ -104,39 +108,33 @@
   </header>
 
   <!-- ========== 3. HERO ========== -->
-  <section class="relative overflow-hidden border-b border-teodora-border">
+  <section id="homeHero" class="relative overflow-hidden border-b border-teodora-border">
     <div class="grid grid-cols-1 lg:grid-cols-2 min-h-0">
-      <div class="flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-16 order-2 lg:order-1 hero-copy bg-gradient-to-br from-[#F8ECE8] via-[#FBF6F3] to-[#FDFBF8]">
-        <p class="text-[11px] tracking-[0.35em] uppercase text-teodora-textMuted mb-4">Teodora</p>
-        <h1 class="font-heading text-[2rem] sm:text-4xl lg:text-[2.75rem] text-teodora-text font-normal leading-[1.18] max-w-md">
-          Mais que beleza,<br>é sobre você.
+      <div class="flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-20 order-2 lg:order-1 hero-copy bg-gradient-to-br from-teodora-blush via-teodora-page to-teodora-cream">
+        <p class="text-[11px] tracking-[0.35em] uppercase text-teodora-gold font-medium mb-4">TEODORA</p>
+        <h1 class="font-heading text-[2.1rem] sm:text-4xl lg:text-[2.85rem] text-teodora-text font-normal leading-[1.15] max-w-lg">
+          Perfumes originais.<br>Entrega em todo o Brasil.
         </h1>
-        <p class="mt-4 text-sm text-teodora-textMuted max-w-sm leading-relaxed font-light">
-          Fragrâncias e cuidados selecionados para o seu dia a dia.
-        </p>
         <div class="mt-8 flex flex-wrap items-center gap-3">
-          <a href="#catalogo" class="inline-flex items-center gap-2 px-7 py-3 bg-[#1E1A1A] text-white text-[11px] uppercase tracking-[0.16em] font-medium hover:bg-black transition">
+          <a href="#catalogo" class="inline-flex items-center gap-2 px-7 py-3.5 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
             Ver produtos <span aria-hidden="true">→</span>
           </a>
-          <button onclick="setSpecialFilter('Mais Vendido')" class="inline-flex items-center px-7 py-3 bg-white border border-[#1E1A1A]/80 text-[#1E1A1A] text-[11px] uppercase tracking-[0.16em] font-medium hover:bg-[#F8F4F1] transition">
-            Mais destaques
+          <button onclick="setSpecialFilter('Mais Vendido')" class="inline-flex items-center px-7 py-3.5 bg-white border border-teodora-text/80 text-teodora-text text-[11px] uppercase tracking-[0.16em] font-medium hover:bg-teodora-cream transition">
+            Mais vendidos
           </button>
         </div>
       </div>
 
-      <div class="relative order-1 lg:order-2 hero-visual h-[280px] sm:h-[360px] lg:h-auto lg:min-h-[460px] bg-[#F4E8E4]">
-        <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1400&q=85"
-             alt="Perfume Teodora entre pétalas"
+      <div class="relative order-1 lg:order-2 hero-visual h-[300px] sm:h-[380px] lg:h-auto lg:min-h-[520px] bg-teodora-blush">
+        <img src="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85"
+             alt="Frasco de perfume Teodora"
              class="absolute inset-0 w-full h-full object-cover object-center">
-        <span class="font-signature absolute top-6 right-6 sm:top-10 sm:right-10 text-2xl sm:text-3xl text-white drop-shadow-[0_1px_8px_rgba(0,0,0,0.35)] pointer-events-none z-10">
-          Beleza em cada detalhe
-        </span>
       </div>
     </div>
   </section>
 
   <!-- ========== 4. CATEGORIAS ========== -->
-  <section class="bg-white border-b border-teodora-border py-10 lg:py-12">
+  <section id="homeCategories" class="bg-white border-b border-teodora-border py-10 lg:py-12">
     <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-end justify-between mb-7 gap-4">
         <h2 class="font-heading text-2xl text-teodora-text font-normal">Categorias</h2>
@@ -148,43 +146,43 @@
       <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
         <button onclick="setCategoryFilter('perfumes')" data-circle-cat="perfumes" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=400&q=80" alt="Perfumes" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=85" alt="Perfumes" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Perfumes</span>
         </button>
         <button onclick="setCategoryFilter('skincare')" data-circle-cat="skincare" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80" alt="Skincare" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=85" alt="Skincare" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Skincare</span>
         </button>
         <button onclick="setCategoryFilter('maquiagem')" data-circle-cat="maquiagem" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=400&q=80" alt="Maquiagem" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=85" alt="Maquiagem" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Maquiagem</span>
         </button>
         <button onclick="setCategoryFilter('cabelos')" data-circle-cat="cabelos" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80" alt="Cabelos" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85" alt="Cabelos" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Cabelos</span>
         </button>
         <button onclick="setCategoryFilter('corpo')" data-circle-cat="corpo" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=400&q=80" alt="Corpo e Banho" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85" alt="Corpo e Banho" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Corpo &amp; Banho</span>
         </button>
         <button onclick="setCategoryFilter('kits')" data-circle-cat="kits" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=400&q=80" alt="Kits" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=600&q=85" alt="Kits" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Kits</span>
         </button>
-        <button onclick="setSpecialFilter('Presente Perfeito')" data-circle-cat="especial" class="cat-circle-card group text-center col-span-3 sm:col-span-1">
+        <button onclick="setCategoryFilter('kits')" data-circle-cat="especial" class="cat-circle-card group text-center col-span-3 sm:col-span-1">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream max-w-[140px] mx-auto sm:max-w-none">
-            <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=400&q=80" alt="Presentes" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?auto=format&fit=crop&w=600&q=85" alt="Presentes" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">Presentes</span>
         </button>
@@ -193,35 +191,35 @@
   </section>
 
   <!-- ========== 5. BENEFÍCIOS ========== -->
-  <section class="bg-[#F7F2EE] border-b border-teodora-border py-6">
+  <section id="homeBenefits" class="bg-teodora-cream border-b border-teodora-border py-4 sm:py-5">
     <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-4">
-        <div class="flex items-start gap-3">
-          <i class="fa-regular fa-gem text-teodora-gold text-lg mt-0.5"></i>
-          <div>
-            <h5 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Produtos Originais</h5>
-            <p class="text-xs text-teodora-textMuted mt-0.5 leading-relaxed">Trabalhamos apenas com marcas oficiais.</p>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div class="flex items-center gap-3">
+          <i class="fa-regular fa-gem text-teodora-gold text-xl shrink-0"></i>
+          <div class="min-w-0">
+            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Produtos Originais</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Marcas oficiais.</p>
           </div>
         </div>
-        <div class="flex items-start gap-3">
-          <i class="fa-solid fa-truck-fast text-teodora-gold text-lg mt-0.5"></i>
-          <div>
-            <h5 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Envio Rápido e Seguro</h5>
-            <p class="text-xs text-teodora-textMuted mt-0.5 leading-relaxed">Para todo o Brasil com rastreamento.</p>
+        <div class="flex items-center gap-3 lg:border-l lg:border-teodora-border lg:pl-6">
+          <i class="fa-solid fa-truck-fast text-teodora-gold text-xl shrink-0"></i>
+          <div class="min-w-0">
+            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Envio Rápido</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Todo o Brasil com rastreio.</p>
           </div>
         </div>
-        <div class="flex items-start gap-3">
-          <i class="fa-regular fa-comments text-teodora-gold text-lg mt-0.5"></i>
-          <div>
-            <h5 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Atendimento Especializado</h5>
-            <p class="text-xs text-teodora-textMuted mt-0.5 leading-relaxed">Equipe pronta para te ajudar sempre.</p>
+        <div class="flex items-center gap-3 lg:border-l lg:border-teodora-border lg:pl-6">
+          <i class="fa-regular fa-comments text-teodora-gold text-xl shrink-0"></i>
+          <div class="min-w-0">
+            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Atendimento</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Equipe pronta no WhatsApp.</p>
           </div>
         </div>
-        <div class="flex items-start gap-3">
-          <i class="fa-regular fa-credit-card text-teodora-gold text-lg mt-0.5"></i>
-          <div>
-            <h5 class="text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Pagamento Facilitado</h5>
-            <p class="text-xs text-teodora-textMuted mt-0.5 leading-relaxed">Até 6x sem juros ou 5% off no PIX.</p>
+        <div class="flex items-center gap-3 lg:border-l lg:border-teodora-border lg:pl-6">
+          <i class="fa-regular fa-credit-card text-teodora-gold text-xl shrink-0"></i>
+          <div class="min-w-0">
+            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Pagamento</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">6x sem juros ou 5% off no Pix.</p>
           </div>
         </div>
       </div>
@@ -306,11 +304,7 @@
               </label>
               <label class="flex items-center gap-2.5 cursor-pointer text-teodora-textMuted hover:text-teodora-text">
                 <input type="radio" name="badgeFilter" value="Edição Especial" onchange="setSpecialFilter('Edição Especial')" class="accent-teodora-gold">
-                <span>Edição especial</span>
-              </label>
-              <label class="flex items-center gap-2.5 cursor-pointer text-teodora-textMuted hover:text-teodora-text">
-                <input type="radio" name="badgeFilter" value="Presente Perfeito" onchange="setSpecialFilter('Presente Perfeito')" class="accent-teodora-gold">
-                <span>Kits presente</span>
+                <span>Linha Privée</span>
               </label>
             </div>
           </div>
@@ -451,7 +445,7 @@
 
             <!-- Botão Comprar Agora (Checkout Direto) -->
             <button onclick="buyNowFromPdp()" class="w-full py-4 px-8 bg-teodora-text hover:bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
-              <i class="fa-solid fa-bolt text-teodora-gold"></i>
+              <i class="fa-solid fa-lock text-teodora-gold"></i>
               <span>Comprar Agora • Checkout Seguro</span>
             </button>
           </div>
@@ -592,13 +586,14 @@
       <div class="space-y-2">
         <span class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Categorias</span>
         <div class="flex flex-col gap-1.5 text-xs font-medium">
-          <button onclick="setCategoryFilter('todos'); toggleMobileFilter();" data-mobile-cat="todos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Todos os Produtos</button>
+          <button onclick="setCategoryFilter('todos'); toggleMobileFilter();" data-mobile-cat="todos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Todos os produtos</button>
           <button onclick="setCategoryFilter('perfumes'); toggleMobileFilter();" data-mobile-cat="perfumes" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Perfumes</button>
           <button onclick="setCategoryFilter('skincare'); toggleMobileFilter();" data-mobile-cat="skincare" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Skincare</button>
           <button onclick="setCategoryFilter('maquiagem'); toggleMobileFilter();" data-mobile-cat="maquiagem" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Maquiagem</button>
           <button onclick="setCategoryFilter('cabelos'); toggleMobileFilter();" data-mobile-cat="cabelos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Cabelos</button>
           <button onclick="setCategoryFilter('corpo'); toggleMobileFilter();" data-mobile-cat="corpo" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Corpo &amp; Banho</button>
-          <button onclick="setCategoryFilter('kits'); toggleMobileFilter();" data-mobile-cat="kits" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Kits de Presente</button>
+          <button onclick="setCategoryFilter('kits'); toggleMobileFilter();" data-mobile-cat="kits" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Kits</button>
+          <button onclick="setSpecialFilter('Edição Especial'); toggleMobileFilter();" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition text-teodora-gold">Linha Privée</button>
         </div>
       </div>
 
@@ -659,11 +654,11 @@
       <!-- Rodapé da Sacola: Frete ViaCEP, Cupom e Checkout -->
       <div class="pt-4 border-t border-teodora-border space-y-3 bg-white">
         
-        <!-- Cálculo de Frete ViaCEP -->
+        <!-- Cálculo de Frete CepCerto -->
         <div class="p-3.5 bg-teodora-bgLight rounded-2xl border border-teodora-border space-y-2">
           <div class="flex items-center justify-between text-xs font-semibold text-teodora-text">
             <span class="flex items-center gap-1.5">
-              <i class="fa-solid fa-truck text-teodora-gold"></i> Simulação de Frete
+              <i class="fa-solid fa-truck text-teodora-gold"></i> Frete (CepCerto)
             </span>
             <span id="cepResultLabel" class="text-[11px] text-teodora-gold font-normal"></span>
           </div>
@@ -721,161 +716,87 @@
     </div>
   </div>
 
-  <div id="mercadoPagoModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-teodora-border my-8 relative">
-      
-      <button onclick="closeMercadoPagoModal()" class="absolute top-6 right-6 text-teodora-textMuted hover:text-teodora-text p-2" aria-label="Fechar">
-        <i class="fa-solid fa-xmark text-xl"></i>
+  <div id="mercadoPagoModal" class="fixed inset-0 z-50 bg-black/50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-teodora-page max-w-lg w-full p-6 sm:p-8 shadow-drawer border border-teodora-border my-8 relative">
+
+      <button onclick="closeMercadoPagoModal()" class="absolute top-5 right-5 text-teodora-textMuted hover:text-teodora-text p-1.5" aria-label="Fechar">
+        <i class="fa-solid fa-xmark text-lg"></i>
       </button>
 
-      <!-- Modal Header -->
-      <div class="flex items-center gap-3 pb-6 border-b border-teodora-border">
-        <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-2xl font-bold">
-          <i class="fa-brands fa-mercadopago"></i>
-        </div>
-        <div>
-          <span class="text-[10px] uppercase tracking-widest text-sky-600 font-bold">Ambiente Criptografado &amp; Oficial</span>
-          <h3 class="font-heading text-2xl font-bold text-teodora-text">Checkout Mercado Pago</h3>
-        </div>
+      <div class="pb-5 border-b border-teodora-border pr-8">
+        <p class="text-[10px] uppercase tracking-[0.2em] text-teodora-textMuted mb-1">Finalizar compra</p>
+        <h3 class="font-heading text-2xl text-teodora-text font-normal">Seus dados</h3>
+        <p class="text-xs text-teodora-textMuted mt-1.5">Pagamento seguro embutido com Mercado Pago (Pix, cartão ou boleto).</p>
       </div>
 
-      <!-- Formulário de Finalização -->
-      <div id="checkoutFormPanel" class="mt-6 space-y-6">
-        
-        <!-- Passo 1: Dados do Cliente -->
+      <div id="checkoutFormPanel" class="mt-5 space-y-6">
+
         <div class="space-y-3">
-          <h4 class="text-xs uppercase tracking-wider text-teodora-gold font-bold flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full bg-teodora-gold text-white flex items-center justify-center text-[10px]">1</span>
-            Destinatário &amp; Endereço de Envio
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <input type="text" id="buyerName" placeholder="Nome completo" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="email" id="buyerEmail" placeholder="E-mail para rastreio" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="text" id="buyerDoc" placeholder="CPF (obrigatório para NF-e)" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="tel" id="buyerPhone" placeholder="WhatsApp" class="p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted">Entrega</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-sm">
+            <input type="text" id="buyerName" placeholder="Nome completo" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="email" id="buyerEmail" placeholder="E-mail" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerDoc" placeholder="CPF" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="tel" id="buyerPhone" placeholder="WhatsApp" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
             <div class="sm:col-span-2">
-              <input type="text" id="buyerAddress" placeholder="Endereço completo (rua, número, bairro, compl.)" class="w-full p-3 rounded-xl border border-teodora-border focus:border-teodora-gold focus:outline-none">
+              <input type="text" id="buyerAddress" placeholder="Endereço completo" class="w-full p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
             </div>
           </div>
         </div>
 
-        <!-- Passo 2: Método de Pagamento -->
-        <div class="space-y-4 pt-4 border-t border-teodora-border">
-          <h4 class="text-xs uppercase tracking-wider text-teodora-gold font-bold flex items-center gap-2">
-            <span class="w-5 h-5 rounded-full bg-teodora-gold text-white flex items-center justify-center text-[10px]">2</span>
-            Forma de Pagamento Segura
-          </h4>
+        <div class="space-y-3 pt-1 border-t border-teodora-border">
+          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Preferência de pagamento</h4>
 
-          <div class="grid grid-cols-3 gap-3">
-            <button onclick="changePaymentOption('pix')" id="payTabPix" class="pay-tab p-3.5 rounded-2xl border-2 border-teodora-gold bg-teodora-roseLight flex flex-col items-center justify-center gap-1 transition">
-              <i class="fa-brands fa-pix text-emerald-600 text-2xl"></i>
-              <span class="text-xs font-bold text-teodora-text">Pix</span>
-              <span class="text-[9px] text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-bold">+5% OFF</span>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="changePaymentOption('pix')" id="payTabPix" class="pay-tab py-3 px-2 border border-teodora-gold bg-teodora-cream text-center transition">
+              <span class="block text-xs font-semibold text-teodora-text">Pix</span>
+              <span class="block text-[10px] text-teodora-textMuted mt-0.5">5% off</span>
             </button>
-
-            <button onclick="changePaymentOption('card')" id="payTabCard" class="pay-tab p-3.5 rounded-2xl border border-teodora-border bg-white flex flex-col items-center justify-center gap-1 transition">
-              <i class="fa-regular fa-credit-card text-teodora-text text-2xl"></i>
-              <span class="text-xs font-bold text-teodora-text">Cartão</span>
-              <span class="text-[9px] text-teodora-textMuted">Até 6x Sem Juros</span>
+            <button type="button" onclick="changePaymentOption('card')" id="payTabCard" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
+              <span class="block text-xs font-semibold text-teodora-text">Cartão</span>
+              <span class="block text-[10px] text-teodora-textMuted mt-0.5">até 6x</span>
             </button>
-
-            <button onclick="changePaymentOption('boleto')" id="payTabBoleto" class="pay-tab p-3.5 rounded-2xl border border-teodora-border bg-white flex flex-col items-center justify-center gap-1 transition">
-              <i class="fa-solid fa-barcode text-teodora-text text-2xl"></i>
-              <span class="text-xs font-bold text-teodora-text">Boleto</span>
-              <span class="text-[9px] text-teodora-textMuted">Compensa em 24h</span>
+            <button type="button" onclick="changePaymentOption('boleto')" id="payTabBoleto" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
+              <span class="block text-xs font-semibold text-teodora-text">Boleto</span>
+              <span class="block text-[10px] text-teodora-textMuted mt-0.5">1–2 dias</span>
             </button>
           </div>
 
-          <!-- Pix Painel -->
-          <div id="panelPix" class="p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs space-y-2">
-            <div class="flex items-center gap-2 text-emerald-800 font-bold">
-              <i class="fa-solid fa-bolt text-emerald-600"></i>
-              <span>Aprovação instantânea &amp; Desconto de 5% aplicado no total</span>
-            </div>
-            <p class="text-teodora-textMuted text-xs">
-              O QR Code e a chave Pix copia-e-cola são gerados instantaneamente pelo Mercado Pago com validade de 30 minutos.
-            </p>
+          <div id="panelPix" class="text-xs text-teodora-textMuted leading-relaxed">
+            Desconto de 5% aplicado no total. O Pix é gerado no formulário abaixo.
           </div>
-
-          <!-- Cartão Painel -->
-          <div id="panelCard" class="hidden p-4 rounded-2xl bg-teodora-bgLight border border-teodora-border text-xs space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div class="sm:col-span-2">
-                <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Número do Cartão de Crédito</label>
-                <input type="text" placeholder="0000 0000 0000 0000" maxlength="19" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
-              </div>
-              <div>
-                <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Titular (como impresso)</label>
-                <input type="text" placeholder="Ex: ANA B VASCONCELOS" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Validade</label>
-                  <input type="text" placeholder="MM/AA" maxlength="5" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
-                </div>
-                <div>
-                  <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">CVV</label>
-                  <input type="text" placeholder="123" maxlength="4" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none">
-                </div>
-              </div>
-              <div class="sm:col-span-2">
-                <label class="block text-[10px] uppercase font-bold text-teodora-textMuted mb-1">Opções de Parcelamento Mercado Pago</label>
-                <select id="checkoutInstallments" class="w-full p-3 rounded-xl border border-teodora-border bg-white focus:border-teodora-gold focus:outline-none"></select>
-              </div>
-            </div>
+          <div id="panelCard" class="hidden text-xs text-teodora-textMuted leading-relaxed">
+            Parcelamento confirmado no formulário Mercado Pago.
           </div>
-
-          <!-- Boleto Painel -->
-          <div id="panelBoleto" class="hidden p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-xs space-y-2">
-            <p class="text-amber-900 font-bold">Boleto Bancário Mercado Pago</p>
-            <p class="text-xs text-teodora-textMuted">Gera código de barras e link em PDF após a confirmação para pagamento em qualquer banco.</p>
+          <div id="panelBoleto" class="hidden text-xs text-teodora-textMuted leading-relaxed">
+            O boleto é gerado no formulário Mercado Pago.
           </div>
-
         </div>
 
-        <!-- Total e CTA Final -->
-        <div class="p-4 bg-teodora-roseLight/70 rounded-2xl border border-teodora-border flex items-center justify-between">
+        <div id="paymentBrickWrap" class="hidden pt-2 border-t border-teodora-border">
+          <div id="paymentBrick_container" class="min-h-[120px]"></div>
+        </div>
+
+        <div class="pt-4 border-t border-teodora-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span class="text-[10px] uppercase tracking-wider text-teodora-textMuted font-bold">Total do Pedido</span>
-            <p id="checkoutFinalTotal" class="font-heading text-2xl sm:text-3xl font-bold text-teodora-text">R$ 0,00</p>
+            <span class="text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted">Total</span>
+            <p id="checkoutFinalTotal" class="font-heading text-2xl text-teodora-text">R$ 0,00</p>
           </div>
-          <button onclick="executePaymentTransaction()" id="btnSubmitPayment" class="px-8 py-4 bg-teodora-text hover:bg-black text-white font-semibold text-xs uppercase tracking-widest rounded-xl transition shadow-lg flex items-center gap-2">
-            <span>Confirmar Pedido Pix</span>
+          <button onclick="executePaymentTransaction()" id="btnSubmitPayment" class="w-full sm:w-auto px-8 py-3.5 bg-teodora-text hover:bg-black text-white text-[11px] uppercase tracking-[0.16em] font-semibold transition flex items-center justify-center gap-2">
+            <span>Continuar para pagar</span>
           </button>
         </div>
 
       </div>
 
-      <!-- Painel de Sucesso com QR Code Pix -->
-      <div id="checkoutSuccessPanel" class="hidden text-center py-6 space-y-5">
-        <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl">
-          <i class="fa-solid fa-check"></i>
-        </div>
-        
-        <div>
-          <span class="text-xs uppercase tracking-widest text-emerald-700 font-bold">Transação Mercado Pago Confirmada</span>
-          <h3 class="font-heading text-2xl sm:text-3xl font-bold text-teodora-text mt-1">Pedido Gerado com Sucesso!</h3>
-          <p class="text-xs text-teodora-textMuted mt-1">Identificador da compra: <strong class="text-teodora-text font-mono" id="displayOrderNumber">#TEO-89210</strong></p>
-        </div>
-
-        <div class="p-6 bg-teodora-bgLight rounded-2xl border border-teodora-border inline-block max-w-sm mx-auto shadow-sm">
-          <img id="pixGeneratedQr" src="" alt="QR Code Pix" class="w-48 h-48 mx-auto border p-2 bg-white rounded-xl shadow-sm">
-          <p class="text-xs text-teodora-text font-semibold mt-3">Escaneie o QR Code no app do seu banco</p>
-          <p class="text-[10px] text-teodora-textMuted mt-0.5">Tempo limite: 30 minutos para compensação imediata</p>
-          
-          <div class="mt-3 flex gap-2">
-            <input type="text" id="pixCodeText" readonly value="" class="w-full text-xs p-2.5 bg-white border border-teodora-border rounded-lg font-mono text-gray-600 truncate">
-            <button onclick="copyPixToClipboard()" class="px-4 py-2 bg-teodora-gold text-white text-xs rounded-lg font-bold shrink-0 hover:bg-teodora-goldDark transition">
-              Copiar
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <button onclick="resetStoreAfterPurchase()" class="px-8 py-3.5 bg-teodora-text text-white text-xs uppercase tracking-widest rounded-full hover:bg-black transition font-semibold">
-            Continuar Explorando a Teodora
-          </button>
-        </div>
+      <div id="checkoutSuccessPanel" class="hidden py-8 text-center space-y-4">
+        <p id="checkoutResultEyebrow" class="text-[10px] uppercase tracking-[0.2em] text-teodora-gold">Pedido</p>
+        <h3 id="checkoutResultTitle" class="font-heading text-2xl text-teodora-text font-normal">Pedido confirmado</h3>
+        <p id="checkoutResultMessage" class="text-sm text-teodora-textMuted max-w-sm mx-auto leading-relaxed">Obrigado. Enviamos os detalhes para o seu e-mail.</p>
+        <p class="text-xs text-teodora-textMuted">Ref. <strong class="text-teodora-text font-mono font-normal" id="displayOrderNumber">—</strong></p>
+        <button onclick="resetStoreAfterPurchase()" class="mt-2 px-8 py-3 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
+          Voltar à loja
+        </button>
       </div>
 
     </div>
@@ -913,7 +834,7 @@
       <div class="flex items-center justify-between pb-3 border-b border-teodora-border">
         <div class="flex items-center gap-3 w-full">
           <i class="fa-solid fa-magnifying-glass text-teodora-gold"></i>
-          <input type="text" id="liveSearchInput" oninput="executeLiveSearch(this.value)" placeholder="Buscar perfumes, cremes, maquiagem..." class="w-full bg-transparent text-sm focus:outline-none text-teodora-text">
+          <input type="text" id="liveSearchInput" oninput="executeLiveSearch(this.value)" placeholder="Buscar perfumes e kits..." class="w-full bg-transparent text-sm focus:outline-none text-teodora-text">
         </div>
         <button onclick="closeSearchModal()" class="text-teodora-textMuted hover:text-teodora-text p-2">
           <i class="fa-solid fa-xmark"></i>
@@ -929,17 +850,17 @@
   <div id="toastOutlet" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
   <!-- ========== 8. RODAPÉ ========== -->
-  <footer class="bg-[#F3EBE4] border-t border-teodora-border pt-12 pb-8 text-xs text-teodora-textMuted">
+  <footer class="bg-teodora-blush border-t border-teodora-border pt-12 pb-8 text-xs text-teodora-textMuted">
     <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-10 border-b border-teodora-border">
         
         <div class="space-y-4">
           <div>
             <span class="font-heading text-xl tracking-[0.22em] font-semibold text-teodora-text uppercase">TEODORA</span>
-            <p class="text-[10px] tracking-[0.28em] uppercase text-teodora-textMuted mt-1">Beleza que te completa</p>
+            <p class="text-[10px] tracking-[0.28em] uppercase text-teodora-textMuted mt-1">Perfumes originais</p>
           </div>
           <p class="text-xs text-teodora-textMuted leading-relaxed max-w-xs">
-            Perfumes originais e cuidados selecionados, com entrega para todo o Brasil.
+            Perfumes originais com entrega para todo o Brasil. Até 6x sem juros ou 5% off no Pix.
           </p>
           <div class="flex items-center gap-3 pt-1 text-teodora-text">
             <a href="#" class="hover:text-teodora-gold transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-lg"></i></a>
@@ -954,6 +875,8 @@
           <ul class="space-y-2.5 text-xs">
             <li><button onclick="setCategoryFilter('perfumes')" class="hover:text-teodora-gold transition">Perfumes</button></li>
             <li><button onclick="setCategoryFilter('skincare')" class="hover:text-teodora-gold transition">Skincare</button></li>
+            <li><button onclick="setCategoryFilter('maquiagem')" class="hover:text-teodora-gold transition">Maquiagem</button></li>
+            <li><button onclick="setCategoryFilter('cabelos')" class="hover:text-teodora-gold transition">Cabelos</button></li>
             <li><button onclick="setCategoryFilter('corpo')" class="hover:text-teodora-gold transition">Corpo &amp; Banho</button></li>
             <li><button onclick="setCategoryFilter('kits')" class="hover:text-teodora-gold transition">Kits</button></li>
             <li><button onclick="setSpecialFilter('Edição Especial')" class="hover:text-teodora-gold transition">Linha Privée</button></li>
@@ -986,12 +909,14 @@
 
       <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
         <p>© 2026 TEODORA COSMÉTICOS LTDA. Todos os direitos reservados.</p>
-        <span class="font-signature text-2xl text-teodora-text">Mais que beleza, é você ♡</span>
+        <span class="font-signature text-2xl text-teodora-text">Mais que beleza, é você</span>
       </div>
     </div>
   </footer>
 
   <!-- Dados e lógica da loja -->
+  <script src="https://sdk.mercadopago.com/js/v2"></script>
+  <script src="js/api.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>

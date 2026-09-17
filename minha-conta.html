@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha conta — TEODORA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/tailwind-config.js"></script>
+  <script>window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://localhost:3001');</script>
+</head>
+<body class="min-h-screen bg-teodora-page text-teodora-text antialiased">
+  <header class="border-b border-teodora-border bg-white/90">
+    <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+      <a href="/" class="font-heading tracking-[0.28em] uppercase text-lg font-semibold">TEODORA</a>
+      <div class="flex items-center gap-4 text-xs uppercase tracking-wider">
+        <a href="/" class="text-teodora-textMuted hover:text-teodora-gold">Loja</a>
+        <button id="btnLogout" class="text-teodora-textMuted hover:text-teodora-gold">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-10 space-y-10">
+    <section>
+      <h1 class="font-heading text-3xl mb-1">Olá, <span id="userName">—</span></h1>
+      <p class="text-sm text-teodora-textMuted" id="userEmail"></p>
+    </section>
+
+    <section class="bg-white border border-teodora-border p-6">
+      <h2 class="text-xs uppercase tracking-[0.16em] text-teodora-textMuted mb-4">Perfil</h2>
+      <form id="profileForm" class="grid sm:grid-cols-2 gap-3">
+        <input id="profileName" class="p-3 border border-teodora-border text-sm" placeholder="Nome">
+        <input id="profilePhone" class="p-3 border border-teodora-border text-sm" placeholder="WhatsApp">
+        <button class="sm:col-span-2 w-fit px-6 py-3 bg-teodora-text text-white text-xs uppercase tracking-wider">Salvar</button>
+      </form>
+    </section>
+
+    <section class="bg-white border border-teodora-border p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-[0.16em] text-teodora-textMuted">Endereços</h2>
+      </div>
+      <div id="addressList" class="space-y-3 mb-6 text-sm"></div>
+      <form id="addressForm" class="grid sm:grid-cols-2 gap-3 border-t border-teodora-border pt-4">
+        <input id="addrCep" class="p-3 border border-teodora-border text-sm" placeholder="CEP" maxlength="9">
+        <input id="addrNumero" class="p-3 border border-teodora-border text-sm" placeholder="Número">
+        <input id="addrLogradouro" class="sm:col-span-2 p-3 border border-teodora-border text-sm" placeholder="Logradouro">
+        <input id="addrBairro" class="p-3 border border-teodora-border text-sm" placeholder="Bairro">
+        <input id="addrCidade" class="p-3 border border-teodora-border text-sm" placeholder="Cidade">
+        <input id="addrUf" class="p-3 border border-teodora-border text-sm" placeholder="UF" maxlength="2">
+        <input id="addrComplemento" class="p-3 border border-teodora-border text-sm" placeholder="Complemento">
+        <button class="sm:col-span-2 w-fit px-6 py-3 bg-teodora-text text-white text-xs uppercase tracking-wider">Adicionar endereço</button>
+      </form>
+    </section>
+
+    <section class="bg-white border border-teodora-border p-6">
+      <h2 class="text-xs uppercase tracking-[0.16em] text-teodora-textMuted mb-4">Pedidos</h2>
+      <div id="ordersList" class="space-y-3 text-sm"></div>
+    </section>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script>
+    if (!TeodoraAPI.getToken()) location.href = '/conta.html';
+
+    const money = (n) => Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    async function loadProfile() {
+      const { user } = await TeodoraAPI.api('/api/auth/me');
+      TeodoraAPI.setSession(TeodoraAPI.getToken(), user);
+      document.getElementById('userName').textContent = user.name || 'Cliente';
+      document.getElementById('userEmail').textContent = user.email || '';
+      document.getElementById('profileName').value = user.name || '';
+      document.getElementById('profilePhone').value = user.phone || '';
+      if (user.role === 'admin') {
+        const link = document.createElement('a');
+        link.href = '/admin/';
+        link.className = 'text-xs uppercase tracking-wider text-teodora-gold';
+        link.textContent = 'Painel admin';
+        document.querySelector('header .flex').prepend(link);
+      }
+    }
+
+    async function loadAddresses() {
+      const { addresses } = await TeodoraAPI.api('/api/addresses');
+      const el = document.getElementById('addressList');
+      if (!addresses.length) {
+        el.innerHTML = '<p class="text-teodora-textMuted">Nenhum endereço salvo.</p>';
+        return;
+      }
+      el.innerHTML = addresses.map(a => `
+        <div class="flex justify-between gap-3 border border-teodora-border p-3">
+          <div>
+            <p class="font-semibold">${a.label || 'Endereço'} ${a.is_default ? '· padrão' : ''}</p>
+            <p class="text-teodora-textMuted">${a.logradouro}, ${a.numero} — ${a.bairro}<br>${a.cidade}/${a.uf} · CEP ${a.cep}</p>
+          </div>
+          <button data-id="${a.id}" class="del-addr text-teodora-textMuted hover:text-red-600 text-xs">Excluir</button>
+        </div>
+      `).join('');
+      el.querySelectorAll('.del-addr').forEach(btn => {
+        btn.onclick = async () => {
+          await TeodoraAPI.api(`/api/addresses/${btn.dataset.id}`, { method: 'DELETE' });
+          loadAddresses();
+        };
+      });
+    }
+
+    async function loadOrders() {
+      const { orders } = await TeodoraAPI.api('/api/orders');
+      const el = document.getElementById('ordersList');
+      if (!orders.length) {
+        el.innerHTML = '<p class="text-teodora-textMuted">Você ainda não tem pedidos.</p>';
+        return;
+      }
+      el.innerHTML = orders.map(o => `
+        <div class="border border-teodora-border p-4">
+          <div class="flex justify-between gap-2 mb-2">
+            <span class="font-mono text-xs">${o.id.slice(0, 8)}…</span>
+            <span class="text-xs uppercase tracking-wider">${o.status}</span>
+          </div>
+          <p class="font-semibold">${money(o.total)}</p>
+          <p class="text-teodora-textMuted text-xs mt-1">${(o.items || []).map(i => `${i.quantity}x ${i.title}`).join(' · ')}</p>
+          <p class="text-[11px] text-teodora-textMuted mt-2">${o.created_at || ''}</p>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('btnLogout').onclick = () => {
+      TeodoraAPI.clearSession();
+      location.href = '/conta.html';
+    };
+
+    document.getElementById('profileForm').onsubmit = async (e) => {
+      e.preventDefault();
+      await TeodoraAPI.api('/api/auth/me', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: document.getElementById('profileName').value,
+          phone: document.getElementById('profilePhone').value,
+        }),
+      });
+      loadProfile();
+    };
+
+    document.getElementById('addrCep').addEventListener('blur', async () => {
+      const cep = document.getElementById('addrCep').value.replace(/\D/g, '');
+      if (cep.length !== 8) return;
+      try {
+        const data = await TeodoraAPI.api(`/api/shipping/cep/${cep}`);
+        document.getElementById('addrLogradouro').value = data.logradouro || '';
+        document.getElementById('addrBairro').value = data.bairro || '';
+        document.getElementById('addrCidade').value = data.localidade || '';
+        document.getElementById('addrUf').value = data.uf || '';
+      } catch (_) { /* ignore */ }
+    });
+
+    document.getElementById('addressForm').onsubmit = async (e) => {
+      e.preventDefault();
+      await TeodoraAPI.api('/api/addresses', {
+        method: 'POST',
+        body: JSON.stringify({
+          cep: document.getElementById('addrCep').value,
+          numero: document.getElementById('addrNumero').value,
+          logradouro: document.getElementById('addrLogradouro').value,
+          bairro: document.getElementById('addrBairro').value,
+          cidade: document.getElementById('addrCidade').value,
+          uf: document.getElementById('addrUf').value,
+          complemento: document.getElementById('addrComplemento').value,
+          is_default: true,
+        }),
+      });
+      e.target.reset();
+      loadAddresses();
+    };
+
+    (async () => {
+      try {
+        await loadProfile();
+        await loadAddresses();
+        await loadOrders();
+      } catch (err) {
+        TeodoraAPI.clearSession();
+        location.href = '/conta.html';
+      }
+    })();
+  </script>
+</body>
+</html>
