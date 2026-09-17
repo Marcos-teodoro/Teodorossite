@@ -21,7 +21,7 @@
   <script src="js/tailwind-config.js"></script>
   <script>
     // Mesma origem quando a loja é servida pelo FastAPI (:3001)
-    window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://localhost:3001');
+    window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://127.0.0.1:3001');
   </script>
 </head>
 <body class="antialiased selection:bg-teodora-roseSoft selection:text-teodora-text flex flex-col min-h-screen bg-teodora-page">
@@ -33,7 +33,7 @@
         <i class="fa-solid fa-truck text-teodora-gold text-xs"></i> Frete grátis acima de R$ 299
       </span>
       <div class="mx-auto md:mx-0 flex items-center gap-2 text-center">
-        <span>Até <strong class="font-semibold text-teodora-text">6x sem juros</strong> ou 5% OFF no Pix</span>
+        <span>Até <strong class="font-semibold text-teodora-text">6x sem juros</strong> no cartão · Pix e boleto</span>
       </div>
       <a href="https://wa.me/" target="_blank" class="hidden md:flex items-center gap-2 font-medium text-teodora-text hover:text-teodora-gold transition">
         <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i> Atendimento WhatsApp
@@ -219,7 +219,7 @@
           <i class="fa-regular fa-credit-card text-teodora-gold text-xl shrink-0"></i>
           <div class="min-w-0">
             <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Pagamento</h5>
-            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">6x sem juros ou 5% off no Pix.</p>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Até 6x sem juros no cartão.</p>
           </div>
         </div>
       </div>
@@ -405,7 +405,7 @@
               </p>
               <div class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
                 <i class="fa-brands fa-pix text-emerald-600"></i>
-                <span>R$ <span id="pdpPixPrice">331,55</span> no Pix (5% OFF)</span>
+                <span>R$ <span id="pdpPixPrice">331,55</span> no Pix</span>
               </div>
             </div>
           </div>
@@ -446,7 +446,7 @@
             <!-- Botão Comprar Agora (Checkout Direto) -->
             <button onclick="buyNowFromPdp()" class="w-full py-4 px-8 bg-teodora-text hover:bg-black text-white text-xs uppercase tracking-[0.2em] font-semibold rounded-2xl shadow-lg transition flex items-center justify-center gap-2">
               <i class="fa-solid fa-lock text-teodora-gold"></i>
-              <span>Comprar Agora • Checkout Seguro</span>
+              <span>Comprar Agora</span>
             </button>
           </div>
 
@@ -706,7 +706,7 @@
         </button>
 
         <div class="flex items-center justify-center gap-3 text-teodora-textMuted text-[10px] pt-1">
-          <span class="flex items-center gap-1"><i class="fa-brands fa-pix text-emerald-600"></i> Pix com 5% OFF</span>
+          <span class="flex items-center gap-1"><i class="fa-brands fa-pix text-emerald-600"></i> Pix</span>
           <span>•</span>
           <span class="flex items-center gap-1"><i class="fa-solid fa-shield-halved text-teodora-gold"></i> Mercado Pago Oficial</span>
         </div>
@@ -724,9 +724,9 @@
       </button>
 
       <div class="pb-5 border-b border-teodora-border pr-8">
-        <p class="text-[10px] uppercase tracking-[0.2em] text-teodora-textMuted mb-1">Finalizar compra</p>
+        <p class="text-[10px] uppercase tracking-[0.2em] text-teodora-textMuted mb-1">Checkout Mercado Pago</p>
         <h3 class="font-heading text-2xl text-teodora-text font-normal">Seus dados</h3>
-        <p class="text-xs text-teodora-textMuted mt-1.5">Pagamento seguro embutido com Mercado Pago (Pix, cartão ou boleto).</p>
+        <p class="text-xs text-teodora-textMuted mt-1.5">Preencha e clique em Continuar — o pagamento Pix, cartão ou boleto abre embutido abaixo (Payment Brick).</p>
       </div>
 
       <div id="checkoutFormPanel" class="mt-5 space-y-6">
@@ -750,7 +750,7 @@
           <div class="grid grid-cols-3 gap-2">
             <button type="button" onclick="changePaymentOption('pix')" id="payTabPix" class="pay-tab py-3 px-2 border border-teodora-gold bg-teodora-cream text-center transition">
               <span class="block text-xs font-semibold text-teodora-text">Pix</span>
-              <span class="block text-[10px] text-teodora-textMuted mt-0.5">5% off</span>
+              <span class="block text-[10px] text-teodora-textMuted mt-0.5">à vista</span>
             </button>
             <button type="button" onclick="changePaymentOption('card')" id="payTabCard" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
               <span class="block text-xs font-semibold text-teodora-text">Cartão</span>
@@ -763,7 +763,7 @@
           </div>
 
           <div id="panelPix" class="text-xs text-teodora-textMuted leading-relaxed">
-            Desconto de 5% aplicado no total. O Pix é gerado no formulário abaixo.
+            O Pix é gerado no formulário Mercado Pago abaixo.
           </div>
           <div id="panelCard" class="hidden text-xs text-teodora-textMuted leading-relaxed">
             Parcelamento confirmado no formulário Mercado Pago.
@@ -860,7 +860,7 @@
             <p class="text-[10px] tracking-[0.28em] uppercase text-teodora-textMuted mt-1">Perfumes originais</p>
           </div>
           <p class="text-xs text-teodora-textMuted leading-relaxed max-w-xs">
-            Perfumes originais com entrega para todo o Brasil. Até 6x sem juros ou 5% off no Pix.
+            Perfumes originais com entrega para todo o Brasil. Até 6x sem juros no cartão.
           </p>
           <div class="flex items-center gap-3 pt-1 text-teodora-text">
             <a href="#" class="hover:text-teodora-gold transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-lg"></i></a>
@@ -902,7 +902,7 @@
             <i class="fa-solid fa-barcode text-teodora-textMuted" title="Boleto"></i>
           </div>
           <p class="text-xs text-teodora-textMuted leading-relaxed mt-3">
-            Até 6x sem juros no cartão ou 5% off no Pix.
+            Até 6x sem juros no cartão · Pix e boleto.
           </p>
         </div>
       </div>

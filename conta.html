@@ -5,79 +5,522 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Entrar — TEODORA</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/tailwind-config.js"></script>
-  <script>window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://localhost:3001');</script>
+  <script>window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://127.0.0.1:3001');</script>
+  <style>
+    .auth-page {
+      --auth-bg: #f3f1ef;
+      --auth-card: #ffffff;
+      --auth-ink: #1a1816;
+      --auth-muted: #7a736c;
+      --auth-line: #e8e2dc;
+      --auth-tab: #f3ebe4;
+      --auth-accent: #a67c52;
+      min-height: 100vh;
+      background: var(--auth-bg);
+      color: var(--auth-ink);
+    }
+    .auth-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 1.1rem 1.75rem;
+      background: rgba(255,255,255,0.92);
+      border-bottom: 1px solid var(--auth-line);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(8px);
+    }
+    .auth-brand {
+      grid-column: 2;
+      text-align: center;
+    }
+    .auth-brand .name {
+      font-family: "Playfair Display", Georgia, serif;
+      letter-spacing: 0.35em;
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+    .auth-brand .tag {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--auth-muted);
+    }
+    .auth-back {
+      grid-column: 3;
+      justify-self: end;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--auth-muted);
+      transition: color 0.2s;
+    }
+    .auth-back:hover { color: var(--auth-ink); }
+    .auth-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+      min-height: calc(100vh - 74px);
+    }
+    .auth-hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 520px;
+    }
+    .auth-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      animation: auth-zoom 12s ease-out both;
+    }
+    .auth-hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(20,16,14,0.15) 0%, rgba(20,16,14,0.55) 100%);
+    }
+    .auth-hero-copy {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      padding: 2.5rem 2.75rem 3rem;
+      color: #fff;
+      animation: auth-rise 0.8s ease-out both;
+    }
+    .auth-hero-copy .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      font-weight: 500;
+      opacity: 0.92;
+    }
+    .auth-hero-copy .eyebrow::after {
+      content: "";
+      width: 48px;
+      height: 1px;
+      background: rgba(255,255,255,0.7);
+    }
+    .auth-hero-copy h1 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-weight: 500;
+      font-size: clamp(1.85rem, 3.2vw, 2.65rem);
+      line-height: 1.2;
+      margin: 1rem 0 0.9rem;
+      max-width: 14ch;
+    }
+    .auth-hero-copy p {
+      max-width: 36ch;
+      font-size: 0.92rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.88);
+      font-weight: 300;
+    }
+    .auth-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      background:
+        radial-gradient(ellipse at 70% 20%, rgba(255,255,255,0.9), transparent 55%),
+        var(--auth-bg);
+      animation: auth-rise 0.7s ease-out 0.08s both;
+    }
+    .auth-card {
+      width: min(100%, 400px);
+      background: var(--auth-card);
+      border: 1px solid var(--auth-line);
+      box-shadow: 0 18px 50px rgba(30, 24, 20, 0.08);
+      padding: 1.35rem 1.4rem 1.5rem;
+    }
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+      margin-bottom: 1.35rem;
+    }
+    .auth-tabs button {
+      border: 1px solid var(--auth-line);
+      background: #fff;
+      padding: 0.7rem 0.5rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 600;
+      color: var(--auth-muted);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .auth-tabs button.active {
+      background: var(--auth-tab);
+      color: var(--auth-ink);
+      border-color: #e2d5c9;
+    }
+    .auth-card h2 {
+      font-family: "Playfair Display", Georgia, serif;
+      font-size: 1.55rem;
+      font-weight: 500;
+      margin: 0 0 0.35rem;
+    }
+    .auth-card .sub {
+      font-size: 0.82rem;
+      color: var(--auth-muted);
+      margin-bottom: 1.25rem;
+    }
+    .field {
+      position: relative;
+      margin-bottom: 0.75rem;
+    }
+    .field i.lead {
+      position: absolute;
+      left: 0.95rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #b0a79f;
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+    .field input {
+      width: 100%;
+      border: 1px solid var(--auth-line);
+      background: #fff;
+      padding: 0.85rem 2.6rem 0.85rem 2.45rem;
+      font-size: 0.88rem;
+      color: var(--auth-ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .field input:focus { border-color: #c4b5a5; }
+    .field .toggle-pass {
+      position: absolute;
+      right: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      border: 0;
+      background: transparent;
+      color: #b0a79f;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+    .forgot {
+      display: block;
+      text-align: right;
+      font-size: 0.78rem;
+      color: var(--auth-accent);
+      margin: 0.15rem 0 1rem;
+    }
+    .forgot:hover { text-decoration: underline; }
+    .btn-primary {
+      width: 100%;
+      border: 0;
+      background: var(--auth-ink);
+      color: #fff;
+      padding: 0.95rem 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: #000; }
+    .btn-primary:disabled { opacity: 0.6; cursor: wait; }
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.15rem 0 0.9rem;
+      color: var(--auth-muted);
+      font-size: 0.75rem;
+    }
+    .divider::before, .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--auth-line);
+    }
+    .btn-outline {
+      width: 100%;
+      border: 1px solid var(--auth-ink);
+      background: #fff;
+      color: var(--auth-ink);
+      padding: 0.9rem 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-outline:hover { background: var(--auth-tab); }
+    .auth-msg {
+      margin-top: 0.85rem;
+      font-size: 0.82rem;
+      color: #b91c1c;
+      display: none;
+    }
+    .auth-msg.show { display: block; }
+    @keyframes auth-rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes auth-zoom {
+      from { transform: scale(1.06); }
+      to { transform: scale(1); }
+    }
+    @media (max-width: 980px) {
+      .auth-shell {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+      .auth-hero {
+        min-height: 240px;
+        max-height: 42vh;
+      }
+      .auth-hero-copy {
+        padding: 1.35rem 1.25rem 1.5rem;
+      }
+      .auth-hero-copy h1 {
+        max-width: none;
+        font-size: clamp(1.45rem, 5.5vw, 1.85rem);
+        margin: 0.7rem 0 0.55rem;
+      }
+      .auth-hero-copy p {
+        font-size: 0.84rem;
+        max-width: none;
+        line-height: 1.5;
+      }
+      .auth-panel {
+        padding: 1.35rem 1.1rem 2.25rem;
+        align-items: flex-start;
+      }
+      .auth-card {
+        width: 100%;
+        max-width: 440px;
+        margin: 0 auto;
+        padding: 1.2rem 1.15rem 1.35rem;
+      }
+    }
+    @media (max-width: 640px) {
+      .auth-header {
+        grid-template-columns: auto 1fr auto;
+        padding: 0.85rem 0.9rem;
+        gap: 0.5rem;
+      }
+      .auth-brand {
+        grid-column: 2;
+      }
+      .auth-brand .name {
+        font-size: 0.95rem;
+        letter-spacing: 0.28em;
+      }
+      .auth-brand .tag {
+        font-size: 0.52rem;
+        letter-spacing: 0.18em;
+      }
+      .auth-back {
+        grid-column: 1;
+        justify-self: start;
+        font-size: 0.62rem;
+      }
+      .auth-back span { display: none; }
+      .auth-hero {
+        min-height: 200px;
+        max-height: 36vh;
+      }
+      .auth-hero-copy .eyebrow {
+        font-size: 0.62rem;
+        letter-spacing: 0.2em;
+      }
+      .auth-hero-copy .eyebrow::after { width: 28px; }
+      .auth-card h2 { font-size: 1.35rem; }
+      .field input {
+        font-size: 16px; /* evita zoom no iOS */
+        padding: 0.9rem 2.6rem 0.9rem 2.45rem;
+      }
+    }
+  </style>
 </head>
-<body class="min-h-screen bg-teodora-page text-teodora-text antialiased">
-  <header class="border-b border-teodora-border bg-white/90">
-    <div class="max-w-lg mx-auto px-4 h-16 flex items-center justify-between">
-      <a href="/" class="font-heading tracking-[0.28em] uppercase text-lg font-semibold">TEODORA</a>
-      <a href="/" class="text-xs uppercase tracking-wider text-teodora-textMuted hover:text-teodora-gold">Loja</a>
+<body class="auth-page antialiased">
+  <header class="auth-header">
+    <div class="auth-brand">
+      <div class="name">TEODORA</div>
+      <span class="tag">Perfumes &amp; Cosméticos</span>
     </div>
+    <a href="/" class="auth-back"><i class="fa-solid fa-arrow-left"></i> <span>Voltar para a loja</span></a>
   </header>
 
-  <main class="max-w-md mx-auto px-4 py-12">
-    <h1 class="font-heading text-3xl mb-2">Sua conta</h1>
-    <p class="text-sm text-teodora-textMuted mb-8">Entre ou crie uma conta para acompanhar pedidos e endereços.</p>
+  <div class="auth-shell">
+    <section class="auth-hero" aria-hidden="false">
+      <img
+        src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=1600&q=85"
+        alt="Perfumes e cosméticos Teodora"
+      >
+      <div class="auth-hero-copy">
+        <div class="eyebrow">Boas-vindas</div>
+        <h1>Sua conta Teodora começa aqui.</h1>
+        <p>Acesse para acompanhar pedidos, salvar favoritos e finalizar compras com praticidade.</p>
+      </div>
+    </section>
 
-    <div class="flex gap-2 mb-6">
-      <button id="tabLogin" class="flex-1 py-2.5 text-xs uppercase tracking-wider border border-teodora-gold bg-teodora-cream font-semibold">Entrar</button>
-      <button id="tabRegister" class="flex-1 py-2.5 text-xs uppercase tracking-wider border border-teodora-border bg-white font-semibold">Cadastrar</button>
-    </div>
+    <section class="auth-panel">
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button type="button" id="tabLogin" class="active">Entrar</button>
+          <button type="button" id="tabRegister">Cadastrar</button>
+        </div>
 
-    <form id="loginForm" class="space-y-3 bg-white border border-teodora-border p-6">
-      <input type="email" id="loginEmail" required placeholder="E-mail" class="w-full p-3 border border-teodora-border text-sm">
-      <input type="password" id="loginPassword" required placeholder="Senha" class="w-full p-3 border border-teodora-border text-sm">
-      <button type="submit" class="w-full py-3 bg-teodora-text text-white text-xs uppercase tracking-[0.16em] font-semibold">Entrar</button>
-    </form>
+        <div id="loginBlock">
+          <h2>Acesse sua conta</h2>
+          <p class="sub" id="loginSub">Entre com seus dados para continuar.</p>
 
-    <form id="registerForm" class="hidden space-y-3 bg-white border border-teodora-border p-6">
-      <input type="text" id="regName" placeholder="Nome" class="w-full p-3 border border-teodora-border text-sm">
-      <input type="email" id="regEmail" required placeholder="E-mail" class="w-full p-3 border border-teodora-border text-sm">
-      <input type="tel" id="regPhone" placeholder="WhatsApp" class="w-full p-3 border border-teodora-border text-sm">
-      <input type="password" id="regPassword" required minlength="8" placeholder="Senha (mín. 8)" class="w-full p-3 border border-teodora-border text-sm">
-      <button type="submit" class="w-full py-3 bg-teodora-text text-white text-xs uppercase tracking-[0.16em] font-semibold">Criar conta</button>
-    </form>
+          <form id="loginForm">
+            <div class="field">
+              <i class="fa-regular fa-envelope lead"></i>
+              <input type="email" id="loginEmail" required placeholder="E-mail" autocomplete="email">
+            </div>
+            <div class="field">
+              <i class="fa-solid fa-lock lead"></i>
+              <input type="password" id="loginPassword" required placeholder="Senha" autocomplete="current-password">
+              <button type="button" class="toggle-pass" data-target="loginPassword" aria-label="Mostrar senha">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <a href="#" class="forgot" id="forgotLink">Esqueceu sua senha?</a>
+            <button type="submit" class="btn-primary">Entrar</button>
+          </form>
 
-    <p id="authMsg" class="mt-4 text-sm text-red-600 hidden"></p>
-  </main>
+          <div class="divider">Ainda não tem uma conta?</div>
+          <button type="button" class="btn-outline" id="goRegister">Criar agora</button>
+        </div>
+
+        <div id="registerBlock" class="hidden">
+          <h2>Crie sua conta</h2>
+          <p class="sub">Cadastre-se para comprar e acompanhar pedidos.</p>
+
+          <form id="registerForm">
+            <div class="field">
+              <i class="fa-regular fa-user lead"></i>
+              <input type="text" id="regName" placeholder="Nome completo" autocomplete="name">
+            </div>
+            <div class="field">
+              <i class="fa-regular fa-envelope lead"></i>
+              <input type="email" id="regEmail" required placeholder="E-mail" autocomplete="email">
+            </div>
+            <div class="field">
+              <i class="fa-brands fa-whatsapp lead"></i>
+              <input type="tel" id="regPhone" placeholder="WhatsApp" autocomplete="tel">
+            </div>
+            <div class="field">
+              <i class="fa-solid fa-lock lead"></i>
+              <input type="password" id="regPassword" required minlength="8" placeholder="Senha (mín. 8)" autocomplete="new-password">
+              <button type="button" class="toggle-pass" data-target="regPassword" aria-label="Mostrar senha">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top:0.5rem">Criar conta</button>
+          </form>
+
+          <div class="divider">Já tem conta?</div>
+          <button type="button" class="btn-outline" id="goLogin">Entrar</button>
+        </div>
+
+        <p id="authMsg" class="auth-msg"></p>
+      </div>
+    </section>
+  </div>
 
   <script src="js/api.js"></script>
   <script>
     const tabLogin = document.getElementById('tabLogin');
     const tabRegister = document.getElementById('tabRegister');
+    const loginBlock = document.getElementById('loginBlock');
+    const registerBlock = document.getElementById('registerBlock');
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
     const msg = document.getElementById('authMsg');
+    const params = new URLSearchParams(location.search);
+    const next = params.get('next') || '';
+
+    if (next === 'checkout') {
+      document.getElementById('loginSub').textContent = 'Entre para finalizar sua compra com Mercado Pago.';
+    }
+
+    function showLogin() {
+      loginBlock.classList.remove('hidden');
+      registerBlock.classList.add('hidden');
+      tabLogin.classList.add('active');
+      tabRegister.classList.remove('active');
+      msg.classList.remove('show');
+    }
+
+    function showRegister() {
+      registerBlock.classList.remove('hidden');
+      loginBlock.classList.add('hidden');
+      tabRegister.classList.add('active');
+      tabLogin.classList.remove('active');
+      msg.classList.remove('show');
+    }
+
+    function goAfterAuth(user) {
+      if (next === 'checkout' || sessionStorage.getItem('teodora_after_login') === 'checkout') {
+        try {
+          sessionStorage.removeItem('teodora_after_login');
+          sessionStorage.setItem('teodora_open_checkout', '1');
+        } catch (_) { /* ignore */ }
+        location.href = '/';
+        return;
+      }
+      location.href = user.role === 'admin' ? '/admin/' : '/minha-conta.html';
+    }
 
     if (TeodoraAPI.getToken()) {
-      location.href = '/minha-conta.html';
+      goAfterAuth(TeodoraAPI.getUser() || { role: 'customer' });
     }
 
     function showMsg(text) {
       msg.textContent = text;
-      msg.classList.remove('hidden');
+      msg.classList.add('show');
     }
 
-    tabLogin.onclick = () => {
-      loginForm.classList.remove('hidden');
-      registerForm.classList.add('hidden');
-      tabLogin.classList.add('border-teodora-gold', 'bg-teodora-cream');
-      tabRegister.classList.remove('border-teodora-gold', 'bg-teodora-cream');
+    tabLogin.onclick = showLogin;
+    tabRegister.onclick = showRegister;
+    document.getElementById('goRegister').onclick = showRegister;
+    document.getElementById('goLogin').onclick = showLogin;
+
+    document.getElementById('forgotLink').onclick = (e) => {
+      e.preventDefault();
+      showMsg('Recuperação de senha em breve. Fale conosco pelo WhatsApp se precisar.');
     };
-    tabRegister.onclick = () => {
-      registerForm.classList.remove('hidden');
-      loginForm.classList.add('hidden');
-      tabRegister.classList.add('border-teodora-gold', 'bg-teodora-cream');
-      tabLogin.classList.remove('border-teodora-gold', 'bg-teodora-cream');
-    };
+
+    document.querySelectorAll('.toggle-pass').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.innerHTML = show ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+      });
+    });
 
     loginForm.onsubmit = async (e) => {
       e.preventDefault();
+      const btn = loginForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
       try {
         const data = await TeodoraAPI.api('/api/auth/login', {
           method: 'POST',
@@ -87,14 +530,17 @@
           }),
         });
         TeodoraAPI.setSession(data.token, data.user);
-        location.href = data.user.role === 'admin' ? '/admin/' : '/minha-conta.html';
+        goAfterAuth(data.user);
       } catch (err) {
         showMsg(err.message);
+        btn.disabled = false;
       }
     };
 
     registerForm.onsubmit = async (e) => {
       e.preventDefault();
+      const btn = registerForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
       try {
         const data = await TeodoraAPI.api('/api/auth/register', {
           method: 'POST',
@@ -106,9 +552,10 @@
           }),
         });
         TeodoraAPI.setSession(data.token, data.user);
-        location.href = '/minha-conta.html';
+        goAfterAuth(data.user);
       } catch (err) {
         showMsg(err.message);
+        btn.disabled = false;
       }
     };
   </script>

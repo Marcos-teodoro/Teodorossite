@@ -168,7 +168,7 @@ const CATEGORY_FILTER_CONFIGS = {
 };
 
 async function loadCatalogFromApi() {
-  const apiBase = (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://localhost:3001').replace(/\/$/, '');
+  const apiBase = (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://127.0.0.1:3001').replace(/\/$/, '');
   const res = await fetch(`${apiBase}/api/catalog/products`);
   if (!res.ok) throw new Error('Falha ao carregar catálogo');
   const data = await res.json();

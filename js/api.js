@@ -2,7 +2,7 @@
 (function (global) {
   const API_BASE = (typeof global.TEODORA_API_BASE === 'string'
     ? global.TEODORA_API_BASE
-    : 'http://localhost:3001'
+    : 'http://127.0.0.1:3001'
   ).replace(/\/$/, '');
   const TOKEN_KEY = 'teodora_token';
   const USER_KEY = 'teodora_user';

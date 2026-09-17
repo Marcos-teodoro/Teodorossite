@@ -54,9 +54,6 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
 
     payment_hint = (body.payment_hint or "card").lower()
     pix_discount = 0.0
-    if payment_hint == "pix":
-        pix_discount = round_money(total * 0.05)
-        total = round_money(total - pix_discount)
 
     if total <= 0:
         raise HTTPException(status_code=400, detail="Total inválido.")

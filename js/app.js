@@ -4,7 +4,7 @@ function formatBRL(val) {
 }
 
 function teodoraApiBase() {
-  return (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://localhost:3001').replace(/\/$/, '');
+  return (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://127.0.0.1:3001').replace(/\/$/, '');
 }
 
 function getFilteredProducts() {
@@ -538,7 +538,6 @@ function updatePdpPriceDisplay(product) {
     : product.price;
 
   const installment = price / 6;
-  const pixPrice = price * 0.95;
 
   const curPriceEl = document.getElementById('pdpCurrentPrice');
   if (curPriceEl) curPriceEl.innerText = formatBRL(price);
@@ -562,7 +561,7 @@ function updatePdpPriceDisplay(product) {
   if (instEl) instEl.innerText = formatBRL(installment);
 
   const pixEl = document.getElementById('pdpPixPrice');
-  if (pixEl) pixEl.innerText = pixPrice.toFixed(2).replace('.', ',');
+  if (pixEl) pixEl.innerText = price.toFixed(2).replace('.', ',');
 }
 
 function changePdpQuantity(delta) {
@@ -601,7 +600,24 @@ function addToCartFromPdp() {
   toggleCartDrawer(true);
 }
 
+function isUserLoggedIn() {
+  return Boolean(window.TeodoraAPI?.getToken?.());
+}
+
+function requireLoginForCheckout() {
+  if (isUserLoggedIn()) return true;
+  try {
+    sessionStorage.setItem('teodora_after_login', 'checkout');
+  } catch (_) { /* ignore */ }
+  displayToast('Entre ou crie sua conta para comprar.');
+  setTimeout(() => {
+    location.href = '/conta.html?next=checkout';
+  }, 600);
+  return false;
+}
+
 function buyNowFromPdp() {
+  if (!requireLoginForCheckout()) return;
   addToCartFromPdp();
   openMercadoPagoModal();
 }
@@ -1036,6 +1052,7 @@ function applyDiscountCoupon() {
 }
 
 async function openMercadoPagoModal() {
+  if (!requireLoginForCheckout()) return;
   if (APP_STATE.cart.length === 0) {
     displayToast('Sua sacola está vazia. Adicione produtos antes de comprar.');
     return;
@@ -1045,7 +1062,6 @@ async function openMercadoPagoModal() {
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
   let finalTotal = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
-  if (APP_STATE.paymentMethod === 'pix') finalTotal *= 0.95;
 
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(finalTotal);
 
@@ -1110,7 +1126,6 @@ function changePaymentOption(method) {
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
   let total = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
-  if (method === 'pix') total *= 0.95;
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(total);
 }
 
@@ -1499,6 +1514,18 @@ window.addEventListener('DOMContentLoaded', async () => {
     console.error(err);
     displayToast('Não foi possível carregar o catálogo. Suba a API em :3001.');
   }
+
+  // Volta do login/cadastro para abrir o checkout
+  try {
+    if (sessionStorage.getItem('teodora_open_checkout') === '1' && isUserLoggedIn()) {
+      sessionStorage.removeItem('teodora_open_checkout');
+      if (APP_STATE.cart.length) {
+        setTimeout(() => openMercadoPagoModal(), 400);
+      } else {
+        displayToast('Sua sacola está vazia. Adicione um produto para comprar.');
+      }
+    }
+  } catch (_) { /* ignore */ }
 });
 
 function updateHeaderAccountLink() {
