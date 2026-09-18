@@ -31,6 +31,10 @@ CEPCERTO_BASE_URL=https://cepcerto.com
 CEPCERTO_POSTAGE_TOKEN=
 CEPCERTO_CONSUMPTION_KEY=
 CEPCERTO_ORIGIN_CEP=01310100
+
+# Galeria de fotos (Supabase Storage)
+SUPABASE_URL=https://SEU-PROJETO.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
 Railway injeta `PORT=8080` sozinho — **não** fixe 3001 no Start Command. Use:
