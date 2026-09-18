@@ -19,6 +19,15 @@ def _images_for(conn, product_id: int) -> list[dict]:
     )
 
 
+def _variants_for(conn, product_id: int) -> list[dict]:
+    return rows_to_list(
+        conn.execute(
+            "SELECT * FROM product_variants WHERE product_id = ? AND active = 1 ORDER BY sort_order, id",
+            (product_id,),
+        ).fetchall()
+    )
+
+
 @router.get("/categories")
 def list_categories(all: bool = Query(False)):
     with get_connection() as conn:
@@ -52,7 +61,7 @@ def list_products(category: str | None = None, q: str | None = None, active_only
         products = []
         for row in rows:
             row["similar_ids"] = parse_json_field(row.get("similar_ids"), [])
-            products.append(product_to_storefront(row, _images_for(conn, row["id"])))
+            products.append(product_to_storefront(row, _images_for(conn, row["id"]), _variants_for(conn, row["id"])))
     return {"products": products}
 
 
@@ -64,4 +73,4 @@ def get_product(product_id: int):
             raise HTTPException(status_code=404, detail="Produto não encontrado")
         data = row_to_dict(row)
         data["similar_ids"] = parse_json_field(data.get("similar_ids"), [])
-        return {"product": product_to_storefront(data, _images_for(conn, product_id))}
+        return {"product": product_to_storefront(data, _images_for(conn, product_id), _variants_for(conn, product_id))}

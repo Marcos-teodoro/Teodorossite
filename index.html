@@ -13,15 +13,24 @@
   <!-- FontAwesome 6 Icons CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
   <!-- Estilos e tema Teodora -->
+  <link rel="stylesheet" href="css/tailwind.css">
   <link rel="stylesheet" href="css/styles.css">
-  <script src="js/tailwind-config.js"></script>
   <script>
-    // Mesma origem quando a loja é servida pelo FastAPI (:3001)
-    window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://127.0.0.1:3001');
+    // Prefere 127.0.0.1 no local para evitar falha IPv6 (localhost → ::1)
+    (function () {
+      if (typeof window.TEODORA_API_BASE === 'string') return;
+      const host = location.hostname;
+      const port = location.port;
+      const isLocal = host === '127.0.0.1' || host === 'localhost' || host === '';
+      if (isLocal && port === '3001' && host === '127.0.0.1') {
+        window.TEODORA_API_BASE = '';
+      } else if (isLocal) {
+        window.TEODORA_API_BASE = 'http://127.0.0.1:3001';
+      } else {
+        window.TEODORA_API_BASE = ''; // mesma origem (Railway etc.)
+      }
+    })();
   </script>
 </head>
 <body class="antialiased selection:bg-teodora-roseSoft selection:text-teodora-text flex flex-col min-h-screen bg-teodora-page">
@@ -33,9 +42,9 @@
         <i class="fa-solid fa-truck text-teodora-gold text-xs"></i> Frete grátis acima de R$ 299
       </span>
       <div class="mx-auto md:mx-0 flex items-center gap-2 text-center">
-        <span>Até <strong class="font-semibold text-teodora-text">6x sem juros</strong> no cartão · Pix e boleto</span>
+        <span>Até <strong id="topInstallments" class="font-semibold text-teodora-text">6x sem juros</strong> no cartão · Pix e boleto</span>
       </div>
-      <a href="https://wa.me/" target="_blank" class="hidden md:flex items-center gap-2 font-medium text-teodora-text hover:text-teodora-gold transition">
+      <a id="topWhatsapp" href="https://wa.me/" target="_blank" class="hidden md:flex items-center gap-2 font-medium text-teodora-text hover:text-teodora-gold transition">
         <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i> Atendimento WhatsApp
       </a>
     </div>
@@ -92,7 +101,7 @@
         </div>
       </div>
 
-      <nav class="hidden lg:flex items-center justify-center border-t border-teodora-border/80 py-3 gap-6 xl:gap-7 text-[11px] font-medium uppercase tracking-[0.16em] text-teodora-text">
+      <nav id="desktopCategoryNav" class="hidden lg:flex items-center justify-center border-t border-teodora-border/80 py-3 gap-6 xl:gap-7 text-[11px] font-medium uppercase tracking-[0.16em] text-teodora-text">
         <button onclick="setCategoryFilter('todos')" data-nav-cat="todos" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Todos</button>
         <button onclick="setCategoryFilter('perfumes')" data-nav-cat="perfumes" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Perfumes</button>
         <button onclick="setCategoryFilter('skincare')" data-nav-cat="skincare" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Skincare</button>
@@ -111,12 +120,12 @@
   <section id="homeHero" class="relative overflow-hidden border-b border-teodora-border">
     <div class="grid grid-cols-1 lg:grid-cols-2 min-h-0">
       <div class="flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-20 order-2 lg:order-1 hero-copy bg-gradient-to-br from-teodora-blush via-teodora-page to-teodora-cream">
-        <p class="text-[11px] tracking-[0.35em] uppercase text-teodora-gold font-medium mb-4">TEODORA</p>
-        <h1 class="font-heading text-[2.1rem] sm:text-4xl lg:text-[2.85rem] text-teodora-text font-normal leading-[1.15] max-w-lg">
+        <p id="heroEyebrow" class="text-[11px] tracking-[0.35em] uppercase text-teodora-gold font-medium mb-4">TEODORA</p>
+        <h1 id="heroTitle" class="font-heading text-[2.1rem] sm:text-4xl lg:text-[2.85rem] text-teodora-text font-normal leading-[1.15] max-w-lg">
           Perfumes originais.<br>Entrega em todo o Brasil.
         </h1>
         <div class="mt-8 flex flex-wrap items-center gap-3">
-          <a href="#catalogo" class="inline-flex items-center gap-2 px-7 py-3.5 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
+          <a id="heroButton" href="#catalogo" class="inline-flex items-center gap-2 px-7 py-3.5 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
             Ver produtos <span aria-hidden="true">→</span>
           </a>
           <button onclick="setSpecialFilter('Mais Vendido')" class="inline-flex items-center px-7 py-3.5 bg-white border border-teodora-text/80 text-teodora-text text-[11px] uppercase tracking-[0.16em] font-medium hover:bg-teodora-cream transition">
@@ -126,7 +135,7 @@
       </div>
 
       <div class="relative order-1 lg:order-2 hero-visual h-[300px] sm:h-[380px] lg:h-auto lg:min-h-[520px] bg-teodora-blush">
-        <img src="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85"
+        <img id="heroImage" src="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85"
              alt="Frasco de perfume Teodora"
              class="absolute inset-0 w-full h-full object-cover object-center">
       </div>
@@ -143,7 +152,7 @@
         </button>
       </div>
 
-      <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
+      <div id="homeCategoryGrid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
         <button onclick="setCategoryFilter('perfumes')" data-circle-cat="perfumes" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
             <img src="https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=85" alt="Perfumes" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
@@ -219,7 +228,7 @@
           <i class="fa-regular fa-credit-card text-teodora-gold text-xl shrink-0"></i>
           <div class="min-w-0">
             <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Pagamento</h5>
-            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Até 6x sem juros no cartão.</p>
+            <p id="benefitInstallments" class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Até 6x sem juros no cartão.</p>
           </div>
         </div>
       </div>
@@ -401,7 +410,7 @@
 
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-teodora-border/70 text-xs">
               <p class="text-teodora-textMuted">
-                ou em até 6x de <strong id="pdpInstallmentPrice" class="text-teodora-text font-semibold">R$ 58,16</strong> sem juros
+                ou em até <span id="pdpInstallmentCount">6x</span> de <strong id="pdpInstallmentPrice" class="text-teodora-text font-semibold">R$ 58,16</strong> sem juros
               </p>
               <div class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200">
                 <i class="fa-brands fa-pix text-emerald-600"></i>
@@ -585,7 +594,7 @@
       <!-- Categorias no Mobile -->
       <div class="space-y-2">
         <span class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Categorias</span>
-        <div class="flex flex-col gap-1.5 text-xs font-medium">
+        <div id="mobileCategoryList" class="flex flex-col gap-1.5 text-xs font-medium">
           <button onclick="setCategoryFilter('todos'); toggleMobileFilter();" data-mobile-cat="todos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Todos os produtos</button>
           <button onclick="setCategoryFilter('perfumes'); toggleMobileFilter();" data-mobile-cat="perfumes" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Perfumes</button>
           <button onclick="setCategoryFilter('skincare'); toggleMobileFilter();" data-mobile-cat="skincare" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Skincare</button>
@@ -754,7 +763,7 @@
             </button>
             <button type="button" onclick="changePaymentOption('card')" id="payTabCard" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
               <span class="block text-xs font-semibold text-teodora-text">Cartão</span>
-              <span class="block text-[10px] text-teodora-textMuted mt-0.5">até 6x</span>
+              <span id="checkoutInstallments" class="block text-[10px] text-teodora-textMuted mt-0.5">até 6x</span>
             </button>
             <button type="button" onclick="changePaymentOption('boleto')" id="payTabBoleto" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
               <span class="block text-xs font-semibold text-teodora-text">Boleto</span>
@@ -860,19 +869,19 @@
             <p class="text-[10px] tracking-[0.28em] uppercase text-teodora-textMuted mt-1">Perfumes originais</p>
           </div>
           <p class="text-xs text-teodora-textMuted leading-relaxed max-w-xs">
-            Perfumes originais com entrega para todo o Brasil. Até 6x sem juros no cartão.
+            <span id="footerDescription">Perfumes originais com entrega para todo o Brasil.</span>
           </p>
           <div class="flex items-center gap-3 pt-1 text-teodora-text">
-            <a href="#" class="hover:text-teodora-gold transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-lg"></i></a>
-            <a href="#" class="hover:text-teodora-gold transition" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="#" class="hover:text-teodora-gold transition" aria-label="YouTube"><i class="fa-brands fa-youtube text-lg"></i></a>
-            <a href="#" class="hover:text-teodora-gold transition" aria-label="Pinterest"><i class="fa-brands fa-pinterest text-lg"></i></a>
+            <a id="socialInstagram" href="#" class="hover:text-teodora-gold transition" aria-label="Instagram"><i class="fa-brands fa-instagram text-lg"></i></a>
+            <a id="socialFacebook" href="#" class="hover:text-teodora-gold transition" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a id="socialYoutube" href="#" class="hover:text-teodora-gold transition" aria-label="YouTube"><i class="fa-brands fa-youtube text-lg"></i></a>
+            <a id="socialPinterest" href="#" class="hover:text-teodora-gold transition" aria-label="Pinterest"><i class="fa-brands fa-pinterest text-lg"></i></a>
           </div>
         </div>
 
         <div>
           <h5 class="uppercase tracking-[0.16em] text-teodora-text font-semibold text-[11px] mb-4">Coleções &amp; Linhas</h5>
-          <ul class="space-y-2.5 text-xs">
+          <ul id="footerCategoryLinks" class="space-y-2.5 text-xs">
             <li><button onclick="setCategoryFilter('perfumes')" class="hover:text-teodora-gold transition">Perfumes</button></li>
             <li><button onclick="setCategoryFilter('skincare')" class="hover:text-teodora-gold transition">Skincare</button></li>
             <li><button onclick="setCategoryFilter('maquiagem')" class="hover:text-teodora-gold transition">Maquiagem</button></li>
@@ -886,7 +895,7 @@
         <div>
           <h5 class="uppercase tracking-[0.16em] text-teodora-text font-semibold text-[11px] mb-4">Atendimento</h5>
           <ul class="space-y-2.5 text-xs">
-            <li><a href="https://wa.me/" target="_blank" class="hover:text-teodora-gold transition">WhatsApp</a></li>
+            <li><a id="footerWhatsapp" href="https://wa.me/" target="_blank" class="hover:text-teodora-gold transition">WhatsApp</a></li>
             <li><a href="javascript:void(0)" onclick="displayToast('Código de rastreamento é enviado por e-mail após a postagem.')" class="hover:text-teodora-gold transition">Rastrear pedido</a></li>
             <li><a href="javascript:void(0)" onclick="displayToast('Primeira troca grátis em até 30 dias após o recebimento.')" class="hover:text-teodora-gold transition">Trocas e devoluções</a></li>
             <li><a href="javascript:void(0)" onclick="displayToast('Ambiente protegido com SSL e Mercado Pago.')" class="hover:text-teodora-gold transition">Privacidade &amp; termos</a></li>
@@ -901,7 +910,7 @@
             <i class="fa-brands fa-pix text-emerald-600" title="Pix"></i>
             <i class="fa-solid fa-barcode text-teodora-textMuted" title="Boleto"></i>
           </div>
-          <p class="text-xs text-teodora-textMuted leading-relaxed mt-3">
+          <p id="footerInstallments" class="text-xs text-teodora-textMuted leading-relaxed mt-3">
             Até 6x sem juros no cartão · Pix e boleto.
           </p>
         </div>

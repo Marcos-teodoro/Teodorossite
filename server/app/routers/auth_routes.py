@@ -174,13 +174,13 @@ def my_orders(user: dict = Depends(require_user)):
 
 
 @orders_router.get("/{order_id}")
-def get_order(order_id: str, user: Optional[dict] = Depends(get_current_user)):
+def get_order(order_id: str, user: dict = Depends(require_user)):
     with get_connection() as conn:
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Pedido não encontrado")
         order = row_to_dict(row)
-        if user and order.get("user_id") and order["user_id"] != user["id"] and user.get("role") != "admin":
+        if order.get("user_id") != user["id"] and user.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Sem permissão")
         order["items"] = rows_to_list(
             conn.execute("SELECT * FROM order_items WHERE order_id = ?", (order_id,)).fetchall()

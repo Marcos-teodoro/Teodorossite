@@ -44,6 +44,8 @@ const APP_STATE = {
   selectedPdpVariantIdx: 0,
   pdpQuantity: 1,
   products: [],
+  categories: [],
+  storeSettings: { installments: 6 },
   catalogLoaded: false,
   filters: {
     category: 'todos',
@@ -60,6 +62,8 @@ const APP_STATE = {
   shippingOption: null,
   shippingInfo: null,
   couponCode: '',
+  couponDiscount: 0,
+  coupon: null,
   paymentMethod: 'pix',
   checkoutOrderId: null,
   mpBrickController: null
@@ -169,9 +173,40 @@ const CATEGORY_FILTER_CONFIGS = {
 
 async function loadCatalogFromApi() {
   const apiBase = (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://127.0.0.1:3001').replace(/\/$/, '');
-  const res = await fetch(`${apiBase}/api/catalog/products`);
-  if (!res.ok) throw new Error('Falha ao carregar catálogo');
-  const data = await res.json();
+  const productsRes = await fetch(`${apiBase}/api/catalog/products`, { cache: 'no-store' });
+  if (!productsRes.ok) throw new Error(`Catálogo HTTP ${productsRes.status}`);
+
+  const [categoriesRes, configRes] = await Promise.all([
+    fetch(`${apiBase}/api/catalog/categories`, { cache: 'no-store' }).catch(() => null),
+    fetch(`${apiBase}/api/storefront/config`, { cache: 'no-store' }).catch(() => null),
+  ]);
+
+  const data = await productsRes.json();
+  const categoryData = categoriesRes && categoriesRes.ok ? await categoriesRes.json() : { categories: [] };
+  const configData = configRes && configRes.ok ? await configRes.json() : { settings: {} };
+
+  APP_STATE.storeSettings = { installments: 6, ...(configData.settings || {}) };
+  APP_STATE.categories = (categoryData.categories || []).map((category) => ({
+    ...category,
+    imageUrl: category.image_url && category.image_url.startsWith('/')
+      ? `${apiBase}${category.image_url}`
+      : (category.image_url || ''),
+  }));
+  if (APP_STATE.categories.length && CATEGORY_FILTER_CONFIGS.todos?.groups?.[0]) {
+    CATEGORY_FILTER_CONFIGS.todos.groups[0].options = APP_STATE.categories.map((category) => ({
+      value: category.slug,
+      label: category.name,
+    }));
+  }
+  APP_STATE.categories.forEach((category) => {
+    if (!CATEGORY_FILTER_CONFIGS[category.slug]) {
+      CATEGORY_FILTER_CONFIGS[category.slug] = {
+        eyebrow: category.name,
+        title: 'Filtrar',
+        groups: [],
+      };
+    }
+  });
   APP_STATE.products = (data.products || []).map((p) => {
     const product = makeProduct(p);
     if (product.image && product.image.startsWith('/')) {
@@ -180,5 +215,6 @@ async function loadCatalogFromApi() {
     }
     return product;
   });
+  if (!APP_STATE.products.length) throw new Error('Catálogo vazio');
   APP_STATE.catalogLoaded = true;
 }

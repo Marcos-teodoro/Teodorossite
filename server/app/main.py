@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .db import init_db
-from .routers import admin, catalog, checkout, shipping
+from .routers import admin, admin_extra, catalog, checkout, shipping, storefront
 from .routers.auth_routes import addresses_router, orders_router, router as auth_router
 from .services.seed import seed_if_empty
 
@@ -16,9 +16,21 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 app = FastAPI(title="Teodora API", version="2.0.0")
 
+allowed_origin_candidates: list[str] = []
+for configured_origin in (settings.frontend_url, settings.base_url):
+    if not configured_origin:
+        continue
+    origin = configured_origin.rstrip("/")
+    allowed_origin_candidates.append(origin)
+    if "localhost" in origin:
+        allowed_origin_candidates.append(origin.replace("localhost", "127.0.0.1"))
+    elif "127.0.0.1" in origin:
+        allowed_origin_candidates.append(origin.replace("127.0.0.1", "localhost"))
+allowed_origins = list(dict.fromkeys(allowed_origin_candidates))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,6 +39,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 def on_startup():
+    settings.validate_production_secrets()
     init_db()
     seed_if_empty()
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
@@ -36,9 +49,11 @@ app.include_router(auth_router)
 app.include_router(addresses_router)
 app.include_router(orders_router)
 app.include_router(catalog.router)
+app.include_router(storefront.router)
 app.include_router(shipping.router)
 app.include_router(checkout.router)
 app.include_router(admin.router)
+app.include_router(admin_extra.router)
 
 uploads_root = settings.uploads_dir.parent
 app.mount("/uploads", StaticFiles(directory=str(uploads_root)), name="uploads")

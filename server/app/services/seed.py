@@ -114,31 +114,28 @@ def seed_if_empty() -> None:
         # Garante admin oficial (e-mail + UID Supabase)
         admin_id = settings.admin_user_id
         admin_email = settings.admin_email.lower()
-        pwd = hash_password(settings.admin_password)
-        by_id = conn.execute("SELECT id FROM profiles WHERE id = ?", (admin_id,)).fetchone()
+        by_id = conn.execute("SELECT id, email FROM profiles WHERE id = ?", (admin_id,)).fetchone()
         by_email = conn.execute(
             "SELECT id FROM profiles WHERE email = ?", (admin_email,)
         ).fetchone()
         if by_id:
+            target_email = admin_email if not by_email or by_email["id"] == admin_id else by_id["email"]
             conn.execute(
                 """
                 UPDATE profiles
                 SET email = ?, name = COALESCE(NULLIF(name, ''), 'Admin Teodora'),
-                    role = 'admin', password_hash = ?, updated_at = datetime('now')
+                    role = 'admin', updated_at = datetime('now')
                 WHERE id = ?
                 """,
-                (admin_email, pwd, admin_id),
+                (target_email, admin_id),
             )
-        elif by_email and by_email["id"] != admin_id:
-            conn.execute("DELETE FROM profiles WHERE id = ?", (by_email["id"],))
+        elif by_email:
             conn.execute(
-                """
-                INSERT INTO profiles (id, email, name, role, password_hash)
-                VALUES (?, ?, 'Admin Teodora', 'admin', ?)
-                """,
-                (admin_id, admin_email, pwd),
+                "UPDATE profiles SET role = 'admin', updated_at = datetime('now') WHERE id = ?",
+                (by_email["id"],),
             )
         else:
+            pwd = hash_password(settings.admin_password)
             conn.execute(
                 """
                 INSERT INTO profiles (id, email, name, role, password_hash)
@@ -146,8 +143,4 @@ def seed_if_empty() -> None:
                 """,
                 (admin_id, admin_email, pwd),
             )
-        conn.execute(
-            "DELETE FROM profiles WHERE email = ? AND id != ?",
-            ("admin@teodora.local", admin_id),
-        )
         conn.commit()

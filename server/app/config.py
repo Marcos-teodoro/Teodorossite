@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     )
 
     port: int = 3001
+    app_env: str = "development"
     base_url: str = "http://localhost:3001"
     frontend_url: str = "http://localhost:5500"
     database_url: str = f"sqlite:///{(ROOT / 'teodora.db').as_posix()}"
@@ -49,6 +50,14 @@ class Settings(BaseSettings):
     @property
     def use_supabase(self) -> bool:
         return bool(self.supabase_url and self.supabase_service_role_key)
+
+    def validate_production_secrets(self) -> None:
+        if self.app_env.lower() != "production":
+            return
+        if self.jwt_secret == "teodora-dev-secret-change-me":
+            raise RuntimeError("Defina JWT_SECRET seguro antes de iniciar em producao")
+        if self.admin_password == "Admin123!":
+            raise RuntimeError("Defina ADMIN_PASSWORD seguro antes de iniciar em producao")
 
 
 @lru_cache

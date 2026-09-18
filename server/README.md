@@ -44,11 +44,12 @@ Coleção Postman CepCerto: https://documenter.getpostman.com/view/44371012/2sBY
 
 - `GET /api/health` · `GET /api/config`
 - `GET /api/catalog/products` · `GET /api/catalog/categories`
+- `GET /api/storefront/config` · `GET /api/storefront/coupon`
 - `GET /api/shipping/quote` · `GET /api/shipping/cep/{cep}`
 - `POST /api/auth/register|login` · `GET/PATCH /api/auth/me`
 - `CRUD /api/addresses` · `GET /api/orders`
 - `POST /api/checkout/prepare` · `POST /api/payments` · `POST /api/webhooks/mercadopago`
-- ` /api/admin/*` (dashboard, products, categories, orders, upload fotos)
+- `/api/admin/*` (dashboard, produtos/variantes, categorias, pedidos/rastreio, cupons, clientes, loja, estoque e auditoria)
 
 ## Express Node (legado)
 

@@ -7,6 +7,90 @@ function teodoraApiBase() {
   return (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://127.0.0.1:3001').replace(/\/$/, '');
 }
 
+function escapeStorefront(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
+function installmentCount() {
+  const value = Number(APP_STATE.storeSettings?.installments || 6);
+  return Math.max(1, Math.min(12, value || 6));
+}
+
+function renderStorefrontSettings() {
+  const settings = APP_STATE.storeSettings || {};
+  const setText = (id, value) => { const element = document.getElementById(id); if (element && value) element.textContent = value; };
+  const setHref = (id, value) => { const element = document.getElementById(id); if (element && value) element.href = value; };
+  setText('heroEyebrow', settings.hero_eyebrow);
+  const heroTitle = document.getElementById('heroTitle');
+  if (heroTitle && settings.hero_title) { heroTitle.textContent = settings.hero_title; heroTitle.style.whiteSpace = 'pre-line'; }
+  const heroButton = document.getElementById('heroButton');
+  if (heroButton && settings.hero_button) heroButton.firstChild.textContent = `${settings.hero_button} `;
+  const heroImage = document.getElementById('heroImage');
+  if (heroImage && settings.hero_image) heroImage.src = settings.hero_image;
+  setText('topInstallments', `${installmentCount()}x sem juros`);
+  setText('benefitInstallments', `Até ${installmentCount()}x sem juros no cartão.`);
+  setText('pdpInstallmentCount', `${installmentCount()}x`);
+  setText('checkoutInstallments', `até ${installmentCount()}x`);
+  setText('footerInstallments', `Até ${installmentCount()}x sem juros no cartão · Pix e boleto.`);
+  setText('footerDescription', settings.footer_description);
+  setHref('topWhatsapp', settings.whatsapp_url); setHref('footerWhatsapp', settings.whatsapp_url);
+  setHref('socialInstagram', settings.instagram_url); setHref('socialFacebook', settings.facebook_url);
+  setHref('socialYoutube', settings.youtube_url); setHref('socialPinterest', settings.pinterest_url);
+}
+
+function renderStorefrontCategories() {
+  const categories = APP_STATE.categories || [];
+  const fallbackImages = {
+    perfumes: 'https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=600&q=85',
+    skincare: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=600&q=85',
+    maquiagem: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?auto=format&fit=crop&w=600&q=85',
+    cabelos: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=85',
+    corpo: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?auto=format&fit=crop&w=600&q=85',
+    kits: 'https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=600&q=85',
+  };
+
+  const nav = document.getElementById('desktopCategoryNav');
+  if (nav) {
+    nav.innerHTML = `
+      <button onclick="setCategoryFilter('todos')" data-nav-cat="todos" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">Todos</button>
+      ${categories.map((category) => `<button onclick="setCategoryFilter('${category.slug}')" data-nav-cat="${category.slug}" class="nav-cat-btn py-1 border-b border-transparent hover:text-teodora-gold transition">${escapeStorefront(category.name)}</button>`).join('')}
+      <button onclick="setSpecialFilter('Edição Especial')" class="text-teodora-gold font-semibold hover:text-teodora-goldDark transition">Linha Privée</button>
+    `;
+  }
+
+  const grid = document.getElementById('homeCategoryGrid');
+  if (grid) {
+    grid.innerHTML = categories.map((category) => {
+      const image = category.imageUrl || fallbackImages[category.slug] || fallbackImages.perfumes;
+      return `
+        <button onclick="setCategoryFilter('${category.slug}')" data-circle-cat="${category.slug}" class="cat-circle-card group text-center">
+          <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
+            <img src="${escapeStorefront(image)}" alt="${escapeStorefront(category.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+          </div>
+          <span class="text-xs tracking-wide text-teodora-text">${escapeStorefront(category.name)}</span>
+        </button>`;
+    }).join('');
+  }
+
+  const footer = document.getElementById('footerCategoryLinks');
+  if (footer) {
+    footer.innerHTML = categories.map((category) => `
+      <li><button onclick="setCategoryFilter('${category.slug}')" class="hover:text-teodora-gold transition">${escapeStorefront(category.name)}</button></li>
+    `).join('') + '<li><button onclick="setSpecialFilter(\'Edição Especial\')" class="hover:text-teodora-gold transition">Linha Privée</button></li>';
+  }
+
+  const mobile = document.getElementById('mobileCategoryList');
+  if (mobile) {
+    mobile.innerHTML = `
+      <button onclick="setCategoryFilter('todos'); toggleMobileFilter();" data-mobile-cat="todos" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">Todos os produtos</button>
+      ${categories.map((category) => `<button onclick="setCategoryFilter('${category.slug}'); toggleMobileFilter();" data-mobile-cat="${category.slug}" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition">${escapeStorefront(category.name)}</button>`).join('')}
+      <button onclick="setSpecialFilter('Edição Especial'); toggleMobileFilter();" class="mobile-cat-pill text-left p-2 rounded-xl border border-teodora-border hover:border-teodora-gold transition text-teodora-gold">Linha Privée</button>
+    `;
+  }
+}
+
 function getFilteredProducts() {
   let result = [...APP_STATE.products];
 
@@ -427,7 +511,7 @@ function openProductPage(productId) {
     const galleryList = product.gallery || [product.image];
     thumbBox.innerHTML = galleryList.map((src, idx) => `
       <button onclick="changePdpGalleryImage('${src}', this)" class="pdp-thumb-item rounded-2xl overflow-hidden aspect-[4/5] border-2 ${idx === 0 ? 'border-teodora-gold' : 'border-teodora-border'} bg-white hover:border-teodora-gold transition">
-        <img src="${src}" alt="${product.title}" class="w-full h-full object-cover">
+        <img src="${escapeStorefront(src)}" alt="${escapeStorefront(product.title)}" class="w-full h-full object-cover">
       </button>
     `).join('');
   }
@@ -537,7 +621,7 @@ function updatePdpPriceDisplay(product) {
     ? product.variants[APP_STATE.selectedPdpVariantIdx].price 
     : product.price;
 
-  const installment = price / 6;
+  const installment = price / installmentCount();
 
   const curPriceEl = document.getElementById('pdpCurrentPrice');
   if (curPriceEl) curPriceEl.innerText = formatBRL(price);
@@ -545,10 +629,12 @@ function updatePdpPriceDisplay(product) {
   const oldPriceEl = document.getElementById('pdpOldPrice');
   const discountEl = document.getElementById('pdpDiscountBadge');
   if (oldPriceEl && discountEl) {
-    if (product.oldPrice && product.oldPrice > price) {
-      const savings = product.oldPrice - price;
+    const selectedVariant = product.variants?.[APP_STATE.selectedPdpVariantIdx];
+    const oldPrice = selectedVariant?.oldPrice || product.oldPrice;
+    if (oldPrice && oldPrice > price) {
+      const savings = oldPrice - price;
       oldPriceEl.style.display = 'inline';
-      oldPriceEl.innerText = formatBRL(product.oldPrice);
+      oldPriceEl.innerText = formatBRL(oldPrice);
       discountEl.style.display = 'inline';
       discountEl.innerText = `−${formatBRL(savings)}`;
     } else {
@@ -585,10 +671,11 @@ function addToCartFromPdp() {
     ...product,
     price: finalPrice,
     volume: finalVolume,
+    variantId: variant?.id || null,
     quantity: APP_STATE.pdpQuantity
   };
 
-  const existing = APP_STATE.cart.find(i => i.id === product.id && i.volume === finalVolume);
+  const existing = APP_STATE.cart.find(i => i.id === product.id && (i.variantId || null) === (variant?.id || null));
   if (existing) {
     existing.quantity += APP_STATE.pdpQuantity;
   } else {
@@ -596,7 +683,7 @@ function addToCartFromPdp() {
   }
 
   updateCartUI();
-  displayToast(`<strong>${product.title} (${finalVolume})</strong> adicionado à sacola!`);
+  displayToast(`<strong>${escapeStorefront(product.title)} (${escapeStorefront(finalVolume)})</strong> adicionado à sacola!`);
   toggleCartDrawer(true);
 }
 
@@ -701,10 +788,10 @@ async function calculateFreightForPdp() {
     if (box) {
       box.innerHTML = `
         <div class="p-2.5 rounded-xl bg-teodora-bgLight border border-teodora-border space-y-1">
-          <p class="text-[11px] font-bold text-teodora-text">${addr.localidade || ''} - ${addr.uf || ''} (${addr.bairro || 'Região'})</p>
+          <p class="text-[11px] font-bold text-teodora-text">${escapeStorefront(addr.localidade || '')} - ${escapeStorefront(addr.uf || '')} (${escapeStorefront(addr.bairro || 'Região')})</p>
           ${options.map((o) => `
             <div class="flex justify-between text-[11px]">
-              <span class="text-teodora-textMuted">${o.name}${o.days ? ` (${o.days})` : ''}:</span>
+              <span class="text-teodora-textMuted">${escapeStorefront(o.name)}${o.days ? ` (${escapeStorefront(o.days)})` : ''}:</span>
               <span class="font-bold text-teodora-text">${formatBRL(o.price)}</span>
             </div>
           `).join('') || '<span class="text-red-500 text-[11px]">Sem opções para este CEP.</span>'}
@@ -713,7 +800,7 @@ async function calculateFreightForPdp() {
       `;
     }
   } catch (e) {
-    if (box) box.innerHTML = `<span class="text-red-500">${e.message || 'Erro ao cotar frete.'}</span>`;
+    if (box) box.innerHTML = `<span class="text-red-500">${escapeStorefront(e.message || 'Erro ao cotar frete.')}</span>`;
   }
 }
 
@@ -729,18 +816,18 @@ function renderSimilarProducts(product) {
   container.innerHTML = similarList.map(item => `
     <article class="group bg-white rounded-3xl border border-teodora-border hover:border-teodora-gold/50 shadow-card-clean hover:shadow-card-hover transition-all duration-300 flex flex-col h-full overflow-hidden p-4">
       <div onclick="openProductPage(${item.id})" class="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-teodora-bgLight mb-4 flex-shrink-0 cursor-pointer">
-        <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
         ${item.badge ? `
           <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
-            ${item.badge}
+            ${escapeStorefront(item.badge)}
           </span>
         ` : ''}
       </div>
       <div class="flex-1 flex flex-col justify-between space-y-3">
         <div>
-          <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-teodora-gold block mb-1">${item.brandTag}</span>
+          <span class="text-[10px] font-bold uppercase tracking-[0.18em] text-teodora-gold block mb-1">${escapeStorefront(item.brandTag)}</span>
           <h3 onclick="openProductPage(${item.id})" class="font-heading text-base font-semibold text-teodora-text group-hover:text-teodora-gold transition-colors leading-tight line-clamp-1 cursor-pointer">
-            ${item.title}
+            ${escapeStorefront(item.title)}
           </h3>
           <div class="flex items-center gap-1.5 text-xs mt-1.5">
             <span class="text-teodora-gold text-xs"><i class="fa-solid fa-star"></i></span>
@@ -792,7 +879,7 @@ function toggleActiveFilter(active, checked) {
 
 function createProductCardHTML(item) {
   const isFav = APP_STATE.wishlist.some(w => w.id === item.id);
-  const installment = item.price / 6;
+  const installment = item.price / installmentCount();
   const savings = item.oldPrice && item.oldPrice > item.price
     ? item.oldPrice - item.price
     : 0;
@@ -804,10 +891,10 @@ function createProductCardHTML(item) {
   return `
     <article class="product-card group flex flex-col h-full overflow-hidden">
       <div onclick="openProductPage(${item.id})" class="product-card__media relative w-full overflow-hidden cursor-pointer">
-        <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
+        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
         ${item.badge ? `
           <span class="absolute top-2.5 left-2.5 text-[9px] sm:text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 ${badgeClass}">
-            ${item.badge}
+            ${escapeStorefront(item.badge)}
           </span>
         ` : ''}
         <button onclick="event.stopPropagation(); toggleWishlist(${item.id})" class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full flex items-center justify-center text-teodora-text/80 hover:text-teodora-text bg-white/95 shadow-sm transition" aria-label="Favoritar">
@@ -817,11 +904,11 @@ function createProductCardHTML(item) {
 
       <div class="p-3 sm:p-4 flex-1 flex flex-col gap-2">
         <div class="space-y-1 cursor-pointer" onclick="openProductPage(${item.id})">
-          <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted line-clamp-1">${item.brandTag || item.volume}</p>
+          <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted line-clamp-1">${escapeStorefront(item.brandTag || item.volume)}</p>
           <h3 class="font-heading text-sm sm:text-[15px] font-normal text-teodora-text leading-snug line-clamp-2">
-            ${item.title}
+            ${escapeStorefront(item.title)}
           </h3>
-          <p class="hidden sm:block text-[11px] text-teodora-textMuted font-light line-clamp-2 leading-relaxed">${item.notes}</p>
+          <p class="hidden sm:block text-[11px] text-teodora-textMuted font-light line-clamp-2 leading-relaxed">${escapeStorefront(item.notes)}</p>
         </div>
 
         <div class="mt-auto pt-2 space-y-2.5">
@@ -831,7 +918,7 @@ function createProductCardHTML(item) {
               ${item.oldPrice ? `<span class="text-xs text-teodora-textMuted line-through">${formatBRL(item.oldPrice)}</span>` : ''}
               ${savings ? `<span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5">−${formatBRL(savings)}</span>` : ''}
             </div>
-            <p class="text-[11px] text-teodora-textMuted">ou 6x de ${formatBRL(installment)} sem juros</p>
+            <p class="text-[11px] text-teodora-textMuted">ou ${installmentCount()}x de ${formatBRL(installment)} sem juros</p>
           </div>
 
           <button onclick="quickAddToCart(${item.id})" class="btn-comprar w-full py-2.5 text-[11px] uppercase tracking-[0.16em] font-semibold">
@@ -875,21 +962,22 @@ function renderProducts() {
 function quickAddToCart(id) {
   const product = APP_STATE.products.find(p => p.id === id);
   if (!product) return;
-
-  const existing = APP_STATE.cart.find(i => i.id === id);
+  const variant = product.variants?.[0] || null;
+  const variantId = variant?.id || null;
+  const existing = APP_STATE.cart.find(i => i.id === id && (i.variantId || null) === variantId);
   if (existing) {
     existing.quantity += 1;
   } else {
-    APP_STATE.cart.push({ ...product, quantity: 1 });
+    APP_STATE.cart.push({ ...product, price: variant?.price || product.price, volume: variant?.label || product.volume, variantId, quantity: 1 });
   }
 
   updateCartUI();
-  displayToast(`<strong>${product.title}</strong> adicionado à sacola!`);
+  displayToast(`<strong>${escapeStorefront(product.title)}</strong> adicionado à sacola!`);
   toggleCartDrawer(true);
 }
 
-function updateCartQuantity(id, delta) {
-  const idx = APP_STATE.cart.findIndex(i => i.id === id);
+function updateCartQuantity(id, variantId, delta) {
+  const idx = APP_STATE.cart.findIndex(i => i.id === id && (i.variantId || null) === (variantId || null));
   if (idx === -1) return;
 
   APP_STATE.cart[idx].quantity += delta;
@@ -899,8 +987,8 @@ function updateCartQuantity(id, delta) {
   updateCartUI();
 }
 
-function removeFromCart(id) {
-  APP_STATE.cart = APP_STATE.cart.filter(i => i.id !== id);
+function removeFromCart(id, variantId) {
+  APP_STATE.cart = APP_STATE.cart.filter(i => !(i.id === id && (i.variantId || null) === (variantId || null)));
   updateCartUI();
   displayToast('Item removido da sacola.');
 }
@@ -928,29 +1016,28 @@ function updateCartUI() {
   } else {
     listEl.innerHTML = APP_STATE.cart.map(item => `
       <div class="flex items-center gap-3 p-3 bg-teodora-bgLight rounded-2xl border border-teodora-border">
-        <img src="${item.image}" alt="${item.title}" class="w-16 h-16 rounded-xl object-cover bg-white border border-teodora-border">
+        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-16 h-16 rounded-xl object-cover bg-white border border-teodora-border">
         <div class="flex-1 min-w-0">
-          <h4 class="font-heading text-xs font-semibold text-teodora-text truncate">${item.title}</h4>
+          <h4 class="font-heading text-xs font-semibold text-teodora-text truncate">${escapeStorefront(item.title)}</h4>
           <p class="text-[10px] text-teodora-textMuted">${item.volume}</p>
           <div class="flex items-center justify-between mt-2">
             <div class="flex items-center border border-teodora-border rounded-lg bg-white">
-              <button onclick="updateCartQuantity(${item.id}, -1)" class="w-6 h-6 flex items-center justify-center text-xs font-semibold hover:bg-teodora-roseLight">-</button>
+              <button onclick="updateCartQuantity(${item.id}, ${item.variantId || 'null'}, -1)" class="w-6 h-6 flex items-center justify-center text-xs font-semibold hover:bg-teodora-roseLight">-</button>
               <span class="w-6 text-center text-xs font-semibold">${item.quantity}</span>
-              <button onclick="updateCartQuantity(${item.id}, 1)" class="w-6 h-6 flex items-center justify-center text-xs font-semibold hover:bg-teodora-roseLight">+</button>
+              <button onclick="updateCartQuantity(${item.id}, ${item.variantId || 'null'}, 1)" class="w-6 h-6 flex items-center justify-center text-xs font-semibold hover:bg-teodora-roseLight">+</button>
             </div>
             <span class="text-xs font-bold text-teodora-text">${formatBRL(item.price * item.quantity)}</span>
           </div>
         </div>
-        <button onclick="removeFromCart(${item.id})" class="text-teodora-textMuted hover:text-red-500 p-1" aria-label="Remover">
+        <button onclick="removeFromCart(${item.id}, ${item.variantId || 'null'})" class="text-teodora-textMuted hover:text-red-500 p-1" aria-label="Remover">
           <i class="fa-regular fa-trash-can text-xs"></i>
         </button>
       </div>
     `).join('');
   }
 
-  let discount = 0;
-  if (APP_STATE.couponCode === 'TEODORA10') {
-    discount = subtotal * 0.10;
+  const discount = calculateCouponDiscount(subtotal);
+  if (discount > 0) {
     document.getElementById('summaryDiscountRow').style.display = 'flex';
     document.getElementById('summaryDiscount').innerText = `- ${formatBRL(discount)}`;
   } else {
@@ -1040,14 +1127,35 @@ function setShippingChoice(cost, name, option) {
   updateCartUI();
 }
 
-function applyDiscountCoupon() {
+function calculateCouponDiscount(subtotal) {
+  const coupon = APP_STATE.coupon;
+  if (!coupon || subtotal < Number(coupon.minOrder || 0)) return 0;
+  if (coupon.type === 'percent') return Math.min(subtotal, subtotal * Number(coupon.value || 0) / 100);
+  return Math.min(subtotal, Number(coupon.value || 0));
+}
+
+async function applyDiscountCoupon() {
   const code = document.getElementById('cartCouponInput').value.trim().toUpperCase();
-  if (code === 'TEODORA10') {
-    APP_STATE.couponCode = 'TEODORA10';
+  if (!code) {
+    APP_STATE.couponCode = '';
+    APP_STATE.coupon = null;
     updateCartUI();
-    displayToast('Cupom <strong>TEODORA10</strong> ativado: 10% de desconto!');
-  } else {
-    displayToast('Cupom inválido ou expirado.');
+    return;
+  }
+  const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  try {
+    const response = await fetch(`${teodoraApiBase()}/api/storefront/coupon?code=${encodeURIComponent(code)}&subtotal=${subtotal}`);
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || 'Cupom inválido ou expirado.');
+    APP_STATE.couponCode = data.coupon.code;
+    APP_STATE.coupon = data.coupon;
+    updateCartUI();
+    displayToast(`Cupom <strong>${escapeStorefront(data.coupon.code)}</strong> aplicado: ${formatBRL(data.coupon.discount)} de desconto!`);
+  } catch (error) {
+    APP_STATE.couponCode = '';
+    APP_STATE.coupon = null;
+    updateCartUI();
+    displayToast(error.message || 'Cupom inválido ou expirado.');
   }
 }
 
@@ -1060,7 +1168,7 @@ async function openMercadoPagoModal() {
   toggleCartDrawer(false);
 
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
+  const discount = calculateCouponDiscount(subtotal);
   let finalTotal = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
 
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(finalTotal);
@@ -1124,7 +1232,7 @@ function changePaymentOption(method) {
   }
 
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discount = APP_STATE.couponCode ? subtotal * 0.10 : 0;
+  const discount = calculateCouponDiscount(subtotal);
   let total = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(total);
 }
@@ -1138,7 +1246,7 @@ async function mountPaymentBrick(amount, publicKey, orderId) {
   const container = document.getElementById('paymentBrick_container');
   container.innerHTML = '';
 
-  const paymentMethods = { maxInstallments: 6 };
+  const paymentMethods = { maxInstallments: installmentCount() };
   if (APP_STATE.paymentMethod === 'pix') {
     paymentMethods.creditCard = 'none';
     paymentMethods.debitCard = 'none';
@@ -1226,7 +1334,7 @@ async function executePaymentTransaction() {
     if (token) headers.Authorization = `Bearer ${token}`;
 
     const payload = {
-      items: APP_STATE.cart.map((item) => ({ id: item.id, quantity: item.quantity })),
+      items: APP_STATE.cart.map((item) => ({ id: item.id, variantId: item.variantId || null, quantity: item.quantity })),
       shippingCost: APP_STATE.shippingCost || 0,
       couponCode: APP_STATE.couponCode || '',
       paymentHint: APP_STATE.paymentMethod || 'pix',
@@ -1287,6 +1395,8 @@ function showCheckoutReturnPanel(status) {
     if (title) title.innerText = 'Pedido confirmado';
     if (message) message.innerText = 'Recebemos a confirmação do Mercado Pago. Obrigado por comprar na Teodora.';
     APP_STATE.cart = [];
+    APP_STATE.couponCode = '';
+    APP_STATE.coupon = null;
     updateCartUI();
     displayToast('Pagamento aprovado. Pedido registrado!');
   } else if (status === 'pending') {
@@ -1325,8 +1435,10 @@ function handleCheckoutReturnFromQuery() {
 function resetStoreAfterPurchase() {
   if (APP_STATE.cart.length) {
     APP_STATE.cart = [];
-    updateCartUI();
   }
+  APP_STATE.couponCode = '';
+  APP_STATE.coupon = null;
+  updateCartUI();
   closeMercadoPagoModal();
   displayToast('Obrigado por escolher a Teodora.');
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1339,25 +1451,25 @@ function openQuickModal(id) {
   const c = document.getElementById('quickModalContent');
   c.innerHTML = `
     <div class="rounded-2xl overflow-hidden aspect-[3/4] bg-teodora-bgLight border border-teodora-border">
-      <img src="${p.image}" alt="${p.title}" class="w-full h-full object-cover">
+      <img src="${escapeStorefront(p.image)}" alt="${escapeStorefront(p.title)}" class="w-full h-full object-cover">
     </div>
     <div class="space-y-4">
       <div>
-        <span class="text-xs uppercase tracking-widest text-teodora-gold font-bold">${p.brandTag}</span>
-        <h3 class="font-heading text-2xl font-bold text-teodora-text mt-1">${p.title}</h3>
-        <p class="text-xs text-teodora-textMuted">${p.volume}</p>
+        <span class="text-xs uppercase tracking-widest text-teodora-gold font-bold">${escapeStorefront(p.brandTag)}</span>
+        <h3 class="font-heading text-2xl font-bold text-teodora-text mt-1">${escapeStorefront(p.title)}</h3>
+        <p class="text-xs text-teodora-textMuted">${escapeStorefront(p.volume)}</p>
       </div>
       
       <div class="p-3 rounded-2xl bg-teodora-roseLight/60 text-xs text-teodora-text space-y-1.5 border border-teodora-border">
         <p class="font-bold text-teodora-gold"><i class="fa-solid fa-droplet"></i> Notas principais</p>
-        <p class="text-teodora-textMuted">${p.notes}</p>
+        <p class="text-teodora-textMuted">${escapeStorefront(p.notes)}</p>
       </div>
 
-      <p class="text-xs text-teodora-text leading-relaxed font-light">${p.description}</p>
+      <p class="text-xs text-teodora-text leading-relaxed font-light">${escapeStorefront(p.description)}</p>
       
       <div class="pt-2 border-t border-teodora-border">
         <span class="text-2xl font-bold text-teodora-text">${formatBRL(p.price)}</span>
-        <p class="text-xs text-teodora-textMuted">ou 6x de ${formatBRL(p.price / 6)} sem juros no Mercado Pago</p>
+        <p class="text-xs text-teodora-textMuted">ou ${installmentCount()}x de ${formatBRL(p.price / installmentCount())} sem juros no Mercado Pago</p>
       </div>
 
       <div class="flex gap-3 pt-2">
@@ -1390,7 +1502,7 @@ function toggleWishlist(id) {
     displayToast('Item removido dos favoritos.');
   } else {
     APP_STATE.wishlist.push(p);
-    displayToast(`<strong>${p.title}</strong> adicionado aos favoritos!`);
+    displayToast(`<strong>${escapeStorefront(p.title)}</strong> adicionado aos favoritos!`);
   }
 
   document.getElementById('wishlistCountBadge').innerText = APP_STATE.wishlist.length;
@@ -1405,9 +1517,9 @@ function openWishlistModal() {
     list.innerHTML = APP_STATE.wishlist.map(p => `
       <div class="flex items-center justify-between p-3 bg-teodora-bgLight rounded-2xl border border-teodora-border">
         <div class="flex items-center gap-3">
-          <img src="${p.image}" class="w-12 h-12 rounded-xl object-cover border border-teodora-border">
+          <img src="${escapeStorefront(p.image)}" class="w-12 h-12 rounded-xl object-cover border border-teodora-border">
           <div>
-            <p class="text-xs font-semibold text-teodora-text">${p.title}</p>
+            <p class="text-xs font-semibold text-teodora-text">${escapeStorefront(p.title)}</p>
             <p class="text-xs text-teodora-text font-bold">${formatBRL(p.price)}</p>
           </div>
         </div>
@@ -1473,10 +1585,10 @@ function executeLiveSearch(query) {
   out.innerHTML = matches.map(m => `
     <div onclick="openQuickModal(${m.id}); closeSearchModal();" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-teodora-roseLight cursor-pointer transition">
       <div class="flex items-center gap-3">
-        <img src="${m.image}" class="w-11 h-11 rounded-lg object-cover border border-teodora-border">
+        <img src="${escapeStorefront(m.image)}" class="w-11 h-11 rounded-lg object-cover border border-teodora-border">
         <div>
-          <p class="text-xs font-semibold text-teodora-text">${m.title}</p>
-          <p class="text-[10px] text-teodora-textMuted">${m.volume}</p>
+          <p class="text-xs font-semibold text-teodora-text">${escapeStorefront(m.title)}</p>
+          <p class="text-[10px] text-teodora-textMuted">${escapeStorefront(m.volume)}</p>
         </div>
       </div>
       <span class="text-xs font-bold text-teodora-text">${formatBRL(m.price)}</span>
@@ -1509,6 +1621,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   handleCheckoutReturnFromQuery();
   try {
     await loadCatalogFromApi();
+    renderStorefrontSettings();
+    renderStorefrontCategories();
+    updateNavigationUI(APP_STATE.filters.category);
+    renderDynamicFilters();
     renderProducts();
   } catch (err) {
     console.error(err);

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class RegisterBody(BaseModel):
@@ -32,7 +32,10 @@ class AddressBody(BaseModel):
 
 class CartItem(BaseModel):
     id: int
+    variant_id: Optional[int] = Field(None, alias="variantId")
     quantity: int = 1
+
+    model_config = {"populate_by_name": True}
 
 
 class PrepareBody(BaseModel):
@@ -59,6 +62,42 @@ class CategoryBody(BaseModel):
     sort_order: int = 0
     active: bool = True
     image_url: Optional[str] = None
+
+    @field_validator("slug")
+    @classmethod
+    def validate_slug(cls, value: str) -> str:
+        value = value.strip().lower()
+        if not value or any(ch not in "abcdefghijklmnopqrstuvwxyz0123456789-" for ch in value):
+            raise ValueError("Slug deve conter apenas letras minusculas, numeros e hifens")
+        return value
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Nome da categoria e obrigatorio")
+        return value
+
+
+class VariantBody(BaseModel):
+    id: Optional[int] = None
+    label: str
+    sku: str = ""
+    price: float
+    old_price: Optional[float] = None
+    stock: int = 0
+    active: bool = True
+
+    @model_validator(mode="after")
+    def validate_variant(self):
+        if not self.label.strip():
+            raise ValueError("Nome da variante e obrigatorio")
+        if self.price <= 0 or self.stock < 0:
+            raise ValueError("Preco e estoque da variante sao invalidos")
+        if self.old_price is not None and self.old_price <= self.price:
+            raise ValueError("Preco antigo da variante deve ser maior que o atual")
+        return self
 
 
 class ProductBody(BaseModel):
@@ -88,9 +127,64 @@ class ProductBody(BaseModel):
     width_cm: float = 8
     length_cm: float = 8
     cover_image: Optional[str] = None
+    variants: list[VariantBody] = Field(default_factory=list)
+
+    @field_validator("title")
+    @classmethod
+    def validate_title(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 3:
+            raise ValueError("Titulo deve ter pelo menos 3 caracteres")
+        return value
+
+    @field_validator("price", "weight_kg", "height_cm", "width_cm", "length_cm")
+    @classmethod
+    def validate_positive(cls, value: float) -> float:
+        if value <= 0:
+            raise ValueError("Valor deve ser maior que zero")
+        return value
+
+    @field_validator("stock")
+    @classmethod
+    def validate_stock(cls, value: int) -> int:
+        if value < 0:
+            raise ValueError("Estoque nao pode ser negativo")
+        return value
+
+    @model_validator(mode="after")
+    def validate_prices(self):
+        if self.old_price is not None and self.old_price <= self.price:
+            raise ValueError("Preco antigo deve ser maior que o preco atual")
+        return self
 
 
-def product_to_storefront(row: dict[str, Any], images: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+class CouponBody(BaseModel):
+    code: str
+    discount_type: str = "percent"
+    discount_value: float
+    min_order: float = 0
+    usage_limit: Optional[int] = None
+    starts_at: Optional[str] = None
+    ends_at: Optional[str] = None
+    active: bool = True
+
+    @model_validator(mode="after")
+    def validate_coupon(self):
+        self.code = self.code.strip().upper()
+        if not self.code or self.discount_type not in {"percent", "fixed"}:
+            raise ValueError("Cupom invalido")
+        if self.discount_value <= 0 or (self.discount_type == "percent" and self.discount_value > 100):
+            raise ValueError("Valor de desconto invalido")
+        if self.min_order < 0 or (self.usage_limit is not None and self.usage_limit < 1):
+            raise ValueError("Limites do cupom invalidos")
+        return self
+
+
+def product_to_storefront(
+    row: dict[str, Any],
+    images: list[dict[str, Any]] | None = None,
+    variants: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     imgs = images or []
     cover = row.get("cover_image") or (imgs[0]["url"] if imgs else "")
     gallery = [i["url"] for i in imgs] if imgs else ([cover] * 4 if cover else [])
@@ -135,10 +229,24 @@ def product_to_storefront(row: dict[str, Any], images: list[dict[str, Any]] | No
         "lengthCm": float(row.get("length_cm") or 8),
         "variants": [
             {
-                "size": row.get("volume") or "100ml",
-                "price": float(row["price"]),
-                "label": row.get("volume") or "100ml",
+                "id": variant["id"],
+                "size": variant["label"],
+                "label": variant["label"],
+                "sku": variant.get("sku") or "",
+                "price": float(variant["price"]),
+                "oldPrice": float(variant["old_price"]) if variant.get("old_price") is not None else None,
+                "stock": int(variant.get("stock") or 0),
+                "active": bool(variant.get("active")),
             }
-        ],
+            for variant in (variants or [])
+            if variant.get("active")
+        ] or [{
+            "id": None,
+            "size": row.get("volume") or "100ml",
+            "price": float(row["price"]),
+            "oldPrice": float(row["old_price"]) if row.get("old_price") is not None else None,
+            "stock": int(row.get("stock") or 0),
+            "label": row.get("volume") or "100ml",
+        }],
         "images": imgs,
     }

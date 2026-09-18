@@ -36,7 +36,13 @@
     const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(data.detail || data.error || data.message || `HTTP ${res.status}`);
+      let detail = data.detail || data.error || data.message || `HTTP ${res.status}`;
+      if (Array.isArray(detail)) {
+        detail = detail.map((d) => d.msg || JSON.stringify(d)).join('; ');
+      } else if (detail && typeof detail === 'object') {
+        detail = detail.msg || JSON.stringify(detail);
+      }
+      const err = new Error(String(detail));
       err.status = res.status;
       err.data = data;
       throw err;

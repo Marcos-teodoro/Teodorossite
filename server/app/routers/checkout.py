@@ -1,16 +1,17 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Optional
+from typing import Any
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from ..auth import get_current_user
+from ..auth import require_user
 from ..config import get_settings
 from ..db import get_connection, row_to_dict, rows_to_list
 from ..schemas import PaymentBody, PrepareBody
 from ..services import mercadopago_svc
+from ..services.inventory import transition_order_stock
 
 router = APIRouter(prefix="/api", tags=["checkout"])
 
@@ -32,22 +33,55 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
             ).fetchone()
             if not row or not row["active"]:
                 raise HTTPException(status_code=400, detail=f"Produto inválido: {item.id}")
+            variant = None
+            if item.variant_id is not None:
+                variant = conn.execute(
+                    "SELECT * FROM product_variants WHERE id = ? AND product_id = ? AND active = 1",
+                    (item.variant_id, item.id),
+                ).fetchone()
+                if not variant:
+                    raise HTTPException(status_code=400, detail=f"Variante invalida para {row['title']}")
             qty = max(1, min(20, int(item.quantity or 1)))
+            available_stock = int(variant["stock"] if variant else row["stock"] or 0)
+            if qty > available_stock:
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Estoque insuficiente para {row['title']}. Disponível: {available_stock}",
+                )
             lines.append(
                 {
                     "product_id": row["id"],
+                    "variant_id": variant["id"] if variant else None,
+                    "variant_label": variant["label"] if variant else "",
+                    "sku": variant["sku"] if variant else "",
                     "title": row["title"][:250],
                     "quantity": qty,
-                    "unit_price": round_money(row["price"]),
+                    "unit_price": round_money(variant["price"] if variant else row["price"]),
                 }
             )
-
-    merchandise = round_money(sum(l["unit_price"] * l["quantity"] for l in lines))
-    coupon_code = (body.coupon_code or "").upper().strip()
-    coupon_discount = 0.0
-    if coupon_code == "TEODORA10":
-        coupon_discount = round_money(merchandise * 0.1)
-        merchandise = round_money(merchandise - coupon_discount)
+        merchandise = round_money(sum(l["unit_price"] * l["quantity"] for l in lines))
+        coupon_code = (body.coupon_code or "").upper().strip()
+        coupon_discount = 0.0
+        if coupon_code:
+            coupon = conn.execute(
+                """
+                SELECT * FROM coupons
+                WHERE code = ? AND active = 1
+                  AND (starts_at IS NULL OR starts_at = '' OR datetime(starts_at) <= datetime('now'))
+                  AND (ends_at IS NULL OR ends_at = '' OR datetime(ends_at) >= datetime('now'))
+                  AND (usage_limit IS NULL OR uses_count < usage_limit)
+                """,
+                (coupon_code,),
+            ).fetchone()
+            if not coupon:
+                raise HTTPException(status_code=400, detail="Cupom invalido ou expirado")
+            if merchandise < float(coupon["min_order"] or 0):
+                raise HTTPException(status_code=400, detail=f"Pedido minimo do cupom: R$ {coupon['min_order']:.2f}")
+            if coupon["discount_type"] == "percent":
+                coupon_discount = round_money(merchandise * float(coupon["discount_value"]) / 100)
+            else:
+                coupon_discount = min(merchandise, round_money(coupon["discount_value"]))
+            merchandise = round_money(merchandise - coupon_discount)
 
     shipping_cost = max(0.0, round_money(body.shipping_cost or 0))
     total = round_money(merchandise + shipping_cost)
@@ -73,7 +107,7 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
 @router.post("/checkout/prepare")
 def checkout_prepare(
     body: PrepareBody,
-    user: Optional[dict] = Depends(get_current_user),
+    user: dict = Depends(require_user),
 ):
     validated = build_validated_order(body)
     order_id = str(uuid4())
@@ -110,12 +144,16 @@ def checkout_prepare(
         for line in validated["lines"]:
             conn.execute(
                 """
-                INSERT INTO order_items (order_id, product_id, title, unit_price, quantity)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO order_items
+                  (order_id, product_id, variant_id, sku, variant_label, title, unit_price, quantity)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     order_id,
                     line["product_id"],
+                    line["variant_id"],
+                    line["sku"],
+                    line["variant_label"],
                     line["title"],
                     line["unit_price"],
                     line["quantity"],
@@ -142,14 +180,14 @@ def checkout_prepare(
 @router.post("/payments")
 def create_payment(
     body: PaymentBody,
-    user: Optional[dict] = Depends(get_current_user),
+    user: dict = Depends(require_user),
 ):
     with get_connection() as conn:
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (body.order_id,)).fetchone()
         if not row:
             raise HTTPException(status_code=404, detail="Pedido não encontrado")
         order = row_to_dict(row)
-        if user and order.get("user_id") and order["user_id"] != user["id"] and user.get("role") != "admin":
+        if order.get("user_id") != user["id"] and user.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Sem permissão")
 
     form = body.form_data or {}
@@ -176,6 +214,8 @@ def create_payment(
     mapped = mercadopago_svc.map_mp_status(mp_status)
 
     with get_connection() as conn:
+        previous = conn.execute("SELECT status FROM orders WHERE id = ?", (body.order_id,)).fetchone()["status"]
+        transition_order_stock(conn, body.order_id, mapped)
         conn.execute(
             """
             UPDATE orders SET mp_payment_id = ?, mp_status = ?, status = ?, updated_at = datetime('now')
@@ -183,6 +223,11 @@ def create_payment(
             """,
             (mp_id, mp_status, mapped, body.order_id),
         )
+        if previous != mapped:
+            conn.execute(
+                "INSERT INTO order_status_history (order_id, old_status, new_status, source) VALUES (?, ?, ?, 'mercadopago')",
+                (body.order_id, previous, mapped),
+            )
         conn.commit()
 
     return {
@@ -219,6 +264,8 @@ async def mercadopago_webhook(request: Request):
             status = mercadopago_svc.map_mp_status(payment.get("status"))
             if ext:
                 with get_connection() as conn:
+                    previous_row = conn.execute("SELECT status FROM orders WHERE id = ?", (ext,)).fetchone()
+                    transition_order_stock(conn, ext, status)
                     conn.execute(
                         """
                         UPDATE orders SET mp_payment_id = ?, mp_status = ?, status = ?, updated_at = datetime('now')
@@ -226,6 +273,11 @@ async def mercadopago_webhook(request: Request):
                         """,
                         (str(payment.get("id")), payment.get("status"), status, ext),
                     )
+                    if previous_row and previous_row["status"] != status:
+                        conn.execute(
+                            "INSERT INTO order_status_history (order_id, old_status, new_status, source) VALUES (?, ?, ?, 'webhook')",
+                            (ext, previous_row["status"], status),
+                        )
                     conn.commit()
         except Exception as exc:
             print(f"[webhook] erro: {exc}")
@@ -237,7 +289,7 @@ async def mercadopago_webhook(request: Request):
 @router.post("/create-preference")
 def legacy_create_preference(
     body: PrepareBody,
-    user: Optional[dict] = Depends(get_current_user),
+    user: dict = Depends(require_user),
 ):
     """Mantém rota antiga: prepara pedido e sugere migrar para Payment Brick."""
     prepared = checkout_prepare(body, user)
