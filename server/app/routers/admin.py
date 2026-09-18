@@ -11,6 +11,7 @@ from ..config import get_settings
 from ..db import get_connection, parse_json_field, row_to_dict, rows_to_list
 from ..schemas import CategoryBody, ProductBody, product_to_storefront
 from ..services.inventory import transition_order_stock
+from ..services.storage import StorageError, delete_object, is_supabase_storage_url, upload_bytes
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -339,8 +340,10 @@ def update_product(product_id: int, body: ProductBody, _admin: dict = Depends(re
 
 
 @router.delete("/products/{product_id}")
-def delete_product(product_id: int, _admin: dict = Depends(require_admin)):
+async def delete_product(product_id: int, _admin: dict = Depends(require_admin)):
+    settings = get_settings()
     local_files: list[Path] = []
+    remote_urls: list[str] = []
     with get_connection() as conn:
         referenced = conn.execute(
             "SELECT COUNT(*) AS c FROM order_items WHERE product_id = ?", (product_id,)
@@ -353,16 +356,21 @@ def delete_product(product_id: int, _admin: dict = Depends(require_admin)):
             conn.commit()
             return {"ok": True, "archived": True}
         for image in _product_images(conn, product_id):
-            if str(image["url"]).startswith("/uploads/product-photos/"):
-                candidate = (get_settings().uploads_dir / Path(image["url"]).name).resolve()
-                if candidate.parent == get_settings().uploads_dir.resolve():
+            url = str(image["url"] or "")
+            if url.startswith("/uploads/product-photos/"):
+                candidate = (settings.uploads_dir / Path(url).name).resolve()
+                if candidate.parent == settings.uploads_dir.resolve():
                     local_files.append(candidate)
+            elif is_supabase_storage_url(url, settings):
+                remote_urls.append(url)
         conn.execute("DELETE FROM product_images WHERE product_id = ?", (product_id,))
         conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
         conn.commit()
     for local_file in local_files:
         if local_file.exists():
             local_file.unlink()
+    for remote in remote_urls:
+        await delete_object(remote, settings)
     return {"ok": True}
 
 
@@ -378,40 +386,60 @@ async def upload_product_image(
         if not exists:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
 
-    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
-    if file.content_type not in allowed_types:
+    allowed_types = {
+        "image/jpeg": ".jpg",
+        "image/png": ".png",
+        "image/webp": ".webp",
+        "image/gif": ".gif",
+    }
+    content_type = (file.content_type or "").split(";")[0].strip().lower()
+    ext = Path(file.filename or "img.jpg").suffix.lower() or allowed_types.get(content_type, ".jpg")
+    if ext == ".jpeg":
+        ext = ".jpg"
+    if content_type and content_type not in allowed_types and content_type != "application/octet-stream":
         raise HTTPException(status_code=400, detail="Tipo de imagem invalido")
-
-    ext = Path(file.filename or "img.jpg").suffix.lower() or ".jpg"
-    if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+    if ext not in {".jpg", ".png", ".webp", ".gif"}:
         raise HTTPException(status_code=400, detail="Formato de imagem inválido")
 
-    settings.uploads_dir.mkdir(parents=True, exist_ok=True)
-    name = f"{product_id}_{uuid.uuid4().hex}{ext}"
-    dest = settings.uploads_dir / name
-    size = 0
     max_size = 8 * 1024 * 1024
-    first_chunk = True
-    try:
-        with dest.open("wb") as out:
-            while chunk := await file.read(1024 * 1024):
-                if first_chunk:
-                    detected = _image_signature(chunk)
-                    if detected is None or (detected == ".jpg" and ext not in {".jpg", ".jpeg"}) or (detected != ".jpg" and detected != ext):
-                        raise HTTPException(status_code=400, detail="Conteudo do arquivo nao corresponde a uma imagem valida")
-                    first_chunk = False
-                size += len(chunk)
-                if size > max_size:
-                    raise HTTPException(status_code=413, detail="Imagem excede o limite de 8 MB")
-                out.write(chunk)
-            if first_chunk:
-                raise HTTPException(status_code=400, detail="Arquivo de imagem vazio")
-    except Exception:
-        if dest.exists():
-            dest.unlink()
-        raise
+    data = await file.read(max_size + 1)
+    if not data:
+        raise HTTPException(status_code=400, detail="Arquivo de imagem vazio")
+    if len(data) > max_size:
+        raise HTTPException(status_code=413, detail="Imagem excede o limite de 8 MB")
 
-    url = f"/uploads/product-photos/{name}"
+    detected = _image_signature(data)
+    if detected is None:
+        raise HTTPException(status_code=400, detail="Conteudo do arquivo nao corresponde a uma imagem valida")
+    # Confia na assinatura real do arquivo
+    ext = detected
+    mime = {
+        ".jpg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+        ".gif": "image/gif",
+    }[ext]
+
+    object_name = f"products/{product_id}/{uuid.uuid4().hex}{ext}"
+    storage = "local"
+    if settings.use_supabase:
+        try:
+            url = await upload_bytes(
+                data=data,
+                object_path=object_name,
+                content_type=mime,
+                settings=settings,
+            )
+            storage = "supabase"
+        except StorageError as err:
+            raise HTTPException(status_code=err.status_code, detail=str(err)) from err
+    else:
+        settings.uploads_dir.mkdir(parents=True, exist_ok=True)
+        local_name = f"{product_id}_{uuid.uuid4().hex}{ext}"
+        dest = settings.uploads_dir / local_name
+        dest.write_bytes(data)
+        url = f"/uploads/product-photos/{local_name}"
+
     with get_connection() as conn:
         count = conn.execute(
             "SELECT COUNT(*) AS c FROM product_images WHERE product_id = ?", (product_id,)
@@ -425,7 +453,7 @@ async def upload_product_image(
             conn.execute("UPDATE products SET cover_image = ? WHERE id = ?", (url, product_id))
         conn.commit()
         img = row_to_dict(conn.execute("SELECT * FROM product_images WHERE id = ?", (cur.lastrowid,)).fetchone())
-    return {"image": img}
+    return {"image": img, "storage": storage}
 
 
 @router.patch("/products/{product_id}/images/{image_id}")
@@ -445,8 +473,10 @@ def set_cover(product_id: int, image_id: int, _admin: dict = Depends(require_adm
 
 
 @router.delete("/products/{product_id}/images/{image_id}")
-def delete_image(product_id: int, image_id: int, _admin: dict = Depends(require_admin)):
+async def delete_image(product_id: int, image_id: int, _admin: dict = Depends(require_admin)):
+    settings = get_settings()
     local_file: Path | None = None
+    remote_url: str | None = None
     with get_connection() as conn:
         img = conn.execute(
             "SELECT * FROM product_images WHERE id = ? AND product_id = ?",
@@ -454,10 +484,13 @@ def delete_image(product_id: int, image_id: int, _admin: dict = Depends(require_
         ).fetchone()
         if not img:
             raise HTTPException(status_code=404, detail="Imagem não encontrada")
-        if str(img["url"]).startswith("/uploads/product-photos/"):
-            candidate = (get_settings().uploads_dir / Path(img["url"]).name).resolve()
-            if candidate.parent == get_settings().uploads_dir.resolve():
+        url = str(img["url"] or "")
+        if url.startswith("/uploads/product-photos/"):
+            candidate = (settings.uploads_dir / Path(url).name).resolve()
+            if candidate.parent == settings.uploads_dir.resolve():
                 local_file = candidate
+        elif is_supabase_storage_url(url, settings):
+            remote_url = url
         conn.execute("DELETE FROM product_images WHERE id = ?", (image_id,))
         if img["is_cover"]:
             next_img = conn.execute(
@@ -475,6 +508,8 @@ def delete_image(product_id: int, image_id: int, _admin: dict = Depends(require_
         conn.commit()
     if local_file and local_file.exists():
         local_file.unlink()
+    if remote_url:
+        await delete_object(remote_url, settings)
     return {"ok": True}
 
 

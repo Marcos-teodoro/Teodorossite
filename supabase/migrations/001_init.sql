@@ -285,6 +285,8 @@ create policy "admin_audit_log_all" on public.admin_audit_log for all using (pub
 -- Storage policies
 create policy "product_photos_public_read" on storage.objects
   for select using (bucket_id = 'product-photos');
+-- Escrita pelo painel: o BFF usa SUPABASE_SERVICE_ROLE_KEY (bypassa RLS).
+-- Políticas abaixo cobrem upload via JWT de admin no Storage API direto.
 create policy "product_photos_admin_write" on storage.objects
   for insert with check (bucket_id = 'product-photos' and public.is_admin());
 create policy "product_photos_admin_update" on storage.objects

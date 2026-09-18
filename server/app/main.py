@@ -69,6 +69,7 @@ def health():
         "hasMpPublicKey": bool(settings.mp_public_key),
         "hasCepCerto": bool(settings.cepcerto_postage_token),
         "useSupabase": settings.use_supabase,
+        "hasSupabaseStorage": settings.use_supabase,
         "publicKey": settings.mp_public_key,
     }
 

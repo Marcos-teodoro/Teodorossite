@@ -3,65 +3,1649 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin — TEODORA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/css/admin.css">
+  <title>Admin — TEODORA Perfumes & Cosméticos</title>
   <script>window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://127.0.0.1:3001');</script>
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Playfair Display (Luxo) e Plus Jakarta Sans (Interface operacional limpa) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif'],
+          },
+          colors: {
+            brand: {
+              bg: '#F9F8F6',
+              card: '#FFFFFF',
+              border: '#E8E5DF',
+              muted: '#78716C',
+              dark: '#141413',
+              gold: '#BFA15F',
+              'gold-light': '#F5EEDB'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Estilos customizados e refinados para perfumaria */
+    body {
+      background-color: #F9F8F6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #1C1917;
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #141413 !important;
+      box-shadow: 0 0 0 1px #141413 !important;
+    }
+
+    /* Scrollbar sutil */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F4F1EA;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D6D3CD;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #A8A29E;
+    }
+  </style>
 </head>
-<body>
-  <div id="loginScreen" class="login-wrap">
-    <div class="login-box">
-      <h1>TEODORA Admin</h1>
-      <p style="color:var(--muted);font-size:0.9rem;margin:0 0 1.25rem;">Acesso restrito ao painel de postagens.</p>
-      <form id="adminLogin" class="grid-form" style="grid-template-columns:1fr">
-        <label>E-mail<input type="email" id="loginEmail" required></label>
-        <label>Senha<input type="password" id="loginPassword" required></label>
-        <button class="btn" type="submit">Entrar</button>
+<body class="bg-[#F9F8F6] text-stone-800 min-h-screen flex antialiased selection:bg-stone-900 selection:text-white">
+  <!-- LOGIN -->
+  <div id="loginScreen" class="fixed inset-0 z-[100] bg-[#F9F8F6] flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-white border border-[#E8E5DF] rounded-lg shadow-sm p-8">
+      <div class="text-center mb-8">
+        <h1 class="font-serif tracking-[0.22em] text-2xl text-stone-900 uppercase">TEODORA</h1>
+        <p class="text-[10px] tracking-[0.25em] text-stone-400 uppercase mt-1">Admin</p>
+      </div>
+      <form id="adminLogin" class="space-y-4">
+        <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase">E-mail
+          <input type="email" id="loginEmail" required class="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-stone-200 rounded" value="admin@gmail.com">
+        </label>
+        <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase">Senha
+          <input type="password" id="loginPassword" required class="mt-1.5 w-full px-3.5 py-2.5 text-sm border border-stone-200 rounded">
+        </label>
+        <button type="submit" class="w-full py-2.5 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">Entrar</button>
       </form>
-      <p id="loginMsg" class="msg hidden"></p>
+      <p id="loginMsg" class="hidden mt-4 text-xs text-red-700"></p>
     </div>
   </div>
 
-  <div id="appShell" class="layout hidden">
-    <aside class="sidebar">
-      <div class="brand">Teodora</div>
-      <nav>
-        <button data-view="dashboard" class="active">Dashboard</button>
-        <button data-view="products">Produtos</button>
-        <button data-view="categories">Categorias</button>
-        <button data-view="orders">Pedidos</button>
-        <button data-view="coupons">Cupons</button>
-        <button data-view="store">Loja</button>
-        <button data-view="customers">Clientes</button>
-        <button data-view="audit">Auditoria</button>
-      </nav>
-      <div class="foot">
-        <div id="adminName"></div>
-        <button id="btnLogout" style="margin-top:0.5rem;padding:0.4rem 0;color:#a8a29e;">Sair</button>
-        <div><a href="/" style="color:#a8a29e;">Ver loja</a></div>
-      </div>
-    </aside>
+  <div id="appShell" class="hidden contents">
 
-    <main class="main">
-      <div class="topbar">
+  <!-- ========================================================================= -->
+  <!-- SIDEBAR LATERAL FIXA                                                      -->
+  <!-- ========================================================================= -->
+  <aside id="main-sidebar" class="w-64 bg-[#141413] text-stone-300 flex flex-col shrink-0 fixed inset-y-0 left-0 z-30 transition-transform duration-300 -translate-x-full md:translate-x-0">
+    <!-- Logotipo da Marca TEODORA -->
+    <div class="p-6 border-b border-stone-800/80">
+      <div class="flex items-center justify-between">
         <div>
-          <h1 id="viewTitle">Dashboard</h1>
-          <p id="viewSubtitle">Visão geral da operação</p>
+          <h1 class="font-serif tracking-[0.22em] text-xl text-stone-100 font-normal uppercase">TEODORA</h1>
+          <p class="text-[10px] tracking-[0.25em] text-stone-400 uppercase mt-0.5 font-light">Perfumes & Cosméticos</p>
         </div>
-        <button id="btnNewProduct" class="btn hidden">Novo produto</button>
+        <button onclick="toggleSidebar()" class="md:hidden text-stone-400 hover:text-white p-1" aria-label="Fechar menu">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navegação Principal -->
+    <nav class="flex-1 px-3 py-5 space-y-1 overflow-y-auto text-sm">
+      <button onclick="navigateView('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+        </svg>
+        <span>Dashboard</span>
+      </button>
+
+      <button onclick="navigateView('produtos')" id="nav-produtos" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors bg-stone-800 text-white font-medium">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        <span>Produtos</span>
+      </button>
+
+      <button onclick="navigateView('categorias')" id="nav-categorias" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+        </svg>
+        <span>Categorias</span>
+      </button>
+
+      <button onclick="navigateView('caixas')" id="nav-caixas" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+        </svg>
+        <span class="flex-1">Caixas de Envio</span>
+        <span class="text-[10px] bg-stone-800 text-stone-400 px-1.5 py-0.5 rounded font-mono">Frete</span>
+      </button>
+
+      <button onclick="navigateView('pedidos')" id="nav-pedidos" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+        </svg>
+        <span class="flex-1">Pedidos</span>
+        <span id="nav-orders-badge" class="hidden text-[11px] bg-amber-900/80 text-amber-200 px-2 py-0.5 rounded-full font-medium">0</span>
+      </button>
+
+      <button onclick="navigateView('cupons')" id="nav-cupons" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+        </svg>
+        <span>Cupons</span>
+      </button>
+
+      <button onclick="navigateView('loja')" id="nav-loja" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span>Loja & Layout</span>
+      </button>
+
+      <button onclick="navigateView('clientes')" id="nav-clientes" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <span>Clientes</span>
+      </button>
+
+      <button onclick="navigateView('auditoria')" id="nav-auditoria" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <span>Auditoria</span>
+      </button>
+    </nav>
+
+    <!-- Rodapé da Barra Lateral -->
+    <div class="p-4 border-t border-stone-800 text-xs text-stone-400 space-y-2">
+      <div class="flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+        <span id="adminName" class="truncate font-mono text-stone-300">admin</span>
+      </div>
+      <div class="flex items-center justify-between pt-1">
+        <a href="javascript:void(0)" onclick="openStorePreview()" class="text-stone-300 hover:text-white underline underline-offset-4 text-[11px] font-medium">
+          Ver loja virtual ↗
+        </a>
+        <button type="button" id="btnLogout" class="text-stone-400 hover:text-red-400 transition-colors text-[11px]">
+          Sair
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ========================================================================= -->
+  <!-- CONTEÚDO PRINCIPAL & CABEÇALHO SUPERIOR                                    -->
+  <!-- ========================================================================= -->
+  <div class="flex-1 flex flex-col md:ml-64 min-w-0">
+    
+    <!-- Topbar Superior -->
+    <header class="h-16 bg-white/90 backdrop-blur border-b border-brand-border px-6 flex items-center justify-between sticky top-0 z-20">
+      <div class="flex items-center gap-4">
+        <button onclick="toggleSidebar()" class="md:hidden text-stone-600 hover:text-stone-900 p-1" aria-label="Abrir menu">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="flex items-center gap-2 text-xs text-stone-500">
+          <span class="font-medium text-stone-800 uppercase tracking-wider">TEODORA</span>
+          <span>/</span>
+          <span id="breadcrumb-current" class="text-stone-600 font-mono">Produtos / Cadastro</span>
+        </div>
       </div>
 
-      <section id="view-dashboard"></section>
-      <section id="view-products" class="hidden"></section>
-      <section id="view-categories" class="hidden"></section>
-      <section id="view-orders" class="hidden"></section>
-      <section id="view-coupons" class="hidden"></section>
-      <section id="view-store" class="hidden"></section>
-      <section id="view-customers" class="hidden"></section>
-      <section id="view-audit" class="hidden"></section>
-      <section id="view-product-form" class="hidden"></section>
+      <div class="flex items-center gap-3">
+        <button onclick="openStorePreview()" type="button" class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold tracking-wide uppercase transition-all shadow-xs">
+          <svg class="w-3.5 h-3.5 text-stone-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+          </svg>
+          <span>Ver como fica na Loja</span>
+        </button>
+
+        <button onclick="handleSaveProduct(event)" type="button" class="inline-flex items-center gap-2 px-4 py-1.5 rounded bg-stone-900 hover:bg-black text-white text-xs font-semibold tracking-wide uppercase transition-all shadow-xs">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span>Salvar Produto</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ÁREA DAS TELAS / VIEWS -->
+    <main class="flex-1 p-6 md:p-10 max-w-7xl w-full mx-auto pb-24">
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 1: DASHBOARD (MÉTRICAS FIÉIS AO PRINT 2)                            -->
+      <!-- ========================================================================= -->
+      <section id="view-dashboard" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Dashboard</h2>
+          <p class="text-sm text-stone-500 mt-1">Visão geral da operação da sua perfumaria.</p>
+        </div>
+
+        <!-- Grid de Métricas Principais -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+          <div class="bg-white p-6 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Produtos</span>
+            <div id="dash-products" class="mt-2 text-3xl font-light text-stone-900 font-mono">—</div>
+          </div>
+
+          <div class="bg-white p-6 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Ativos</span>
+            <div id="dash-active" class="mt-2 text-3xl font-light text-stone-900 font-mono">—</div>
+          </div>
+
+          <div class="bg-white p-6 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Pedidos Pendentes</span>
+            <div id="dash-pending" class="mt-2 text-3xl font-light text-amber-800 font-mono">—</div>
+          </div>
+
+          <div class="bg-white p-6 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Aprovados</span>
+            <div id="dash-approved" class="mt-2 text-3xl font-light text-stone-900 font-mono">—</div>
+          </div>
+
+          <div class="bg-white p-6 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Faturamento Confirmado</span>
+            <div id="dash-revenue" class="mt-2 text-3xl font-light text-stone-900 font-mono">—</div>
+          </div>
+
+          <div class="bg-white p-6 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-stone-500">Estoque Baixo</span>
+            <div id="dash-lowstock" class="mt-2 text-3xl font-light text-stone-900 font-mono">—</div>
+          </div>
+        </div>
+
+        <!-- Tabela Últimos Pedidos -->
+        <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Últimos Pedidos</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-stone-100 bg-stone-50/70 text-[11px] uppercase tracking-wider text-stone-500">
+                  <th class="py-3 px-6 font-semibold">ID</th>
+                  <th class="py-3 px-6 font-semibold">Cliente</th>
+                  <th class="py-3 px-6 font-semibold">Status</th>
+                  <th class="py-3 px-6 font-semibold">Total</th>
+                  <th class="py-3 px-6 font-semibold">Data</th>
+                </tr>
+              </thead>
+              <tbody id="dash-recent-orders" class="divide-y divide-stone-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 2: PRODUTOS (CATÁLOGO PAGINADO & FORMULÁRIO DE CADASTRO/EDIÇÃO)      -->
+      <!-- ========================================================================= -->
+      <section id="view-produtos" class="view-content space-y-8">
+        
+        <!-- SUBVIEW A: LISTA PAGINADA DO CATÁLOGO DE PRODUTOS -->
+        <div id="product-list-container" class="space-y-6">
+          
+          <!-- Cabeçalho do Catálogo -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-brand-border">
+            <div>
+              <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Produtos Cadastrados</h2>
+              <p class="text-sm text-stone-500 mt-1">
+                Catálogo ativo com gestão de estoque, preços e embalagens de despacho.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="openStorePreview()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 transition-colors flex items-center gap-1.5 shadow-xs">
+                <span>👁</span>
+                <span>Ver Loja Virtual</span>
+              </button>
+              <button type="button" onclick="openNewProductForm()" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors flex items-center gap-1.5 shadow-sm">
+                <span>+</span>
+                <span>Novo Produto</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Barra de Busca e Filtros Rápidos -->
+          <div class="bg-white p-4 rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+            <div class="flex-1 flex flex-col sm:flex-row gap-3">
+              <!-- Campo de Busca -->
+              <div class="relative flex-1">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-stone-400">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </span>
+                <input type="text" id="catalog-search-input" oninput="handleCatalogSearch(this.value)" placeholder="Buscar por título, marca ou SKU..." class="w-full pl-9 pr-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded focus:bg-white transition-all">
+              </div>
+
+              <!-- Filtro de Categoria -->
+              <select id="catalog-category-filter" onchange="handleCatalogCategoryChange(this.value)" class="text-xs px-3 py-2 bg-stone-50 border border-stone-200 rounded focus:bg-white text-stone-700">
+                <option value="todos">Todas as Categorias</option>
+                <option value="perfumes">Perfumes</option>
+                <option value="skincare">Skincare</option>
+                <option value="maquiagem">Maquiagem</option>
+                <option value="cabelos">Cabelos</option>
+                <option value="corpo">Corpo & Banho</option>
+                <option value="kits">Kits & Presentes</option>
+              </select>
+
+              <!-- Filtro de Status -->
+              <select id="catalog-status-filter" onchange="handleCatalogStatusChange(this.value)" class="text-xs px-3 py-2 bg-stone-50 border border-stone-200 rounded focus:bg-white text-stone-700">
+                <option value="todos">Todos os Status</option>
+                <option value="ativo">Apenas Ativos</option>
+                <option value="rascunho">Apenas Rascunhos</option>
+                <option value="baixo_estoque">Estoque Baixo (&lt; 10)</option>
+              </select>
+            </div>
+
+            <!-- Seletor de Itens por Página -->
+            <div class="flex items-center gap-2 self-end md:self-auto text-xs text-stone-500 font-mono">
+              <span>Exibir:</span>
+              <select id="catalog-per-page-select" onchange="handleCatalogPerPageChange(this.value)" class="text-xs px-2.5 py-1.5 bg-stone-50 border border-stone-200 rounded focus:bg-white text-stone-800 font-medium">
+                <option value="8" selected>8 por pág.</option>
+                <option value="12">12 por pág.</option>
+                <option value="20">20 por pág.</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tabela Principal de Produtos -->
+          <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="border-b border-stone-200 bg-stone-50/70 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
+                    <th class="py-3 px-5">Foto</th>
+                    <th class="py-3 px-5">Produto & Marca</th>
+                    <th class="py-3 px-5">SKU</th>
+                    <th class="py-3 px-5">Categoria</th>
+                    <th class="py-3 px-5">Preço</th>
+                    <th class="py-3 px-5">Estoque</th>
+                    <th class="py-3 px-5">Caixa</th>
+                    <th class="py-3 px-5">Status</th>
+                    <th class="py-3 px-5 text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="products-table-body" class="divide-y divide-stone-100 font-normal">
+                  <!-- Linhas renderizadas dinamicamente via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Barra Inferior de Paginação -->
+            <div class="px-6 py-4 border-t border-stone-100 bg-[#FCFBF9] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div class="text-xs text-stone-500 font-mono" id="catalog-pagination-info">
+                Mostrando 1 a 8 de 29 produtos
+              </div>
+
+              <!-- Controles de Navegação de Página -->
+              <div class="flex items-center gap-1.5" id="catalog-pagination-controls">
+                <!-- Botões de páginas numéricas gerados dinamicamente via JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- SUBVIEW B: FORMULÁRIO DE NOVO PRODUTO / EDIÇÃO (INICIALMENTE OCULTO) -->
+        <div id="product-form-container" class="space-y-8 hidden">
+
+          <!-- Cabeçalho da Página do Produto -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-brand-border">
+            <div class="flex items-center gap-3">
+              <button type="button" onclick="closeProductForm()" class="p-2 rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 transition-colors" title="Voltar para a Lista de Produtos">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <div>
+                <h2 id="form-product-heading" class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Novo produto</h2>
+                <p class="text-sm text-stone-500 mt-1">Fotos, preço, notas olfativas, frete e estoque.</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="closeProductForm()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white text-stone-700 hover:bg-stone-50 transition-colors">
+                ← Voltar ao Catálogo
+              </button>
+              <button type="button" onclick="openStorePreview()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-800 bg-stone-100 hover:bg-stone-200 text-stone-900 transition-colors flex items-center gap-1.5">
+                <span>👁</span>
+                <span>Ver na Loja</span>
+              </button>
+              <button type="button" onclick="handleSaveProduct(event)" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors shadow-sm">
+                Salvar Produto
+              </button>
+            </div>
+          </div>
+
+          <form id="productForm" onsubmit="handleSaveProduct(event)" class="space-y-8">
+            <input type="hidden" id="prod_edit_id" value="">
+
+            <!-- CARD 1: INFORMAÇÕES PRINCIPAIS -->
+            <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+              <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Informações Principais</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Dados exibidos no card e no topo da página do produto.</p>
+                </div>
+                <button type="button" onclick="autoGenerateTitle(true)" class="text-xs font-medium text-amber-800 hover:text-amber-900 flex items-center gap-1 underline underline-offset-2">
+                  <span>✦ Gerar Título Padronizado</span>
+                </button>
+              </div>
+
+              <div class="p-6 space-y-5">
+                <!-- TÍTULO -->
+                <div>
+                  <label for="prod_titulo" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                    Título do Produto <span class="text-red-500">*</span>
+                  </label>
+                  <input type="text" id="prod_titulo" required value="" placeholder="Ex: Jean Paul Gaultier La Belle Feminino Eau de Parfum" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-normal transition-all">
+                  <span class="text-[11px] text-stone-400 mt-1 block">O título completo que estampa o cabeçalho do e-commerce.</span>
+                </div>
+
+                <!-- MARCA E VOLUME -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label for="prod_marca" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Marca
+                    </label>
+                    <input type="text" id="prod_marca" value="" oninput="autoGenerateTitle()" placeholder="Ex: Jean Paul Gaultier, Chanel, Dior" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
+                  </div>
+
+                  <div>
+                    <label for="prod_volume" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Volume / Apresentação
+                    </label>
+                    <input type="text" id="prod_volume" value="100ml" oninput="autoGenerateTitle()" placeholder="Ex: 50ml, 100ml, 200ml" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
+                  </div>
+                </div>
+
+                <!-- CATEGORIA E SELO -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label for="prod_categoria" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Categoria
+                    </label>
+                    <select id="prod_categoria" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
+                      <option value="perfumes" selected>Perfumes</option>
+                      <option value="skincare">Skincare</option>
+                      <option value="maquiagem">Maquiagem</option>
+                      <option value="cabelos">Cabelos</option>
+                      <option value="corpo">Corpo & Banho</option>
+                      <option value="kits">Kits & Presentes</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="prod_selo" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Selo Promocional
+                    </label>
+                    <select id="prod_selo" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
+                      <option value="sem_selo">Sem selo</option>
+                      <option value="mais_vendido" selected>Mais vendido</option>
+                      <option value="lancamento">Lançamento</option>
+                      <option value="exclusivo">Exclusivo</option>
+                      <option value="edicao_limitada">Edição Limitada</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- PREÇO, PREÇO ANTIGO E CÁLCULO DE DESCONTO -->
+                <div class="p-4 rounded bg-[#FAF9F6] border border-stone-200">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+                    
+                    <div>
+                      <label for="prod_preco" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                        Preço Atual (Venda) <span class="text-red-500">*</span>
+                      </label>
+                      <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-medium text-stone-400">R$</span>
+                        <input type="number" step="0.01" id="prod_preco" value="403.90" oninput="calculateDiscount()" placeholder="0,00" required class="w-full pl-9 pr-3.5 py-2 text-sm bg-white border border-stone-200 rounded font-mono font-medium">
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="prod_preco_antigo" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                        Preço Antigo ("De")
+                      </label>
+                      <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-medium text-stone-400">R$</span>
+                        <input type="number" step="0.01" id="prod_preco_antigo" value="464.90" oninput="calculateDiscount()" placeholder="0,00" class="w-full pl-9 pr-3.5 py-2 text-sm bg-white border border-stone-200 rounded font-mono">
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="prod_estoque" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                        Estoque Físico
+                      </label>
+                      <input type="number" id="prod_estoque" value="50" class="w-full px-3.5 py-2 text-sm bg-white border border-stone-200 rounded font-mono">
+                    </div>
+
+                    <div>
+                      <label for="prod_ativo" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                        Status de Publicação
+                      </label>
+                      <select id="prod_ativo" class="w-full px-3.5 py-2 text-sm bg-white border border-stone-200 rounded">
+                        <option value="sim" selected>Ativo na Loja</option>
+                        <option value="nao">Rascunho (Oculto)</option>
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <!-- Resumo Automático de Desconto e Parcelas -->
+                  <div id="discount-preview-bar" class="mt-3 pt-3 border-t border-stone-200 flex flex-wrap items-center justify-between text-xs gap-2">
+                    <div class="flex items-center gap-2">
+                      <span class="text-stone-500">Economia calculada:</span>
+                      <span id="discount-badge" class="inline-flex items-center font-mono font-medium bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px]">
+                        -R$ 61,00 (13% OFF)
+                      </span>
+                    </div>
+                    <div class="text-stone-500 font-mono text-[11px]">
+                      <span id="installment-preview">Até 6x de R$ 67,32 sem juros</span> • <span id="pix-preview" class="text-emerald-700 font-semibold">R$ 383,70 no Pix (5% OFF)</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- CARD 2: GESTÃO DE FOTOS & GALERIA -->
+            <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+              <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between gap-3">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Fotos do Produto &amp; Galeria</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Escolha as fotos, envie e defina qual será a capa da loja.</p>
+                </div>
+                <span class="text-[11px] text-stone-500 font-mono shrink-0">JPG · PNG · WEBP · GIF · até 8&nbsp;MB</span>
+              </div>
+
+              <div class="p-6 space-y-6">
+                <div id="gallery-upload-slot">
+                  <span class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Fotos</span>
+                  <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                    <label for="input_nova_foto_file" id="btn_escolher_fotos" class="cursor-pointer inline-flex items-center justify-center px-4 py-2.5 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 select-none">
+                      Escolher fotos
+                    </label>
+                    <input type="file" id="input_nova_foto_file" name="gallery_files" accept="image/*" multiple>
+                    <button type="button" id="btn_upload_fotos" class="px-5 py-2.5 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white">
+                      Enviar
+                    </button>
+                  </div>
+                  <p id="gallery-file-names" class="text-[11px] text-stone-500 mt-2">Nenhum arquivo selecionado.</p>
+                  <p id="gallery-upload-hint" class="text-[11px] text-stone-400 mt-1">Ao selecionar, as fotos aparecem abaixo para você marcar a capa e depois enviar.</p>
+                </div>
+
+                <div>
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-semibold text-stone-700 uppercase tracking-wider">Pré-visualização / Galeria</span>
+                    <span class="text-xs text-stone-400 font-mono" id="gallery-counter">0 foto(s)</span>
+                  </div>
+                  <div id="gallery-grid" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                    <div class="col-span-6 text-center text-xs text-stone-400 py-4 italic">Nenhuma foto ainda.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- CARD 3: VARIANTES -->
+            <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] p-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Variantes</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Cadastre volumes, SKUs, preços e estoques independentes. Sem variantes, o produto usa os dados principais.</p>
+                </div>
+
+                <button type="button" onclick="showToast('Módulo de variantes pronto para adicionar novo volume.')" class="px-3.5 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 transition-colors self-start sm:self-auto">
+                  + Adicionar Variante
+                </button>
+              </div>
+
+              <div class="p-4 rounded border border-dashed border-stone-300 bg-stone-50/50 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-3">
+                  <span class="font-mono text-stone-500">Padrão:</span>
+                  <span class="font-semibold text-stone-900">100ml</span>
+                  <span class="text-stone-300">|</span>
+                  <span class="font-mono text-stone-700">R$ 403,90</span>
+                  <span class="text-stone-300">|</span>
+                  <span class="text-stone-500">Estoque: 50 un</span>
+                </div>
+                <span class="text-[11px] text-stone-400 font-mono">SKU: JPG-LB-100</span>
+              </div>
+            </div>
+
+            <!-- CARD 4: CONTEÚDO E PERFUMARIA (PIRÂMIDE OLFATIVA ORGANIZADA) -->
+            <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+              <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Conteúdo & Perfumaria</h3>
+                <p class="text-xs text-stone-500 mt-0.5">Informações sensoriais e pirâmide olfativa exibidas com exclusividade na página do produto.</p>
+              </div>
+
+              <div class="p-6 space-y-6">
+
+                <!-- Classificação Rápida -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label for="prod_familia" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Família Olfativa
+                    </label>
+                    <select id="prod_familia" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
+                      <option value="oriental_gourmand" selected>Oriental Gourmand</option>
+                      <option value="floral">Floral Amadeirado</option>
+                      <option value="citrico">Cítrico Refrescante</option>
+                      <option value="chypre">Chypre Frutado</option>
+                      <option value="amadeirado">Amadeirado Nobre</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="prod_concentracao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Concentração
+                    </label>
+                    <select id="prod_concentracao" onchange="autoGenerateTitle()" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
+                      <option value="Eau de Parfum" selected>Eau de Parfum (EDP)</option>
+                      <option value="Eau de Toilette">Eau de Toilette (EDT)</option>
+                      <option value="Parfum">Parfum / Extrait</option>
+                      <option value="Eau de Cologne">Eau de Cologne (EDC)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="prod_ocasiao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Ocasião Recomendada
+                    </label>
+                    <select id="prod_ocasiao" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
+                      <option value="noite" selected>Noite & Eventos</option>
+                      <option value="dia">Uso Diário / Assinatura</option>
+                      <option value="encontros">Encontros & Romântico</option>
+                      <option value="verao">Dias Quentes / Verão</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="prod_sensacao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Sensação / Acorde
+                    </label>
+                    <select id="prod_sensacao" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
+                      <option value="romantico" selected>Romântico & Marcante</option>
+                      <option value="sedutor">Sensual & Magnético</option>
+                      <option value="fresco">Energizante & Leve</option>
+                      <option value="elegante">Clássico & Imponente</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- PIRÂMIDE OLFATIVA (3 COLUNAS ELEGANTES) -->
+                <div class="p-5 rounded bg-[#FAF9F6] border border-stone-200">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                      <span class="text-amber-700">✦</span>
+                      <span class="text-xs font-bold uppercase tracking-wider text-stone-800">Pirâmide Olfativa (Notas Oficiais)</span>
+                    </div>
+                    <span class="text-[11px] text-stone-400">Preenche o card olfativo na loja</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Saída / Topo -->
+                    <div class="bg-white p-3.5 rounded border border-stone-200 shadow-xs">
+                      <div class="flex items-center justify-between mb-1">
+                        <label for="prod_notas_saida" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
+                          Notas de Topo (Saída)
+                        </label>
+                        <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">0 a 15 min</span>
+                      </div>
+                      <textarea id="prod_notas_saida" rows="3" placeholder="Ex: Pêra Suculenta e Bergamota" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none">Pêra verde radiante e bergamota fresca italiana.</textarea>
+                    </div>
+
+                    <!-- Coração -->
+                    <div class="bg-white p-3.5 rounded border border-stone-200 shadow-xs">
+                      <div class="flex items-center justify-between mb-1">
+                        <label for="prod_notas_coracao" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
+                          Notas de Coração (Corpo)
+                        </label>
+                        <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">15 min a 4h</span>
+                      </div>
+                      <textarea id="prod_notas_coracao" rows="3" placeholder="Ex: Vetiver e Flores Brancas" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none">Fava Tonka tostada e jasmim sambac envolvente.</textarea>
+                    </div>
+
+                    <!-- Fundo -->
+                    <div class="bg-white p-3.5 rounded border border-stone-200 shadow-xs">
+                      <div class="flex items-center justify-between mb-1">
+                        <label for="prod_notas_fundo" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
+                          Notas de Fundo (Base)
+                        </label>
+                        <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">Fixação 8h+</span>
+                      </div>
+                      <textarea id="prod_notas_fundo" rows="3" placeholder="Ex: Baunilha de Madagascar e Âmbar" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none">Baunilha negra de Madagascar, fava tonka e âmbar quente.</textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DESCRIÇÃO COMPLETA -->
+                <div>
+                  <label for="prod_descricao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                    Descrição do Produto (Aba da Loja)
+                  </label>
+                  <textarea id="prod_descricao" rows="4" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">Jean Paul Gaultier La Belle Feminino Eau de Parfum. Um perfume original, magnético e hipnotizante. Uma fusão ultra sensual de pêra fresca e baunilha viciante.</textarea>
+                </div>
+
+                <!-- RITUAL DE USO E INGREDIENTES -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label for="prod_ritual" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Ritual de Uso
+                    </label>
+                    <textarea id="prod_ritual" rows="3" placeholder="Dicas de aplicação nos pontos de pulsação..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded text-xs">Borrife nos pontos de maior circulação sanguínea como pulsos, pescoço e dobras dos cotovelos a 15 cm da pele.</textarea>
+                  </div>
+
+                  <div>
+                    <label for="prod_ingredientes" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                      Ingredientes / Composição
+                    </label>
+                    <textarea id="prod_ingredientes" rows="3" placeholder="Composição química e ativos conforme Anvisa..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded text-xs font-mono">ALCOHOL DENAT., PARFUM (FRAGRANCE), AQUA (WATER), BENZYL SALICYLATE, LINALOOL, HYDROXYCITRONELLAL, COUMARIN.</textarea>
+                  </div>
+                </div>
+
+                <!-- PRODUTOS RELACIONADOS AUTOMÁTICOS -->
+                <div class="p-4 rounded bg-stone-50 border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-stone-800 block">Recomendação "Você Também Pode Gostar"</span>
+                    <p class="text-xs text-stone-500 mt-0.5">Automatizado com base na marca e na família olfativa cadastrada.</p>
+                  </div>
+                  <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded border border-emerald-200 shrink-0">
+                    ✓ Recomendação Automática Ativa
+                  </span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- CARD 5: ENTREGA, PESO MANUAL E VÍNCULO COM O MENU DE CAIXAS -->
+            <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+              <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Entrega & Caixa de Despacho</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Peso manual do frasco + dimensões puxadas do menu próprio de Caixas para cálculo do frete exato.</p>
+                </div>
+
+                <button type="button" onclick="navigateView('caixas')" class="text-xs font-medium text-amber-800 hover:text-amber-900 flex items-center gap-1 underline underline-offset-2 self-start sm:self-auto">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  <span>Configurar dimensões de caixas no menu</span>
+                </button>
+              </div>
+
+              <div class="p-6 space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                  
+                  <!-- 1. PESO DO PRODUTO (DIGITAÇÃO MANUAL OBRIGATÓRIA) -->
+                  <div class="md:col-span-5 p-4 rounded bg-[#FAF9F6] border border-stone-200">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <label for="prod_peso_manual" class="block text-[11px] font-bold tracking-wider text-stone-800 uppercase">
+                        Peso do Produto / Frasco <span class="text-red-500">*</span>
+                      </label>
+                      <span class="text-[10px] text-amber-800 font-medium bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                        Preenchimento Manual
+                      </span>
+                    </div>
+                    
+                    <div class="relative mt-2">
+                      <input type="number" step="0.01" id="prod_peso_manual" value="0.38" oninput="updateShippingWeights()" placeholder="0.38" class="w-full px-3.5 py-2.5 text-base bg-white border border-stone-300 rounded font-mono font-semibold text-stone-900 focus:border-stone-900">
+                      <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-xs font-semibold text-stone-500">kg</span>
+                    </div>
+
+                    <p class="text-[11px] text-stone-500 mt-2 leading-relaxed">
+                      Pese o frasco lacrado. Vidros de perfumaria têm densidades e espessuras únicas (ex: 100ml líquido costuma pesar entre <strong>0,35 kg e 0,45 kg</strong> com o frasco).
+                    </p>
+                  </div>
+
+                  <!-- 2. ESCOLHA DA CAIXA CADASTRADA NO MENU PRÓPRIO -->
+                  <div class="md:col-span-7 p-4 rounded bg-white border border-stone-200 flex flex-col justify-between">
+                    <div>
+                      <div class="flex items-center justify-between mb-1.5">
+                        <label for="prod_caixa_id" class="block text-[11px] font-bold tracking-wider text-stone-800 uppercase">
+                          Caixa de Envio Padrão
+                        </label>
+                        <span class="text-[10px] text-stone-500 font-mono" id="current-box-dimensions-label">
+                          14 x 9 x 8 cm
+                        </span>
+                      </div>
+
+                      <div class="relative">
+                        <select id="prod_caixa_id" onchange="selectProductBox(this.value)" class="w-full appearance-none px-3.5 py-2.5 text-sm bg-stone-50 border border-stone-300 rounded font-medium focus:border-stone-900 pr-10">
+                          <!-- Preenchido via JavaScript com base no Menu de Caixas -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-stone-600">
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- RESUMO TÉCNICO SOMADO -->
+                    <div class="mt-4 pt-3 border-t border-stone-200 flex flex-wrap items-center justify-between text-xs gap-2">
+                      <div class="text-stone-600">
+                        <span>Frasco: <strong id="summary-prod-weight" class="font-mono text-stone-900">0,38 kg</strong></span>
+                        <span class="mx-1 text-stone-300">+</span>
+                        <span>Caixa vazia: <strong id="summary-box-tare" class="font-mono text-stone-900">0,08 kg</strong></span>
+                      </div>
+                      <div class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-900 font-semibold px-2.5 py-1 rounded border border-emerald-200 font-mono">
+                        <span>📦 Peso Total de Envio:</span>
+                        <span id="summary-total-weight">0,46 kg</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <!-- DIMENSÕES DA CAIXA -->
+                <div class="pt-2">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-stone-600">
+                      Dimensões Físicas Transmitidas aos Correios / Transportadoras
+                    </span>
+                    <span class="text-[10px] text-stone-400">Puxadas automaticamente da caixa selecionada</span>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-4">
+                    <div>
+                      <label for="prod_altura" class="block text-[10px] font-semibold uppercase text-stone-500 mb-1">Altura</label>
+                      <div class="relative">
+                        <input type="number" id="prod_altura" value="14" class="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded font-mono text-stone-700">
+                        <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[11px] font-medium text-stone-400">cm</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="prod_largura" class="block text-[10px] font-semibold uppercase text-stone-500 mb-1">Largura</label>
+                      <div class="relative">
+                        <input type="number" id="prod_largura" value="9" class="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded font-mono text-stone-700">
+                        <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[11px] font-medium text-stone-400">cm</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="prod_comprimento" class="block text-[10px] font-semibold uppercase text-stone-500 mb-1">Comprimento</label>
+                      <div class="relative">
+                        <input type="number" id="prod_comprimento" value="8" class="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-200 rounded font-mono text-stone-700">
+                        <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-[11px] font-medium text-stone-400">cm</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- BARRA INFERIOR DE SALVAMENTO -->
+            <div class="p-4 bg-white rounded border border-brand-border flex items-center justify-between shadow-xs">
+              <div class="text-xs text-stone-500 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span>Dados integrados à lista paginada e ao preview da loja.</span>
+              </div>
+              <div class="flex items-center gap-3">
+                <button type="button" onclick="closeProductForm()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-800">
+                  Cancelar
+                </button>
+                <button type="submit" class="px-6 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-all shadow-xs">
+                  Salvar Produto
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 3: CATEGORIAS (CONFORME PRINT 3)                                     -->
+      <!-- ========================================================================= -->
+      <section id="view-categorias" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Categorias</h2>
+          <p class="text-sm text-stone-500 mt-1">Organização do menu e filtros da loja.</p>
+        </div>
+
+        <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] mb-8 overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Nova Categoria</h3>
+            <p class="text-xs text-stone-500 mt-0.5">As categorias ativas alimentam menu, home e filtros da loja.</p>
+          </div>
+          
+          <form onsubmit="handleSaveCategory(event)" class="p-6 space-y-5">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Slug</label>
+                <input type="text" id="cat_slug" placeholder="ex: perfumes" required class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Nome</label>
+                <input type="text" id="cat_nome" placeholder="ex: Perfumes" required class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Ordem</label>
+                <input type="number" id="cat_ordem" value="1" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Ativa</label>
+                <select id="cat_ativa" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">
+                  <option value="Sim">Sim</option>
+                  <option value="Não">Não</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">URL da Imagem</label>
+              <input type="url" id="cat_url" placeholder="https://..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="px-5 py-2.5 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors">
+                Salvar Categoria
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- LISTA DE CATEGORIAS -->
+        <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Lista de Categorias</h3>
+            <p id="categories-count-label" class="text-xs text-stone-500 mt-0.5">—</p>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-stone-100 bg-stone-50/70 text-[11px] uppercase tracking-wider text-stone-500">
+                  <th class="py-3.5 px-6 font-semibold">Ordem</th>
+                  <th class="py-3.5 px-6 font-semibold">Slug</th>
+                  <th class="py-3.5 px-6 font-semibold">Nome</th>
+                  <th class="py-3.5 px-6 font-semibold">Ativa</th>
+                  <th class="py-3.5 px-6 font-semibold text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="categories-table-body" class="divide-y divide-stone-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 4: CAIXAS DE ENVIO & EMBALAGENS (MENU EXCLUSIVO DE DIMENSÕES)          -->
+      <!-- ========================================================================= -->
+      <section id="view-caixas" class="view-content hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-brand-border mb-8">
+          <div>
+            <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Caixas de Envio</h2>
+            <p class="text-sm text-stone-500 mt-1">Gerencie as dimensões das embalagens utilizadas para calcular o frete exato via Correios e transportadoras.</p>
+          </div>
+
+          <button type="button" onclick="resetBoxForm()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors flex items-center gap-2 shadow-sm">
+            <span>+</span>
+            <span>Cadastrar Nova Caixa</span>
+          </button>
+        </div>
+
+        <!-- FORMULÁRIO DE CADASTRO / EDIÇÃO DE CAIXA -->
+        <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] mb-8 overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between">
+            <div>
+              <h3 id="box-form-title" class="text-xs font-bold uppercase tracking-widest text-stone-800">Adicionar Modelo de Embalagem</h3>
+              <p class="text-xs text-stone-500 mt-0.5">Defina altura, largura, comprimento e tara da caixa vazia.</p>
+            </div>
+            <span class="text-[11px] font-mono text-stone-500">Módulo de Logística</span>
+          </div>
+
+          <form id="boxForm" onsubmit="handleSaveBox(event)" class="p-6 space-y-5">
+            <input type="hidden" id="box_edit_id" value="">
+
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+              <div class="md:col-span-4">
+                <label for="box_nome" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                  Nome da Caixa <span class="text-red-500">*</span>
+                </label>
+                <input type="text" id="box_nome" placeholder="Ex: Caixa Padrão P (Até 100ml)" required class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded focus:border-stone-900">
+              </div>
+
+              <div class="md:col-span-3">
+                <label for="box_codigo" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                  Código de Referência
+                </label>
+                <input type="text" id="box_codigo" placeholder="Ex: CX-01" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+              </div>
+
+              <div class="md:col-span-5">
+                <label for="box_desc" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                  Capacidade Recomendada
+                </label>
+                <input type="text" id="box_desc" placeholder="Ex: 1 frasco de perfume 50ml ou 100ml com proteção" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">
+              </div>
+            </div>
+
+            <!-- DIMENSÕES E PESO VAZIO -->
+            <div class="p-4 rounded bg-[#FAF9F6] border border-stone-200">
+              <span class="block text-[11px] font-bold uppercase tracking-wider text-stone-700 mb-3">
+                Medidas Físicas da Embalagem Fechada (Para Frete)
+              </span>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label for="box_altura" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">
+                    Altura <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <input type="number" id="box_altura" required placeholder="14" class="w-full px-3 py-2 text-sm bg-white border border-stone-300 rounded font-mono">
+                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-stone-400">cm</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="box_largura" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">
+                    Largura <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <input type="number" id="box_largura" required placeholder="9" class="w-full px-3 py-2 text-sm bg-white border border-stone-300 rounded font-mono">
+                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-stone-400">cm</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="box_comprimento" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">
+                    Comprimento <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <input type="number" id="box_comprimento" required placeholder="8" class="w-full px-3 py-2 text-sm bg-white border border-stone-300 rounded font-mono">
+                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-stone-400">cm</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="box_tara" class="block text-[11px] font-semibold text-stone-700 uppercase mb-1">
+                    Peso da Caixa Vazia (Tara)
+                  </label>
+                  <div class="relative">
+                    <input type="number" step="0.01" id="box_tara" placeholder="0.08" class="w-full px-3 py-2 text-sm bg-white border border-stone-300 rounded font-mono">
+                    <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-stone-400">kg</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2">
+              <label class="flex items-center gap-2 text-xs text-stone-700 cursor-pointer">
+                <input type="checkbox" id="box_default" class="rounded border-stone-300 text-stone-900 focus:ring-stone-900">
+                <span>Definir esta embalagem como padrão nos novos cadastros de produtos</span>
+              </label>
+
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="resetBoxForm()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white text-stone-700 hover:bg-stone-50">
+                  Limpar
+                </button>
+                <button type="submit" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors">
+                  Salvar Caixa
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- TABELA DE CAIXAS CADASTRADAS -->
+        <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Modelos de Caixas Ativas</h3>
+            <span id="boxes-count-label" class="text-xs text-stone-500 font-mono">4 modelos</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm border-collapse">
+              <thead>
+                <tr class="border-b border-stone-200 bg-stone-50 text-[11px] uppercase tracking-wider text-stone-500">
+                  <th class="py-3.5 px-6 font-semibold">Ref.</th>
+                  <th class="py-3.5 px-6 font-semibold">Nome da Caixa</th>
+                  <th class="py-3.5 px-6 font-semibold">Dimensões (A x L x C)</th>
+                  <th class="py-3.5 px-6 font-semibold">Peso Vazio</th>
+                  <th class="py-3.5 px-6 font-semibold">Uso Recomendado</th>
+                  <th class="py-3.5 px-6 font-semibold">Status</th>
+                  <th class="py-3.5 px-6 font-semibold text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="boxes-table-body" class="divide-y divide-stone-100 font-normal">
+                <!-- Renderizado via JavaScript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 5: LOJA & CONFIGURAÇÕES (CONFORME PRINT 4)                           -->
+      <!-- ========================================================================= -->
+      <section id="view-loja" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Loja</h2>
+          <p class="text-sm text-stone-500 mt-1">Conteúdo, contatos e configurações da página inicial.</p>
+        </div>
+
+        <form onsubmit="handleSaveStoreSettings(event)" class="space-y-8">
+          <!-- HERO DA PÁGINA INICIAL -->
+          <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Hero da Página Inicial</h3>
+            </div>
+            
+            <div class="p-6 space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Chamada</label>
+                  <input type="text" value="TEODORA" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Botão</label>
+                  <input type="text" value="Ver produtos" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Título</label>
+                <textarea rows="2" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">Perfumes originais.
+Entrega em todo o Brasil.</textarea>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Imagem</label>
+                <input type="url" value="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTATO E REDES -->
+          <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Contato e Redes</h3>
+            </div>
+
+            <div class="p-6 space-y-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">WhatsApp</label>
+                  <input type="url" value="https://wa.me/5511999999999" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Instagram</label>
+                  <input type="text" value="@teodoraperfumes" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Facebook</label>
+                  <input type="text" value="#" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Youtube</label>
+                  <input type="text" value="#" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Pinterest</label>
+                  <input type="text" value="#" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Parcelas Sem Juros</label>
+                  <input type="number" value="6" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Descrição do Rodapé</label>
+                <textarea rows="3" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">Perfumes originais com entrega garantida para todo o Brasil. Curadoria olfativa exclusiva com as melhores marcas internacionais.</textarea>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="px-6 py-2.5 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors">
+                  Salvar Configurações
+                </button>
+              </div>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW 6: PEDIDOS                                                           -->
+      <!-- ========================================================================= -->
+      <section id="view-pedidos" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Pedidos / Vendas</h2>
+            <p class="text-sm text-stone-500 mt-1">Expedição, status Mercado Pago, rastreio e histórico — sincronizado com a API.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="orders-status-filter" class="text-xs px-3 py-2 bg-white border border-stone-200 rounded">
+              <option value="">Todos os status</option>
+              <option value="pending">pending</option>
+              <option value="approved">approved</option>
+              <option value="rejected">rejected</option>
+              <option value="shipped">shipped</option>
+              <option value="delivered">delivered</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+            <button type="button" id="orders-refresh-btn" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50">Atualizar</button>
+          </div>
+        </div>
+
+        <div id="order-detail-panel" class="hidden mb-8"></div>
+
+        <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Fila de Pedidos</h3>
+            <span id="orders-pending-label" class="text-xs font-mono text-stone-500">—</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="border-b border-stone-100 bg-stone-50/70 text-[11px] uppercase tracking-wider text-stone-500">
+                  <th class="py-3 px-6 font-semibold">Pedido</th>
+                  <th class="py-3 px-6 font-semibold">Cliente</th>
+                  <th class="py-3 px-6 font-semibold">Itens</th>
+                  <th class="py-3 px-6 font-semibold">Frete</th>
+                  <th class="py-3 px-6 font-semibold">Total</th>
+                  <th class="py-3 px-6 font-semibold">MP</th>
+                  <th class="py-3 px-6 font-semibold">Status</th>
+                  <th class="py-3 px-6 font-semibold text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody id="orders-table-body" class="divide-y divide-stone-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-cupons" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Cupons de Desconto</h2>
+          <p class="text-sm text-stone-500 mt-1">Promoções validadas pelo servidor no checkout.</p>
+        </div>
+        <div id="coupons-root"></div>
+      </section>
+
+      <section id="view-clientes" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Clientes</h2>
+          <p class="text-sm text-stone-500 mt-1">Base de compradores e histórico.</p>
+        </div>
+        <div id="customers-root"></div>
+      </section>
+
+      <section id="view-auditoria" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">Auditoria & Logs</h2>
+          <p class="text-sm text-stone-500 mt-1">Alterações administrativas e movimentos de estoque.</p>
+        </div>
+        <div id="audit-root" class="space-y-6"></div>
+      </section>
+
     </main>
   </div>
+
+  </div><!-- /appShell -->
+
+  <!-- ========================================================================= -->
+  <!-- MODAL LIVE PREVIEW: "COMO FICA NA LOJA" (FIEL AO PRINT 5 ENVIADO)         -->
+  <!-- ========================================================================= -->
+  <div id="preview-modal" class="fixed inset-0 z-50 hidden bg-stone-900/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-white w-full max-w-6xl rounded-lg shadow-2xl border border-stone-200 overflow-hidden my-auto max-h-[95vh] flex flex-col">
+      
+      <!-- Barra Superior do Modal -->
+      <div class="bg-[#141413] text-stone-300 px-6 py-3.5 flex items-center justify-between shrink-0 border-b border-stone-800">
+        <div class="flex items-center gap-3">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs uppercase tracking-widest font-semibold text-white">Preview em Tempo Real — Loja Virtual TEODORA</span>
+        </div>
+        <button onclick="closeStorePreview()" class="text-stone-400 hover:text-white p-1 rounded transition-colors" aria-label="Fechar preview">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Conteúdo Visual da Página da Loja -->
+      <div class="flex-1 overflow-y-auto bg-white font-sans text-stone-800">
+        
+        <!-- Faixa de Benefícios Superior -->
+        <div class="bg-[#F6F3EE] text-[11px] tracking-wide text-stone-600 border-b border-stone-200 py-2 px-4 flex flex-wrap items-center justify-around gap-2 font-medium">
+          <span>🚚 FRETE GRÁTIS ACIMA DE R$ 299</span>
+          <span>💳 ATÉ 6X SEM JUROS NO CARTÃO • PIX E BOLETO</span>
+          <span>💬 ATENDIMENTO WHATSAPP</span>
+        </div>
+
+        <!-- Cabeçalho da Loja -->
+        <div class="border-b border-stone-100 py-5 px-6 sm:px-12 flex items-center justify-between">
+          <div class="w-1/4 hidden md:block">
+            <div class="relative">
+              <input type="text" placeholder="Buscar perfumes, marcas..." disabled class="w-full text-xs py-1.5 pl-8 pr-3 border border-stone-200 rounded-full bg-stone-50">
+              <svg class="w-3.5 h-3.5 absolute left-2.5 top-2 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <span class="font-serif tracking-[0.25em] text-2xl text-stone-900 block font-normal">TEODORA</span>
+            <span class="text-[9px] tracking-[0.3em] uppercase text-stone-400 block font-light">PERFUMES ORIGINAIS</span>
+          </div>
+
+          <div class="w-1/4 flex items-center justify-end gap-3 text-stone-700 text-xs font-medium">
+            <span class="cursor-pointer">♡ 0</span>
+            <span class="cursor-pointer">👤</span>
+            <div class="bg-stone-900 text-white px-3 py-1.5 rounded-full text-xs flex items-center gap-1.5 cursor-pointer">
+              <span>🛍</span>
+              <span id="preview-cart-count">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Menu da Loja -->
+        <div class="border-b border-stone-200 py-2.5 px-6 flex items-center justify-center gap-6 text-xs uppercase tracking-wider text-stone-600 font-medium">
+          <span class="cursor-pointer hover:text-stone-950 font-bold border-b-2 border-stone-900 pb-0.5">Todos</span>
+          <span class="cursor-pointer hover:text-stone-950">Perfumes</span>
+          <span class="cursor-pointer hover:text-stone-950">Skincare</span>
+          <span class="cursor-pointer hover:text-stone-950">Maquiagem</span>
+          <span class="cursor-pointer hover:text-stone-950">Cabelos</span>
+          <span class="cursor-pointer hover:text-stone-950">Corpo & Banho</span>
+          <span class="cursor-pointer hover:text-stone-950">Kits</span>
+          <span class="cursor-pointer hover:text-stone-950 text-amber-700">Linha Privée</span>
+        </div>
+
+        <!-- Miolo da Página do Produto -->
+        <div class="max-w-6xl mx-auto px-6 py-8">
+          
+          <!-- Breadcrumb e Voltar -->
+          <div class="flex items-center justify-between text-xs text-stone-400 mb-6">
+            <span class="cursor-pointer hover:text-stone-800 flex items-center gap-1 font-medium">
+              ← VOLTAR PARA O CATÁLOGO
+            </span>
+            <div class="text-[11px] font-mono">
+              Início / Perfumes / <span id="preview-breadcrumb-title" class="text-stone-600">Jean Paul Gaultier</span>
+            </div>
+          </div>
+
+          <!-- GRID PRINCIPAL (FOTOS À ESQUERDA, COMPRA À DIREITA) -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            
+            <!-- COLUNA ESQUERDA: FOTOS -->
+            <div class="lg:col-span-6 space-y-4">
+              <!-- Foto Principal com Selo -->
+              <div class="relative bg-gradient-to-b from-sky-50 to-stone-100 rounded border border-stone-200 aspect-[4/5] flex items-center justify-center overflow-hidden p-6">
+                <span id="preview-badge" class="absolute top-4 left-4 bg-white/95 backdrop-blur text-[10px] font-bold uppercase tracking-widest text-stone-800 px-3 py-1 rounded shadow-xs border border-stone-200">
+                  MAIS VENDIDO
+                </span>
+                
+                <img id="preview-main-img" src="https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=700&auto=format&fit=crop&q=80" alt="Produto" class="max-h-full max-w-full object-contain drop-shadow-md transition-all duration-300">
+              </div>
+
+              <!-- Trilho de Miniaturas Logo Abaixo da Foto -->
+              <div id="preview-thumbs-rail" class="flex items-center gap-3 overflow-x-auto pb-2">
+                <!-- Miniaturas renderizadas dinamicamente via JS -->
+              </div>
+            </div>
+
+            <!-- COLUNA DIREITA: DETALHES, PREÇO, BOTÕES E NOTAS -->
+            <div class="lg:col-span-6 space-y-5">
+              
+              <!-- Marca e Título -->
+              <div>
+                <span id="preview-brand" class="text-xs uppercase tracking-[0.2em] font-semibold text-amber-800 block">
+                  JEAN PAUL GAULTIER
+                </span>
+                <h1 id="preview-title" class="font-serif text-3xl font-medium text-stone-900 mt-1 leading-snug">
+                  Jean Paul Gaultier La Belle Feminino Eau de Parfum
+                </h1>
+
+                <!-- Avaliações -->
+                <div class="flex items-center gap-2 mt-2 text-xs">
+                  <div class="text-amber-500 tracking-wider">★★★★★</div>
+                  <span class="font-semibold text-stone-800 font-mono">4.9</span>
+                  <span class="text-stone-400">(48 avaliações)</span>
+                </div>
+              </div>
+
+              <!-- Caixa de Preço & Desconto -->
+              <div class="p-4 rounded bg-[#FAF9F6] border border-stone-200">
+                <div class="flex flex-wrap items-baseline gap-3">
+                  <span id="preview-price" class="text-3xl font-semibold text-stone-900 font-serif">R$ 403,90</span>
+                  <span id="preview-old-price" class="text-sm text-stone-400 line-through font-mono">R$ 464,90</span>
+                  <span id="preview-discount-tag" class="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 font-mono">
+                    -R$ 61,00
+                  </span>
+                </div>
+
+                <div class="mt-2 text-xs text-stone-600 space-y-1">
+                  <div>ou em até <strong id="preview-installments">6x de R$ 67,32 sem juros</strong></div>
+                  <div class="inline-flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-1 rounded mt-1 border border-emerald-200">
+                    <span>⚡</span>
+                    <span id="preview-pix-price">R$ 383,70 no Pix</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Seleção de Apresentação / Volume -->
+              <div>
+                <div class="flex items-center justify-between text-xs mb-2">
+                  <span class="font-semibold uppercase tracking-wider text-stone-600">Volume / Apresentação:</span>
+                  <span id="preview-volume-label" class="text-stone-500 font-medium">Eau de Parfum - 100ml</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button type="button" class="px-4 py-2 border-2 border-stone-900 text-stone-900 text-xs font-semibold rounded bg-stone-50">
+                    <span id="preview-volume-badge">Eau de Parfum • 100ml</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Quantidade e Adicionar à Sacola -->
+              <div class="flex items-center gap-3 pt-2">
+                <div class="flex items-center border border-stone-300 rounded overflow-hidden">
+                  <button type="button" class="px-3 py-2.5 text-stone-600 hover:bg-stone-100 text-sm font-semibold">−</button>
+                  <span class="px-4 py-2 text-xs font-mono font-semibold">1</span>
+                  <button type="button" class="px-3 py-2.5 text-stone-600 hover:bg-stone-100 text-sm font-semibold">+</button>
+                </div>
+
+                <button type="button" onclick="showToast('Produto adicionado à sacola de compras!')" class="flex-1 border border-stone-900 text-stone-900 hover:bg-stone-900 hover:text-white py-2.5 px-4 rounded text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2">
+                  <span>🛍</span>
+                  <span>Adicionar à Sacola</span>
+                </button>
+
+                <button type="button" onclick="showToast('Salvo nos seus favoritos!')" class="p-2.5 border border-stone-300 rounded text-stone-500 hover:text-stone-900 hover:border-stone-900 transition-colors" title="Favoritar">
+                  ♡
+                </button>
+              </div>
+
+              <!-- Botão Comprar Agora -->
+              <button type="button" onclick="showToast('Direcionando para o checkout seguro...')" class="w-full bg-[#1C1917] hover:bg-black text-white py-3 px-6 rounded text-xs font-semibold uppercase tracking-widest transition-all shadow-sm flex items-center justify-center gap-2">
+                <span>🔒</span>
+                <span>Comprar Agora</span>
+              </button>
+
+              <!-- Simulação de Frete -->
+              <div class="p-3.5 rounded bg-stone-50 border border-stone-200 text-xs">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-semibold text-stone-700 flex items-center gap-1.5">
+                    <span>📦</span> Calcular Frete e Prazo de Entrega
+                  </span>
+                  <span class="text-[10px] text-stone-400">Envio para todo o Brasil</span>
+                </div>
+                <div class="flex gap-2">
+                  <input type="text" placeholder="Digite seu CEP (ex: 78051-000)" class="flex-1 px-3 py-1.5 border border-stone-300 rounded text-xs bg-white font-mono">
+                  <button type="button" onclick="showToast('Frete Grátis via Sedex para sua região!')" class="px-4 py-1.5 bg-stone-900 text-white rounded text-xs font-semibold">Calcular</button>
+                </div>
+              </div>
+
+              <!-- NOTAS OLFATIVAS (CARD IDÊNTICO À FOTO 5) -->
+              <div class="p-4 rounded bg-[#FAF9F6] border border-stone-200 space-y-2.5">
+                <div class="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-900">
+                  <span>✦</span>
+                  <span>Notas Olfativas</span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div class="bg-white p-2.5 rounded border border-stone-200">
+                    <span class="text-[9px] uppercase tracking-wider font-bold text-amber-700 block">Notas de Topo</span>
+                    <span id="preview-notes-top" class="text-[11px] text-stone-700 mt-1 block leading-tight">Pêra radiante e bergamota fresca</span>
+                  </div>
+
+                  <div class="bg-white p-2.5 rounded border border-stone-200">
+                    <span class="text-[9px] uppercase tracking-wider font-bold text-amber-700 block">Notas de Coração</span>
+                    <span id="preview-notes-heart" class="text-[11px] text-stone-700 mt-1 block leading-tight">Fava Tonka e jasmim</span>
+                  </div>
+
+                  <div class="bg-white p-2.5 rounded border border-stone-200">
+                    <span class="text-[9px] uppercase tracking-wider font-bold text-amber-700 block">Notas de Fundo</span>
+                    <span id="preview-notes-base" class="text-[11px] text-stone-700 mt-1 block leading-tight">Baunilha de Madagascar</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SEÇÃO INFERIOR: ABAS DE DESCRIÇÃO, INGREDIENTES E AVALIAÇÕES -->
+          <div class="mt-12 pt-8 border-t border-stone-200">
+            <div class="flex items-center gap-8 border-b border-stone-200 text-xs uppercase tracking-wider font-semibold">
+              <span class="border-b-2 border-stone-900 pb-2 text-stone-900 cursor-pointer">Descrição</span>
+              <span class="pb-2 text-stone-400 hover:text-stone-700 cursor-pointer">Ingredientes</span>
+              <span class="pb-2 text-stone-400 hover:text-stone-700 cursor-pointer">Avaliações (48)</span>
+            </div>
+
+            <div class="py-6 text-xs text-stone-600 leading-relaxed max-w-3xl space-y-2">
+              <p id="preview-description-text">Jean Paul Gaultier La Belle Feminino Eau de Parfum. Perfume original lacrado de fábrica.</p>
+              <p class="text-stone-400 font-mono text-[11px]">Família Olfativa: Oriental Gourmand • Origem: França</p>
+            </div>
+          </div>
+
+          <!-- RECOMENDAÇÕES "VOCÊ TAMBÉM PODE GOSTAR" -->
+          <div class="mt-8 pt-8 border-t border-stone-200">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <span class="text-[10px] uppercase tracking-widest text-amber-800 font-bold block">Sugestões</span>
+                <h3 class="font-serif text-xl text-stone-900 font-medium">Você também pode gostar</h3>
+              </div>
+              <span class="text-xs underline cursor-pointer text-stone-500 hover:text-stone-900">Ver Catálogo</span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- Item 1 -->
+              <div class="bg-white rounded border border-stone-200 p-3 flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
+                <div class="aspect-square bg-stone-50 rounded overflow-hidden mb-3 relative">
+                  <span class="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider bg-white px-1.5 py-0.5 rounded shadow-xs">Lançamento</span>
+                  <img src="https://images.unsplash.com/photo-1547887537-6158d64c35b3?w=500&auto=format&fit=crop&q=80" alt="Perfume" class="w-full h-full object-contain p-2">
+                </div>
+                <div class="space-y-1">
+                  <span class="text-[10px] uppercase font-bold text-stone-400 block">Jean Paul Gaultier</span>
+                  <h4 class="text-xs font-semibold text-stone-900 truncate">La Belle Le Parfum Intense</h4>
+                  <div class="text-xs font-mono font-semibold text-stone-900">R$ 444,90</div>
+                </div>
+                <button type="button" class="mt-3 w-full py-1.5 text-[11px] uppercase font-semibold border border-stone-200 rounded hover:border-stone-900 transition-colors">Ver Detalhes</button>
+              </div>
+
+              <!-- Item 2 -->
+              <div class="bg-white rounded border border-stone-200 p-3 flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
+                <div class="aspect-square bg-stone-50 rounded overflow-hidden mb-3 relative">
+                  <span class="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider bg-white px-1.5 py-0.5 rounded shadow-xs">Mais Vendido</span>
+                  <img src="https://images.unsplash.com/photo-1523293182086-7651a899d37f?w=500&auto=format&fit=crop&q=80" alt="Perfume" class="w-full h-full object-contain p-2">
+                </div>
+                <div class="space-y-1">
+                  <span class="text-[10px] uppercase font-bold text-stone-400 block">Jean Paul Gaultier</span>
+                  <h4 class="text-xs font-semibold text-stone-900 truncate">Scandal Eau de Parfum</h4>
+                  <div class="text-xs font-mono font-semibold text-stone-900">R$ 419,90</div>
+                </div>
+                <button type="button" class="mt-3 w-full py-1.5 text-[11px] uppercase font-semibold border border-stone-200 rounded hover:border-stone-900 transition-colors">Ver Detalhes</button>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="bg-white rounded border border-stone-200 p-3 flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
+                <div class="aspect-square bg-stone-50 rounded overflow-hidden mb-3 relative">
+                  <img src="https://images.unsplash.com/photo-1588405748880-12d1d2a59f75?w=500&auto=format&fit=crop&q=80" alt="Perfume" class="w-full h-full object-contain p-2">
+                </div>
+                <div class="space-y-1">
+                  <span class="text-[10px] uppercase font-bold text-stone-400 block">Jean Paul Gaultier</span>
+                  <h4 class="text-xs font-semibold text-stone-900 truncate">Classique Eau de Toilette</h4>
+                  <div class="text-xs font-mono font-semibold text-stone-900">R$ 363,90</div>
+                </div>
+                <button type="button" class="mt-3 w-full py-1.5 text-[11px] uppercase font-semibold border border-stone-200 rounded hover:border-stone-900 transition-colors">Ver Detalhes</button>
+              </div>
+
+              <!-- Item 4 -->
+              <div class="bg-white rounded border border-stone-200 p-3 flex flex-col justify-between group cursor-pointer hover:shadow-md transition-shadow">
+                <div class="aspect-square bg-stone-50 rounded overflow-hidden mb-3 relative">
+                  <span class="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider bg-white px-1.5 py-0.5 rounded shadow-xs">Lançamento</span>
+                  <img src="https://images.unsplash.com/photo-1594035910387-fea47794261f?w=500&auto=format&fit=crop&q=80" alt="Perfume" class="w-full h-full object-contain p-2">
+                </div>
+                <div class="space-y-1">
+                  <span class="text-[10px] uppercase font-bold text-stone-400 block">Carolina Herrera</span>
+                  <h4 class="text-xs font-semibold text-stone-900 truncate">Good Girl Blush EDP</h4>
+                  <div class="text-xs font-mono font-semibold text-stone-900">R$ 452,90</div>
+                </div>
+                <button type="button" class="mt-3 w-full py-1.5 text-[11px] uppercase font-semibold border border-stone-200 rounded hover:border-stone-900 transition-colors">Ver Detalhes</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Rodapé do Preview -->
+        <div class="bg-[#F8F6F2] border-t border-stone-200 py-8 px-8 text-center text-xs text-stone-500">
+          <span class="font-serif tracking-[0.2em] text-sm text-stone-800 uppercase block">TEODORA</span>
+          <p class="mt-1 text-[11px]">© 2026 TEODORA COSMÉTICOS LTDA. Todos os direitos reservados. Mais que beleza, você.</p>
+        </div>
+
+      </div>
+
+      <!-- Rodapé do Modal -->
+      <div class="bg-stone-50 px-6 py-3 border-t border-stone-200 flex items-center justify-between shrink-0">
+        <span class="text-xs text-stone-500">Visualização fiel renderizada a partir dos dados do painel administrativo.</span>
+        <button onclick="closeStorePreview()" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">
+          Fechar Preview
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SISTEMA DE NOTIFICAÇÃO TOAST ELEGANTE (SEM ALERT) -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-stone-900 text-white text-xs px-4 py-3 rounded shadow-lg border border-stone-800">
+    <span class="text-emerald-400 text-sm">✓</span>
+    <span id="toast-message">Operação concluída com sucesso!</span>
+  </div>
+
 
   <script src="/js/api.js"></script>
   <script src="/admin/js/admin.js"></script>

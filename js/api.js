@@ -56,7 +56,13 @@
     if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch(`${API_BASE}${path}`, { method: 'POST', headers, body: formData });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+    if (!res.ok) {
+      const detail = data.detail;
+      const message = Array.isArray(detail)
+        ? detail.map((d) => d.msg || JSON.stringify(d)).join('; ')
+        : (detail || `HTTP ${res.status}`);
+      throw new Error(message);
+    }
     return data;
   }
 
