@@ -10,7 +10,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/tailwind.css">
   <link rel="stylesheet" href="css/styles.css">
-  <script>window.TEODORA_API_BASE = window.TEODORA_API_BASE || (location.port === '3001' ? '' : 'http://127.0.0.1:3001');</script>
+  <script>
+    (function () {
+      if (typeof window.TEODORA_API_BASE === 'string') return;
+      const host = location.hostname;
+      const port = location.port;
+      const isLocal = host === '127.0.0.1' || host === 'localhost' || host === '';
+      if (isLocal && port === '3001') window.TEODORA_API_BASE = '';
+      else if (isLocal) window.TEODORA_API_BASE = 'http://127.0.0.1:3001';
+      else window.TEODORA_API_BASE = '';
+    })();
+  </script>
   <style>
     .auth-page {
       --auth-bg: #f3f1ef;

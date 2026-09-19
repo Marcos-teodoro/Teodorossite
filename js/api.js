@@ -1,9 +1,14 @@
 /** Cliente HTTP Teodora + sessão */
 (function (global) {
-  const API_BASE = (typeof global.TEODORA_API_BASE === 'string'
-    ? global.TEODORA_API_BASE
-    : 'http://127.0.0.1:3001'
-  ).replace(/\/$/, '');
+  function resolveApiBase() {
+    if (typeof global.TEODORA_API_BASE === 'string') {
+      return global.TEODORA_API_BASE.replace(/\/$/, '');
+    }
+    const host = global.location?.hostname || '';
+    const isLocal = host === '127.0.0.1' || host === 'localhost' || host === '';
+    return isLocal ? 'http://127.0.0.1:3001' : '';
+  }
+  const API_BASE = resolveApiBase();
   const TOKEN_KEY = 'teodora_token';
   const USER_KEY = 'teodora_user';
 
