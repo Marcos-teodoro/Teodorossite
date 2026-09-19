@@ -56,6 +56,8 @@ app.include_router(admin.router)
 app.include_router(admin_extra.router)
 
 uploads_root = settings.uploads_dir.parent
+uploads_root.mkdir(parents=True, exist_ok=True)
+settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(uploads_root)), name="uploads")
 
 
