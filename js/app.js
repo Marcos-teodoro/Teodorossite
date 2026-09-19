@@ -1311,9 +1311,19 @@ async function executePaymentTransaction() {
   const doc = (document.getElementById('buyerDoc')?.value || '').trim();
   const phone = (document.getElementById('buyerPhone')?.value || '').trim();
   const address = (document.getElementById('buyerAddress')?.value || '').trim();
+  const addressNumber = (document.getElementById('buyerAddressNumber')?.value || '').trim();
+  const addressComplement = (document.getElementById('buyerAddressComplement')?.value || '').trim();
 
   if (!name || !email) {
     displayToast('Informe nome e e-mail para continuar.');
+    return;
+  }
+  if (!addressNumber) {
+    displayToast('Informe o número do endereço de entrega.');
+    return;
+  }
+  if (!APP_STATE.shippingOption || !(APP_STATE.shippingOption.cep || document.getElementById('cepInput')?.value)) {
+    displayToast('Calcule e selecione o frete antes de pagar.');
     return;
   }
   if (APP_STATE.cart.length === 0) {
@@ -1333,6 +1343,8 @@ async function executePaymentTransaction() {
     const token = window.TeodoraAPI?.getToken?.();
     if (token) headers.Authorization = `Bearer ${token}`;
 
+    const addressLine = [address, addressNumber && `nº ${addressNumber}`, addressComplement].filter(Boolean).join(', ');
+
     const payload = {
       items: APP_STATE.cart.map((item) => ({ id: item.id, variantId: item.variantId || null, quantity: item.quantity })),
       shippingCost: APP_STATE.shippingCost || 0,
@@ -1340,10 +1352,22 @@ async function executePaymentTransaction() {
       paymentHint: APP_STATE.paymentMethod || 'pix',
       shippingOption: {
         ...(APP_STATE.shippingOption || {}),
-        cep: (document.getElementById('cepInput')?.value || '').replace(/\D/g, ''),
+        cep: (document.getElementById('cepInput')?.value || APP_STATE.shippingOption?.cep || '').replace(/\D/g, ''),
         address: APP_STATE.shippingInfo || null,
+        address_number: addressNumber,
+        address_complement: addressComplement,
+        originCep: APP_STATE.shippingOption?.originCep || '',
+        originLabel: APP_STATE.shippingOption?.originLabel || '',
       },
-      payer: { name, email, doc, phone, address },
+      payer: {
+        name,
+        email,
+        doc,
+        phone,
+        address: addressLine,
+        addressNumber,
+        addressComplement,
+      },
     };
 
     const res = await fetch(`${apiBase}/api/checkout/prepare`, {

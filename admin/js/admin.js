@@ -1504,8 +1504,34 @@
             </form>
 
             <div class="space-y-4 p-4 bg-amber-50/50 rounded border border-amber-200/80">
-              <span class="font-semibold text-stone-700 uppercase tracking-wider text-[10px] block">Gerar etiqueta CepCerto</span>
-              <p class="text-[11px] text-stone-500">Emite postagem com declaração de conteúdo (debita saldo). Preencha o CEP se o pedido não tiver.</p>
+              <span class="font-semibold text-stone-700 uppercase tracking-wider text-[10px] block">Etiqueta CepCerto</span>
+              ${(() => {
+                const lab = snap.label || {};
+                const cost = lab.valor_etiqueta != null ? Number(lab.valor_etiqueta) : null;
+                const charged = Number(o.shipping_cost || 0);
+                const margin = cost != null ? charged - cost : null;
+                if (lab.codigo_objeto && !lab.cancelled) {
+                  return `
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-3">
+                    <div><span class="text-stone-400 uppercase text-[10px] block">Frete pago (cliente)</span><div class="font-mono font-semibold mt-0.5">${money(charged)}</div></div>
+                    <div><span class="text-stone-400 uppercase text-[10px] block">Custo etiqueta</span><div class="font-mono font-semibold mt-0.5">${cost != null ? money(cost) : '—'}</div></div>
+                    <div><span class="text-stone-400 uppercase text-[10px] block">Margem</span><div class="font-mono font-semibold mt-0.5 ${margin != null && margin >= 0 ? 'text-emerald-800' : 'text-red-700'}">${margin != null ? money(margin) : '—'}</div></div>
+                    <div><span class="text-stone-400 uppercase text-[10px] block">Origem</span><div class="font-mono text-[11px] mt-0.5">${escapeHtml(lab.originCep || snap.originCep || '—')}</div></div>
+                  </div>
+                  <p class="text-xs mb-2"><span class="text-stone-400">Objeto</span> <span class="font-mono font-semibold">${escapeHtml(lab.codigo_objeto)}</span>
+                    ${lab.originLabel ? ` · ${escapeHtml(lab.originLabel)}` : ''}</p>
+                  <div class="flex flex-wrap gap-2">
+                    ${lab.pdf_url_etiqueta ? `<a href="${escapeHtml(lab.pdf_url_etiqueta)}" target="_blank" rel="noopener" class="px-4 py-2 text-xs font-semibold rounded bg-stone-900 text-white">Abrir PDF</a>` : ''}
+                    ${lab.pdf_url_dce ? `<a href="${escapeHtml(lab.pdf_url_dce)}" target="_blank" rel="noopener" class="px-4 py-2 text-xs font-semibold rounded border border-stone-300 bg-white">Declaração</a>` : ''}
+                    <button type="button" onclick="cancelOrderLabel('${oid}')" class="px-4 py-2 text-xs font-semibold rounded border border-red-200 text-red-700 bg-white hover:bg-red-50">Cancelar etiqueta</button>
+                    <button type="button" onclick="generateOrderLabel('${oid}')" class="px-4 py-2 text-xs font-semibold rounded border border-stone-300 bg-white">Reabrir / dados</button>
+                  </div>`;
+                }
+                if (lab.cancelled) {
+                  return `<p class="text-xs text-stone-500 mb-2">Etiqueta cancelada (${escapeHtml(lab.codigo_objeto || '')}). Pode gerar outra.</p>`;
+                }
+                return `<p class="text-[11px] text-stone-500 mb-3">Emite postagem (debita saldo). CEP e nº se faltarem no pedido.</p>`;
+              })()}
               <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
                   <label class="block text-[10px] font-semibold uppercase text-stone-600 mb-1">CEP destino</label>
@@ -1522,12 +1548,12 @@
                 </div>
                 <div>
                   <label class="block text-[10px] font-semibold uppercase text-stone-600 mb-1">Nº endereço dest.</label>
-                  <input id="_label_num_${oid}" value="" placeholder="auto" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                  <input id="_label_num_${oid}" value="${escapeHtml(String(snap.address_number || ''))}" placeholder="auto" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
                 </div>
               </div>
               <button type="button" id="_label_btn_${oid}" onclick="generateOrderLabel('${oid}')"
                 class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-amber-800 hover:bg-amber-900 text-white">
-                Gerar etiqueta
+                ${(snap.label && snap.label.codigo_objeto && !snap.label.cancelled) ? 'Reconsultar etiqueta' : 'Gerar etiqueta'}
               </button>
               <div id="_label_msg_${oid}" class="text-xs text-stone-600"></div>
             </div>
@@ -1573,13 +1599,12 @@
   };
 
   window.generateOrderLabel = async function (orderId) {
-    if (!confirm('Gerar etiqueta CepCerto? Isso pode debitar saldo da carteira.')) return;
     const btn = document.getElementById(`_label_btn_${orderId}`);
     const msg = document.getElementById(`_label_msg_${orderId}`);
     const cep = document.getElementById(`_label_cep_${orderId}`)?.value || '';
     const tipo = document.getElementById(`_label_tipo_${orderId}`)?.value || 'pac';
     const num = document.getElementById(`_label_num_${orderId}`)?.value || '';
-    if (btn) { btn.disabled = true; btn.textContent = 'Gerando…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Processando…'; }
     if (msg) msg.textContent = '';
     try {
       const payload = { cep_destinatario: cep, tipo_entrega: tipo };
@@ -1589,13 +1614,15 @@
         body: JSON.stringify(payload),
       });
       const label = res.label || {};
-      showToast(label.mensagem || 'Etiqueta gerada.');
+      showToast(res.reused ? 'Etiqueta já existia.' : (label.mensagem || 'Etiqueta gerada.'));
       if (msg) {
+        const cost = res.label_cost != null ? res.label_cost : label.valor_etiqueta;
         msg.innerHTML = `
           <div class="space-y-1">
             <div><span class="text-stone-400">Objeto:</span> <span class="font-mono font-semibold">${escapeHtml(label.codigo_objeto || '—')}</span></div>
-            ${label.pdf_url_etiqueta ? `<a class="text-amber-900 underline font-semibold" href="${escapeHtml(label.pdf_url_etiqueta)}" target="_blank" rel="noopener">Baixar PDF da etiqueta</a>` : ''}
-            ${label.pdf_url_dce ? `<a class="text-stone-600 underline block" href="${escapeHtml(label.pdf_url_dce)}" target="_blank" rel="noopener">Declaração de conteúdo</a>` : ''}
+            ${cost != null ? `<div><span class="text-stone-400">Custo:</span> <span class="font-mono font-semibold">${money(cost)}</span>
+              ${res.margin != null ? ` · margem ${money(res.margin)}` : ''}</div>` : ''}
+            ${label.pdf_url_etiqueta ? `<a class="text-amber-900 underline font-semibold" href="${escapeHtml(label.pdf_url_etiqueta)}" target="_blank" rel="noopener">Baixar PDF</a>` : ''}
           </div>`;
       }
       await showOrderDetail(orderId);
@@ -1608,17 +1635,61 @@
     }
   };
 
+  window.cancelOrderLabel = async function (orderId) {
+    if (!confirm('Cancelar a etiqueta no CepCerto? Pode haver estorno de saldo.')) return;
+    try {
+      const res = await TeodoraAPI.api(`/api/admin/orders/${orderId}/label/cancel`, { method: 'POST', body: '{}' });
+      showToast(res.cancel?.mensagem || 'Etiqueta cancelada.');
+      await showOrderDetail(orderId);
+    } catch (err) {
+      showToast(err.message || 'Erro ao cancelar.', 'error');
+    }
+  };
+
   // ============================================================
   // CEPCERTO
   // ============================================================
 
+  const ORIGIN_LABELS = {
+    pac: 'PAC (Correios)',
+    sedex: 'SEDEX',
+    jadlog_package: 'Jadlog Package',
+    jadlog_com: 'Jadlog .COM',
+    loggi: 'Loggi',
+    mini_envio: 'Mini Envio',
+  };
+
   async function loadCepCertoPanel() {
     await loadCepCertoStatus();
+    await loadCepCertoSpending();
+  }
+
+  function renderOriginsForm(origins, codes) {
+    const box = document.getElementById('cepcerto-origins-rows');
+    if (!box) return;
+    const list = codes && codes.length ? codes : Object.keys(ORIGIN_LABELS);
+    box.innerHTML = list.map((code) => {
+      const o = (origins && origins[code]) || {};
+      return `
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-end" data-origin-code="${escapeHtml(code)}">
+          <div>
+            <label class="block text-[10px] font-semibold uppercase text-stone-500 mb-1">${escapeHtml(ORIGIN_LABELS[code] || code)}</label>
+            <input data-field="cep" value="${escapeHtml(o.cep || '')}" maxlength="9" placeholder="CEP 00000-000"
+              class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[10px] font-semibold uppercase text-stone-500 mb-1">Nome do depósito / ponto</label>
+            <input data-field="label" value="${escapeHtml(o.label || '')}" placeholder="Ex.: Base Jadlog Guarulhos"
+              class="w-full px-3 py-2 text-sm border border-stone-200 rounded">
+          </div>
+        </div>`;
+    }).join('');
   }
 
   window.loadCepCertoStatus = async function () {
     const grid = document.getElementById('cepcerto-status-grid');
     const badge = document.getElementById('nav-cepcerto-badge');
+    const checklist = document.getElementById('cepcerto-checklist');
     try {
       const data = await TeodoraAPI.api('/api/admin/cepcerto/status');
       const shipper = data.shipper || {};
@@ -1629,20 +1700,21 @@
       set('shipper_email', shipper.email_remetente);
       set('shipper_address_number', shipper.numero_endereco_remetente);
       set('shipper_complement', shipper.complemento_remetente);
+      renderOriginsForm(data.origins || {}, data.service_codes);
 
-      const ok = Boolean(data.configured);
+      const ok = Boolean(data.ready || data.configured);
       if (badge) {
-        badge.textContent = ok ? 'OK' : 'OFF';
-        badge.className = ok
+        badge.textContent = data.ready ? 'OK' : (data.configured ? '…' : 'OFF');
+        badge.className = data.ready
           ? 'text-[10px] bg-emerald-900/80 text-emerald-200 px-1.5 py-0.5 rounded font-mono'
           : 'text-[10px] bg-amber-900/80 text-amber-200 px-1.5 py-0.5 rounded font-mono';
       }
       if (grid) {
-        const saldo = data.saldo?.saldo_atual || (data.message ? '—' : '—');
+        const saldo = data.saldo?.saldo_atual || '—';
         grid.innerHTML = `
           <div>
             <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Token postagem</span>
-            <div class="mt-1 text-sm font-semibold ${ok ? 'text-emerald-800' : 'text-amber-800'}">${ok ? 'Configurado' : 'Ausente'}</div>
+            <div class="mt-1 text-sm font-semibold ${data.configured ? 'text-emerald-800' : 'text-amber-800'}">${data.configured ? 'Configurado' : 'Ausente (Railway)'}</div>
           </div>
           <div>
             <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Saldo</span>
@@ -1650,17 +1722,64 @@
             ${data.saldo?.nome_cliente ? `<div class="text-[11px] text-stone-400 mt-0.5">${escapeHtml(data.saldo.nome_cliente)}</div>` : ''}
           </div>
           <div>
-            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">CEP origem</span>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Fallback origem</span>
             <div class="mt-1 text-sm font-mono text-stone-800">${escapeHtml(data.origin_cep || '—')}</div>
           </div>
           <div>
-            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Chave consumo CEP</span>
-            <div class="mt-1 text-sm font-semibold ${data.has_consumption_key ? 'text-emerald-800' : 'text-stone-500'}">${data.has_consumption_key ? 'Sim' : 'Não (ViaCEP)'}</div>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Pronto p/ emitir</span>
+            <div class="mt-1 text-sm font-semibold ${data.ready ? 'text-emerald-800' : 'text-amber-800'}">${data.ready ? 'Sim' : 'Não'}</div>
           </div>
           ${data.message ? `<div class="sm:col-span-2 lg:col-span-4 text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded px-3 py-2">${escapeHtml(data.message)}</div>` : ''}`;
       }
+      if (checklist) {
+        checklist.innerHTML = (data.checklist || []).map((item) =>
+          `<li class="flex items-center gap-2 ${item.ok ? 'text-emerald-800' : 'text-amber-800'}">
+            <span class="font-mono text-[10px]">${item.ok ? '[ok]' : '[ ]'}</span> ${escapeHtml(item.label)}</li>`
+        ).join('') || '';
+      }
     } catch (err) {
       if (grid) grid.innerHTML = `<div class="text-sm text-red-600">${escapeHtml(err.message || 'Erro')}</div>`;
+    }
+  };
+
+  window.loadCepCertoSpending = async function () {
+    const grid = document.getElementById('cepcerto-spending-grid');
+    if (!grid) return;
+    try {
+      const data = await TeodoraAPI.api('/api/admin/cepcerto/spending?days=30');
+      grid.innerHTML = `
+        <div><span class="text-[10px] uppercase text-stone-400 font-semibold">Etiquetas</span>
+          <div class="mt-1 font-mono font-semibold text-lg">${data.labels_count || 0}</div></div>
+        <div><span class="text-[10px] uppercase text-stone-400 font-semibold">Custo etiquetas</span>
+          <div class="mt-1 font-mono font-semibold text-lg">${money(data.label_cost_total || 0)}</div></div>
+        <div><span class="text-[10px] uppercase text-stone-400 font-semibold">Frete cobrado</span>
+          <div class="mt-1 font-mono font-semibold text-lg">${money(data.freight_charged_total || 0)}</div></div>
+        <div><span class="text-[10px] uppercase text-stone-400 font-semibold">Margem</span>
+          <div class="mt-1 font-mono font-semibold text-lg ${(data.margin_total || 0) >= 0 ? 'text-emerald-800' : 'text-red-700'}">${money(data.margin_total || 0)}</div></div>`;
+    } catch (err) {
+      grid.innerHTML = `<div class="text-xs text-red-600">${escapeHtml(err.message || 'Erro')}</div>`;
+    }
+  };
+
+  window.saveCepCertoOrigins = async function (event) {
+    event.preventDefault();
+    const rows = document.querySelectorAll('#cepcerto-origins-rows [data-origin-code]');
+    const map = {};
+    rows.forEach((row) => {
+      const code = row.getAttribute('data-origin-code');
+      const cep = (row.querySelector('[data-field="cep"]')?.value || '').replace(/\D/g, '');
+      const label = (row.querySelector('[data-field="label"]')?.value || '').trim();
+      map[code] = { cep, label };
+    });
+    try {
+      await TeodoraAPI.api('/api/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify({ shipping_origins_json: JSON.stringify(map) }),
+      });
+      showToast('CEPs de origem salvos.');
+      await loadCepCertoStatus();
+    } catch (err) {
+      showToast(err.message || 'Erro ao salvar origens.', 'error');
     }
   };
 
@@ -1679,6 +1798,30 @@
       showToast('Remetente salvo.');
       await loadCepCertoStatus();
     } catch (err) { showToast(err.message || 'Erro ao salvar remetente.', 'error'); }
+  };
+
+  window.runCepCertoCredit = async function (event) {
+    event.preventDefault();
+    const box = document.getElementById('cc_credit_result');
+    if (box) box.textContent = 'Gerando PIX…';
+    try {
+      const data = await TeodoraAPI.api('/api/admin/cepcerto/credit', {
+        method: 'POST',
+        body: JSON.stringify({ valor: document.getElementById('cc_credit_valor').value }),
+      });
+      const pix = data.pix_copia_cola || '';
+      if (box) {
+        box.innerHTML = `
+          <p class="font-medium text-stone-800">${escapeHtml(data.mensagem || 'PIX gerado')}</p>
+          <p class="text-stone-500">Valor: ${money(data.valor || 0)}</p>
+          ${pix ? `<textarea readonly class="w-full mt-2 text-[10px] font-mono border border-stone-200 rounded p-2 h-20">${escapeHtml(pix)}</textarea>
+            <button type="button" class="mt-1 text-xs font-semibold underline" onclick="navigator.clipboard.writeText(${JSON.stringify(pix)});showToast('PIX copiado.');">Copiar código</button>` : '<p class="text-amber-800">Resposta sem código PIX — confira o raw no CepCerto.</p>'}`;
+      }
+      showToast('Cobrança PIX criada. Saldo entra após o pagamento.');
+    } catch (err) {
+      if (box) box.textContent = err.message || 'Erro';
+      showToast(err.message || 'Erro ao gerar crédito', 'error');
+    }
   };
 
   window.runCepCertoQuote = async function (event) {
@@ -1703,7 +1846,10 @@
         box.innerHTML = `
           <p class="font-medium text-stone-800">${escapeHtml([addr.localidade, addr.uf].filter(Boolean).join('/') || 'CEP ok')}${data.demo ? ' · estimativa' : ''}</p>
           <ul class="mt-2 space-y-1">${opts.map((o) =>
-            `<li class="flex justify-between gap-4 border-b border-stone-100 py-1"><span>${escapeHtml(o.name)}${o.days ? ` · ${escapeHtml(String(o.days))}` : ''}</span><span class="font-mono font-semibold">${money(o.price)}</span></li>`
+            `<li class="flex justify-between gap-4 border-b border-stone-100 py-1">
+              <span>${escapeHtml(o.name)}${o.days ? ` · ${escapeHtml(String(o.days))}` : ''}
+                ${o.originCep ? `<span class="text-stone-400"> · origem ${escapeHtml(o.originCep)}</span>` : ''}</span>
+              <span class="font-mono font-semibold">${money(o.price)}</span></li>`
           ).join('') || '<li class="text-stone-400">Sem opções</li>'}</ul>`;
       }
     } catch (err) {

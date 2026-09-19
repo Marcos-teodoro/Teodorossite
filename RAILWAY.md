@@ -5,7 +5,7 @@
 2. Repo: `Marcos-teodoro/Teodorossite`  
 3. Root do serviço: pasta do repositório (não só `server`)
 
-O deploy usa **Dockerfile** (Python 3.11), não Nixpacks — evita o erro `pip: command not found` causado pelo `package.json` na raiz.
+O deploy usa **Dockerfile** (Python 3.11).
 
 ## 2) Start Command
 ```bash
@@ -13,8 +13,6 @@ cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT
 ```
 
 ## 3) Variáveis (Settings → Variables)
-
-Substitua pelo seu domínio Railway (já provisionado):
 
 ```
 BASE_URL=https://teodorossite-production.up.railway.app
@@ -29,32 +27,30 @@ MP_ACCESS_TOKEN=
 MP_PUBLIC_KEY=
 MP_SANDBOX=false
 
+# CepCerto — no Railway só o token (secret). CEPs/remetente = Admin → CepCerto
 CEPCERTO_BASE_URL=https://cepcerto.com
 CEPCERTO_POSTAGE_TOKEN=
 CEPCERTO_CONSUMPTION_KEY=
 CEPCERTO_ORIGIN_CEP=01310100
-CEPCERTO_SHIPPER_NAME=Teodora Perfumes
-CEPCERTO_SHIPPER_DOC=
-CEPCERTO_SHIPPER_PHONE=
-CEPCERTO_SHIPPER_EMAIL=
 
 # Galeria de fotos (Supabase Storage)
 SUPABASE_URL=https://SEU-PROJETO.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-No admin: menu **CepCerto** (saldo, cotação, rastreio, remetente) e em **Pedidos → Detalhes** o botão **Gerar etiqueta**.
+### CepCerto no admin (sem redeploy)
+No painel **Admin → CepCerto** você cadastra:
+- Remetente (nome, CPF/CNPJ, telefone…)
+- **CEP de origem por tipo de frete** (PAC, SEDEX, Jadlog, Loggi…)
+- Saldo, crédito PIX, gastos com etiquetas
+- Em **Pedidos → Detalhes**: gerar / cancelar etiqueta (grava custo e margem vs frete pago pelo cliente)
 
-Railway injeta `PORT=8080` sozinho — **não** fixe 3001 no Start Command. Use:
-
-```bash
-cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
+O cliente paga o frete **junto no total** do Mercado Pago. A etiqueta debita a **carteira CepCerto da loja**.
 
 ## 4) URLs
 - Loja: https://teodorossite-production.up.railway.app/
 - Admin: https://teodorossite-production.up.railway.app/admin/
 - Health: https://teodorossite-production.up.railway.app/api/health
 
-## 5) Volume (importante)
-SQLite e fotos ficam no disco do container. Em Settings → Volumes, monte um volume em `/app/server` (ou o path onde roda o app) para não perder banco/uploads a cada redeploy. Sem volume, o catálogo volta ao seed no restart.
+## 5) Volume
+SQLite e uploads: monte um volume em `/app/server` para não perder dados a cada redeploy.

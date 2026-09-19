@@ -1295,16 +1295,53 @@ Entrega em todo o Brasil.</textarea>
             <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Situação da integração</h3>
             <button type="button" onclick="loadCepCertoStatus()" class="text-xs px-3 py-1.5 rounded border border-stone-300 bg-white hover:bg-stone-50 font-semibold">Atualizar</button>
           </div>
-          <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" id="cepcerto-status-grid">
-            <div class="text-xs text-stone-400">Carregando…</div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" id="cepcerto-status-grid">
+              <div class="text-xs text-stone-400">Carregando…</div>
+            </div>
+            <ul id="cepcerto-checklist" class="text-xs space-y-1.5 border-t border-stone-100 pt-4"></ul>
           </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <div id="cepcerto-spending-card" class="bg-white rounded border border-brand-border overflow-hidden lg:col-span-2">
+            <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Gastos com etiquetas (30 dias)</h3>
+              <button type="button" onclick="loadCepCertoSpending()" class="text-xs px-3 py-1 rounded border border-stone-300 bg-white hover:bg-stone-50 font-semibold">Atualizar</button>
+            </div>
+            <div id="cepcerto-spending-grid" class="p-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+              <div class="text-xs text-stone-400">—</div>
+            </div>
+          </div>
+          <div class="bg-white rounded border border-brand-border overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Crédito PIX</h3>
+              <p class="text-[11px] text-stone-500 mt-0.5">Recarrega a carteira da loja (não do cliente).</p>
+            </div>
+            <form class="p-6 space-y-3" onsubmit="runCepCertoCredit(event)">
+              <input id="cc_credit_valor" type="number" min="5" max="5000" step="0.01" value="50" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono" placeholder="Valor R$">
+              <button type="submit" class="w-full px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">Gerar PIX</button>
+              <div id="cc_credit_result" class="text-xs text-stone-600 space-y-2"></div>
+            </form>
+          </div>
+        </div>
+
+        <div class="bg-white rounded border border-brand-border overflow-hidden mb-6">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Pontos de retirada (CEP de origem por frete)</h3>
+            <p class="text-[11px] text-stone-500 mt-0.5">Cadastre aqui — não precisa alterar Variables no Railway.</p>
+          </div>
+          <form id="cepcerto-origins-form" class="p-6 space-y-4" onsubmit="saveCepCertoOrigins(event)">
+            <div id="cepcerto-origins-rows" class="space-y-3"></div>
+            <button type="submit" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">Salvar origens</button>
+          </form>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div class="bg-white rounded border border-brand-border overflow-hidden">
             <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
               <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Dados do remetente</h3>
-              <p class="text-[11px] text-stone-500 mt-0.5">Usados na emissão de etiquetas. Também dá para definir via .env.</p>
+              <p class="text-[11px] text-stone-500 mt-0.5">Usados na emissão de etiquetas.</p>
             </div>
             <form id="cepcerto-shipper-form" class="p-6 space-y-4" onsubmit="saveCepCertoShipper(event)">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

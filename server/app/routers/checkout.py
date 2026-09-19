@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 from uuid import uuid4
 
@@ -84,6 +85,15 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
             merchandise = round_money(merchandise - coupon_discount)
 
     shipping_cost = max(0.0, round_money(body.shipping_cost or 0))
+    settings = get_settings()
+    shipping_option = body.shipping_option or {}
+    if settings.cepcerto_postage_token:
+        dest_cep = re.sub(r"\D", "", str(shipping_option.get("cep") or ""))
+        if len(dest_cep) != 8:
+            raise HTTPException(status_code=400, detail="Informe um CEP válido e calcule o frete.")
+        if not shipping_option.get("code") and not shipping_option.get("name"):
+            raise HTTPException(status_code=400, detail="Selecione uma opção de frete antes de pagar.")
+
     total = round_money(merchandise + shipping_cost)
 
     payment_hint = (body.payment_hint or "card").lower()
@@ -112,7 +122,12 @@ def checkout_prepare(
     validated = build_validated_order(body)
     order_id = str(uuid4())
     payer = body.payer or {}
-    shipping_snapshot = body.shipping_option or {}
+    shipping_snapshot = dict(body.shipping_option or {})
+    # Normaliza campos de endereço no snapshot
+    if payer.get("addressNumber") or payer.get("address_number"):
+        shipping_snapshot["address_number"] = payer.get("addressNumber") or payer.get("address_number")
+    if payer.get("addressComplement") or payer.get("address_complement"):
+        shipping_snapshot["address_complement"] = payer.get("addressComplement") or payer.get("address_complement")
 
     with get_connection() as conn:
         conn.execute(
