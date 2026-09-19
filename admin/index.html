@@ -152,6 +152,15 @@
         <span class="text-[10px] bg-stone-800 text-stone-400 px-1.5 py-0.5 rounded font-mono">Frete</span>
       </button>
 
+      <button onclick="navigateView('envios')" id="nav-envios" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1h7zm0 0l3.5-2H20a1 1 0 001-1V8.5"/>
+        </svg>
+        <span class="flex-1">CepCerto</span>
+        <span id="nav-cepcerto-badge" class="text-[10px] bg-stone-800 text-stone-400 px-1.5 py-0.5 rounded font-mono">API</span>
+      </button>
+
       <button onclick="navigateView('pedidos')" id="nav-pedidos" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded text-left transition-colors text-stone-400 hover:text-white hover:bg-stone-850">
         <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
@@ -975,14 +984,31 @@
             </div>
 
             <div>
-              <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">URL da Imagem</label>
-              <input type="url" id="cat_url" placeholder="https://..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+              <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Foto da categoria</label>
+              <div class="flex flex-col sm:flex-row gap-4 items-start">
+                <div id="cat_preview_wrap" class="w-24 h-24 rounded border border-stone-200 bg-stone-50 overflow-hidden shrink-0 flex items-center justify-center">
+                  <img id="cat_preview_img" src="" alt="" class="hidden w-full h-full object-cover">
+                  <span id="cat_preview_empty" class="text-[10px] text-stone-400 px-2 text-center">Sem foto</span>
+                </div>
+                <div class="flex-1 w-full space-y-2">
+                  <label for="cat_foto_file" class="cursor-pointer inline-flex items-center justify-center px-4 py-2.5 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-800">
+                    Escolher foto
+                  </label>
+                  <input type="file" id="cat_foto_file" accept="image/*" class="sr-only">
+                  <p id="cat_foto_name" class="text-[11px] text-stone-500">JPG · PNG · WEBP · até 8&nbsp;MB</p>
+                  <input type="url" id="cat_url" placeholder="ou cole uma URL https://…" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
+                </div>
+              </div>
             </div>
 
-            <div class="pt-2">
-              <button type="submit" class="px-5 py-2.5 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors">
+            <div class="pt-2 flex flex-wrap items-center gap-3">
+              <button type="submit" id="cat_save_btn" class="px-5 py-2.5 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white transition-colors">
                 Salvar Categoria
               </button>
+              <button type="button" onclick="resetCategoryForm()" class="px-4 py-2.5 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-700">
+                Limpar
+              </button>
+              <span id="categories-limit-hint" class="text-[11px] text-stone-400 font-mono">Máx. 8 categorias</span>
             </div>
           </form>
         </div>
@@ -998,6 +1024,7 @@
             <table class="w-full text-left text-sm">
               <thead>
                 <tr class="border-b border-stone-100 bg-stone-50/70 text-[11px] uppercase tracking-wider text-stone-500">
+                  <th class="py-3.5 px-6 font-semibold">Foto</th>
                   <th class="py-3.5 px-6 font-semibold">Ordem</th>
                   <th class="py-3.5 px-6 font-semibold">Slug</th>
                   <th class="py-3.5 px-6 font-semibold">Nome</th>
@@ -1252,6 +1279,116 @@ Entrega em todo o Brasil.</textarea>
             </div>
           </div>
         </form>
+      </section>
+
+      <!-- ========================================================================= -->
+      <!-- VIEW: CEPCERTO (saldo, cotação, rastreio, remetente)                       -->
+      <!-- ========================================================================= -->
+      <section id="view-envios" class="view-content hidden">
+        <div class="pb-6 border-b border-brand-border mb-8">
+          <h2 class="font-serif text-3xl font-medium text-stone-900 tracking-tight">CepCerto</h2>
+          <p class="text-sm text-stone-500 mt-1">Saldo, cotação, etiquetas (nos pedidos) e rastreio — API de postagem.</p>
+        </div>
+
+        <div id="cepcerto-status-card" class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] mb-6 overflow-hidden">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9] flex items-center justify-between gap-3">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Situação da integração</h3>
+            <button type="button" onclick="loadCepCertoStatus()" class="text-xs px-3 py-1.5 rounded border border-stone-300 bg-white hover:bg-stone-50 font-semibold">Atualizar</button>
+          </div>
+          <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm" id="cepcerto-status-grid">
+            <div class="text-xs text-stone-400">Carregando…</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-white rounded border border-brand-border overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Dados do remetente</h3>
+              <p class="text-[11px] text-stone-500 mt-0.5">Usados na emissão de etiquetas. Também dá para definir via .env.</p>
+            </div>
+            <form id="cepcerto-shipper-form" class="p-6 space-y-4" onsubmit="saveCepCertoShipper(event)">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Nome</label>
+                  <input id="shipper_name" class="w-full px-3 py-2 text-sm border border-stone-200 rounded" required>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">CPF/CNPJ</label>
+                  <input id="shipper_doc" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono" required>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">WhatsApp</label>
+                  <input id="shipper_phone" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">E-mail</label>
+                  <input id="shipper_email" type="email" class="w-full px-3 py-2 text-sm border border-stone-200 rounded">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Nº endereço</label>
+                  <input id="shipper_address_number" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Complemento</label>
+                  <input id="shipper_complement" class="w-full px-3 py-2 text-sm border border-stone-200 rounded">
+                </div>
+              </div>
+              <button type="submit" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">Salvar remetente</button>
+            </form>
+          </div>
+
+          <div class="bg-white rounded border border-brand-border overflow-hidden">
+            <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+              <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Cotar frete</h3>
+            </div>
+            <form class="p-6 space-y-4" onsubmit="runCepCertoQuote(event)">
+              <div class="grid grid-cols-2 gap-3">
+                <div class="col-span-2">
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">CEP destino</label>
+                  <input id="cc_quote_cep" required maxlength="9" placeholder="00000-000" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold uppercase text-stone-700 mb-1.5">Peso (kg)</label>
+                  <input id="cc_quote_weight" type="number" step="0.001" value="0.5" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold uppercase text-stone-700 mb-1.5">Valor (R$)</label>
+                  <input id="cc_quote_value" type="number" step="0.01" value="100" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold uppercase text-stone-700 mb-1.5">A (cm)</label>
+                  <input id="cc_quote_h" type="number" value="12" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold uppercase text-stone-700 mb-1.5">L (cm)</label>
+                  <input id="cc_quote_w" type="number" value="8" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold uppercase text-stone-700 mb-1.5">C (cm)</label>
+                  <input id="cc_quote_l" type="number" value="8" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+              </div>
+              <button type="submit" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">Cotar</button>
+              <div id="cc_quote_result" class="text-xs text-stone-600 space-y-1"></div>
+            </form>
+          </div>
+        </div>
+
+        <div class="bg-white rounded border border-brand-border overflow-hidden mb-6">
+          <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Rastrear objeto</h3>
+            <p class="text-[11px] text-stone-500 mt-0.5">Somente etiquetas geradas pelo CepCerto nesta conta.</p>
+          </div>
+          <form class="p-6 space-y-4" onsubmit="runCepCertoTrack(event)">
+            <div class="flex flex-col sm:flex-row gap-3">
+              <input id="cc_track_code" required placeholder="Código do objeto" class="flex-1 px-3 py-2 text-sm border border-stone-200 rounded font-mono uppercase">
+              <button type="submit" class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 text-white hover:bg-black">Rastrear</button>
+            </div>
+            <div id="cc_track_result" class="text-xs text-stone-600 space-y-2"></div>
+          </form>
+        </div>
+
+        <p class="text-xs text-stone-500">Para <strong>gerar etiqueta</strong>, abra o pedido em Pedidos → Detalhes → Gerar etiqueta CepCerto.</p>
       </section>
 
       <!-- ========================================================================= -->

@@ -9,8 +9,9 @@
   display: contents;
 }
 
-/* Input de arquivo da galeria: acessível ao label, sem ocupar layout */
-#input_nova_foto_file {
+# Input de arquivo da galeria: acessível ao label, sem ocupar layout
+#input_nova_foto_file,
+#cat_foto_file {
   position: absolute;
   width: 1px;
   height: 1px;

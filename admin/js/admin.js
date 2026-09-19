@@ -181,7 +181,7 @@
 
   function navigateView(view) {
     _currentView = view;
-    const ALL_VIEWS = ['dashboard', 'produtos', 'categorias', 'caixas', 'pedidos', 'cupons', 'loja', 'clientes', 'auditoria'];
+    const ALL_VIEWS = ['dashboard', 'produtos', 'categorias', 'caixas', 'envios', 'pedidos', 'cupons', 'loja', 'clientes', 'auditoria'];
     ALL_VIEWS.forEach((v) => {
       const el = document.getElementById(`view-${v}`);
       if (el) el.classList.toggle('hidden', v !== view);
@@ -199,7 +199,7 @@
     });
     const BREADCRUMBS = {
       dashboard: 'Dashboard', produtos: 'Produtos', categorias: 'Categorias',
-      caixas: 'Caixas de Envio', pedidos: 'Pedidos / Vendas', cupons: 'Cupons',
+      caixas: 'Caixas de Envio', envios: 'CepCerto', pedidos: 'Pedidos / Vendas', cupons: 'Cupons',
       loja: 'Loja & Layout', clientes: 'Clientes', auditoria: 'Auditoria',
     };
     const bc = document.getElementById('breadcrumb-current');
@@ -221,6 +221,7 @@
       if (view === 'produtos') await loadProducts();
       if (view === 'categorias') await loadCategories();
       if (view === 'caixas') renderBoxesTable();
+      if (view === 'envios') await loadCepCertoPanel();
       if (view === 'pedidos') await loadOrders();
       if (view === 'cupons') await loadCoupons();
       if (view === 'loja') await loadStore();
@@ -942,12 +943,90 @@
   // CATEGORIAS
   // ============================================================
 
+  const MAX_CATEGORIES = 8;
+  let _catPendingFile = null;
+  let _catPendingPreviewUrl = null;
+
+  function bindCategoryPhotoControls() {
+    const input = document.getElementById('cat_foto_file');
+    if (!input || input.dataset.bound) return;
+    input.dataset.bound = '1';
+    input.addEventListener('change', () => {
+      const file = input.files && input.files[0];
+      if (_catPendingPreviewUrl) URL.revokeObjectURL(_catPendingPreviewUrl);
+      _catPendingPreviewUrl = null;
+      _catPendingFile = null;
+      if (!file) {
+        updateCategoryPreview(document.getElementById('cat_url')?.value || '');
+        return;
+      }
+      _catPendingFile = file;
+      _catPendingPreviewUrl = URL.createObjectURL(file);
+      updateCategoryPreview(_catPendingPreviewUrl);
+      const nameEl = document.getElementById('cat_foto_name');
+      if (nameEl) nameEl.textContent = file.name;
+    });
+    const urlInput = document.getElementById('cat_url');
+    if (urlInput && !urlInput.dataset.bound) {
+      urlInput.dataset.bound = '1';
+      urlInput.addEventListener('input', () => {
+        if (_catPendingFile) return;
+        updateCategoryPreview(urlInput.value.trim());
+      });
+    }
+  }
+
+  function updateCategoryPreview(src) {
+    const img = document.getElementById('cat_preview_img');
+    const empty = document.getElementById('cat_preview_empty');
+    if (!img) return;
+    if (src) {
+      img.src = src.startsWith('blob:') || src.startsWith('http') || src.startsWith('/')
+        ? (src.startsWith('/') ? TeodoraAPI.absoluteUrl(src) : src)
+        : src;
+      img.classList.remove('hidden');
+      if (empty) empty.classList.add('hidden');
+    } else {
+      img.removeAttribute('src');
+      img.classList.add('hidden');
+      if (empty) empty.classList.remove('hidden');
+    }
+  }
+
+  window.resetCategoryForm = function () {
+    _catEditId = null;
+    _catPendingFile = null;
+    if (_catPendingPreviewUrl) URL.revokeObjectURL(_catPendingPreviewUrl);
+    _catPendingPreviewUrl = null;
+    ['cat_slug', 'cat_nome', 'cat_url'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('cat_ordem').value = String((_categories.length || 0) + 1);
+    document.getElementById('cat_ativa').value = 'Sim';
+    const fileInput = document.getElementById('cat_foto_file');
+    if (fileInput) fileInput.value = '';
+    const nameEl = document.getElementById('cat_foto_name');
+    if (nameEl) nameEl.textContent = 'JPG · PNG · WEBP · até 8 MB';
+    updateCategoryPreview('');
+  };
+
   async function loadCategories() {
+    bindCategoryPhotoControls();
     const data = await TeodoraAPI.api('/api/admin/categories');
     _categories = data.categories || [];
     renderCategoriesTable();
     syncCategorySelects();
-    _catEditId = null;
+    const hint = document.getElementById('categories-limit-hint');
+    if (hint) hint.textContent = `${_categories.length}/${MAX_CATEGORIES} categorias`;
+    const saveBtn = document.getElementById('cat_save_btn');
+    if (saveBtn && !_catEditId) {
+      saveBtn.disabled = _categories.length >= MAX_CATEGORIES;
+      saveBtn.title = _categories.length >= MAX_CATEGORIES
+        ? 'Limite de categorias atingido'
+        : '';
+    }
+    if (!_catEditId) resetCategoryForm();
   }
 
   function syncCategorySelects() {
@@ -972,10 +1051,15 @@
     const tbody = document.getElementById('categories-table-body');
     if (!tbody) return;
     const countEl = document.getElementById('categories-count-label');
-    if (countEl) countEl.textContent = `${_categories.length} categoria(s) cadastrada(s)`;
+    if (countEl) countEl.textContent = `${_categories.length}/${MAX_CATEGORIES} categoria(s) · limite da loja`;
     tbody.innerHTML = _categories.length
-      ? _categories.map((c) => `
+      ? _categories.map((c) => {
+          const thumb = c.image_url
+            ? `<img src="${escapeHtml(TeodoraAPI.absoluteUrl(c.image_url))}" alt="" class="w-10 h-10 rounded object-cover border border-stone-200">`
+            : '<div class="w-10 h-10 rounded bg-stone-100 border border-stone-200"></div>';
+          return `
         <tr class="hover:bg-stone-50/50 transition-colors">
+          <td class="py-3.5 px-6">${thumb}</td>
           <td class="py-3.5 px-6 font-mono text-xs">${escapeHtml(String(c.sort_order ?? 0))}</td>
           <td class="py-3.5 px-6"><code class="text-xs bg-stone-100 px-1.5 py-0.5 rounded">${escapeHtml(c.slug)}</code></td>
           <td class="py-3.5 px-6 font-medium text-sm">${escapeHtml(c.name)}</td>
@@ -992,12 +1076,17 @@
                 class="text-xs px-3 py-1 rounded border border-red-200 bg-white hover:bg-red-50 text-red-700 font-medium">Excluir</button>
             </div>
           </td>
-        </tr>`).join('')
-      : '<tr><td colspan="5" class="py-8 text-center text-xs text-stone-400">Nenhuma categoria cadastrada.</td></tr>';
+        </tr>`;
+        }).join('')
+      : '<tr><td colspan="6" class="py-8 text-center text-xs text-stone-400">Nenhuma categoria cadastrada.</td></tr>';
   }
 
   async function handleSaveCategory(event) {
     event.preventDefault();
+    if (!_catEditId && _categories.length >= MAX_CATEGORIES) {
+      showToast(`Limite de ${MAX_CATEGORIES} categorias. Exclua uma antes de criar outra.`, 'error');
+      return;
+    }
     const payload = {
       slug: document.getElementById('cat_slug').value.trim(),
       name: document.getElementById('cat_nome').value.trim(),
@@ -1005,31 +1094,56 @@
       active: document.getElementById('cat_ativa').value === 'Sim',
       image_url: document.getElementById('cat_url').value.trim() || null,
     };
+    const btn = document.getElementById('cat_save_btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
     try {
+      let categoryId = _catEditId;
       if (_catEditId) {
-        await TeodoraAPI.api(`/api/admin/categories/${_catEditId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        const res = await TeodoraAPI.api(`/api/admin/categories/${_catEditId}`, { method: 'PUT', body: JSON.stringify(payload) });
+        categoryId = res.category?.id || _catEditId;
         showToast('Categoria atualizada.');
       } else {
-        await TeodoraAPI.api('/api/admin/categories', { method: 'POST', body: JSON.stringify(payload) });
+        const res = await TeodoraAPI.api('/api/admin/categories', { method: 'POST', body: JSON.stringify(payload) });
+        categoryId = res.category?.id;
         showToast('Categoria criada.');
       }
+      if (_catPendingFile && categoryId) {
+        const fd = new FormData();
+        fd.append('file', _catPendingFile);
+        await TeodoraAPI.apiForm(`/api/admin/categories/${categoryId}/image`, fd);
+        showToast('Foto da categoria enviada.');
+      }
+      _catEditId = null;
+      _catPendingFile = null;
+      if (_catPendingPreviewUrl) URL.revokeObjectURL(_catPendingPreviewUrl);
+      _catPendingPreviewUrl = null;
       await loadCategories();
-      // Limpa o formulário
-      ['cat_slug', 'cat_nome', 'cat_url'].forEach((id) => { const el = document.getElementById(id); if (el) el.value = ''; });
-      document.getElementById('cat_ordem').value = '1';
-      document.getElementById('cat_ativa').value = 'Sim';
-    } catch (err) { showToast(err.message || 'Erro ao salvar categoria.', 'error'); }
+    } catch (err) {
+      showToast(err.message || 'Erro ao salvar categoria.', 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Salvar Categoria'; }
+    }
   }
 
   window.editCategory = function (id) {
     const c = _categories.find((x) => String(x.id) === String(id));
     if (!c) return;
     _catEditId = c.id;
+    _catPendingFile = null;
+    if (_catPendingPreviewUrl) URL.revokeObjectURL(_catPendingPreviewUrl);
+    _catPendingPreviewUrl = null;
     document.getElementById('cat_slug').value = c.slug;
     document.getElementById('cat_nome').value = c.name;
     document.getElementById('cat_ordem').value = c.sort_order ?? 1;
     document.getElementById('cat_ativa').value = c.active ? 'Sim' : 'Não';
     document.getElementById('cat_url').value = c.image_url || '';
+    const fileInput = document.getElementById('cat_foto_file');
+    if (fileInput) fileInput.value = '';
+    const nameEl = document.getElementById('cat_foto_name');
+    if (nameEl) nameEl.textContent = c.image_url ? 'Foto atual — escolha outra para substituir' : 'JPG · PNG · WEBP · até 8 MB';
+    updateCategoryPreview(c.image_url || '');
+    const saveBtn = document.getElementById('cat_save_btn');
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.title = ''; }
     document.getElementById('cat_slug').scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
@@ -1038,6 +1152,7 @@
     try {
       await TeodoraAPI.api(`/api/admin/categories/${id}`, { method: 'DELETE' });
       showToast('Categoria excluída.');
+      _catEditId = null;
       await loadCategories();
     } catch (err) { showToast(err.message || 'Erro ao excluir categoria.', 'error'); }
   };
@@ -1368,9 +1483,9 @@
                     placeholder="BR123456789BR" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
                 </div>
                 <div>
-                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">URL de Rastreio</label>
+                  <label class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">URL de Rastreio / Etiqueta</label>
                   <input type="url" name="tracking_url" value="${escapeHtml(o.tracking_url || '')}"
-                    placeholder="https://rastreamento.correios.com.br/…"
+                    placeholder="https://…"
                     class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded font-mono">
                 </div>
               </div>
@@ -1379,11 +1494,43 @@
                 <textarea name="admin_notes" rows="3"
                   class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">${escapeHtml(o.admin_notes || '')}</textarea>
               </div>
-              <button type="button" onclick="saveFulfillment('${oid}')"
-                class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white">
-                Salvar Expedição
-              </button>
+              <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="saveFulfillment('${oid}')"
+                  class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-stone-900 hover:bg-black text-white">
+                  Salvar Expedição
+                </button>
+                ${o.tracking_url ? `<a href="${escapeHtml(o.tracking_url)}" target="_blank" rel="noopener" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50">Abrir etiqueta/PDF</a>` : ''}
+              </div>
             </form>
+
+            <div class="space-y-4 p-4 bg-amber-50/50 rounded border border-amber-200/80">
+              <span class="font-semibold text-stone-700 uppercase tracking-wider text-[10px] block">Gerar etiqueta CepCerto</span>
+              <p class="text-[11px] text-stone-500">Emite postagem com declaração de conteúdo (debita saldo). Preencha o CEP se o pedido não tiver.</p>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase text-stone-600 mb-1">CEP destino</label>
+                  <input id="_label_cep_${oid}" value="${escapeHtml(String(snap.cep || (snap.address && snap.address.cep) || ''))}"
+                    class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono" placeholder="00000000">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase text-stone-600 mb-1">Serviço</label>
+                  <select id="_label_tipo_${oid}" class="w-full px-3 py-2 text-sm border border-stone-200 rounded">
+                    ${['pac','sedex','jadlog-package','jadlog-dotcom','loggi'].map((t) =>
+                      `<option value="${t}" ${(snap.code || '').replace(/_/g,'-') === t || snap.code === t ? 'selected' : ''}>${t}</option>`
+                    ).join('')}
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[10px] font-semibold uppercase text-stone-600 mb-1">Nº endereço dest.</label>
+                  <input id="_label_num_${oid}" value="" placeholder="auto" class="w-full px-3 py-2 text-sm border border-stone-200 rounded font-mono">
+                </div>
+              </div>
+              <button type="button" id="_label_btn_${oid}" onclick="generateOrderLabel('${oid}')"
+                class="px-5 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-amber-800 hover:bg-amber-900 text-white">
+                Gerar etiqueta
+              </button>
+              <div id="_label_msg_${oid}" class="text-xs text-stone-600"></div>
+            </div>
 
             <div>
               <span class="font-semibold text-stone-600 uppercase tracking-wider text-[10px] block mb-3">Histórico de Status</span>
@@ -1423,6 +1570,175 @@
       });
       showToast('Dados de expedição salvos.');
     } catch (err) { showToast(err.message || 'Erro ao salvar expedição.', 'error'); }
+  };
+
+  window.generateOrderLabel = async function (orderId) {
+    if (!confirm('Gerar etiqueta CepCerto? Isso pode debitar saldo da carteira.')) return;
+    const btn = document.getElementById(`_label_btn_${orderId}`);
+    const msg = document.getElementById(`_label_msg_${orderId}`);
+    const cep = document.getElementById(`_label_cep_${orderId}`)?.value || '';
+    const tipo = document.getElementById(`_label_tipo_${orderId}`)?.value || 'pac';
+    const num = document.getElementById(`_label_num_${orderId}`)?.value || '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Gerando…'; }
+    if (msg) msg.textContent = '';
+    try {
+      const payload = { cep_destinatario: cep, tipo_entrega: tipo };
+      if (num) payload.numero_endereco_destinatario = num;
+      const res = await TeodoraAPI.api(`/api/admin/orders/${orderId}/label`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      const label = res.label || {};
+      showToast(label.mensagem || 'Etiqueta gerada.');
+      if (msg) {
+        msg.innerHTML = `
+          <div class="space-y-1">
+            <div><span class="text-stone-400">Objeto:</span> <span class="font-mono font-semibold">${escapeHtml(label.codigo_objeto || '—')}</span></div>
+            ${label.pdf_url_etiqueta ? `<a class="text-amber-900 underline font-semibold" href="${escapeHtml(label.pdf_url_etiqueta)}" target="_blank" rel="noopener">Baixar PDF da etiqueta</a>` : ''}
+            ${label.pdf_url_dce ? `<a class="text-stone-600 underline block" href="${escapeHtml(label.pdf_url_dce)}" target="_blank" rel="noopener">Declaração de conteúdo</a>` : ''}
+          </div>`;
+      }
+      await showOrderDetail(orderId);
+      await loadOrders();
+    } catch (err) {
+      showToast(err.message || 'Erro ao gerar etiqueta.', 'error');
+      if (msg) msg.textContent = err.message || 'Falha na emissão.';
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Gerar etiqueta'; }
+    }
+  };
+
+  // ============================================================
+  // CEPCERTO
+  // ============================================================
+
+  async function loadCepCertoPanel() {
+    await loadCepCertoStatus();
+  }
+
+  window.loadCepCertoStatus = async function () {
+    const grid = document.getElementById('cepcerto-status-grid');
+    const badge = document.getElementById('nav-cepcerto-badge');
+    try {
+      const data = await TeodoraAPI.api('/api/admin/cepcerto/status');
+      const shipper = data.shipper || {};
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+      set('shipper_name', shipper.nome_remetente);
+      set('shipper_doc', shipper.cpf_cnpj_remetente);
+      set('shipper_phone', shipper.whatsapp_remetente);
+      set('shipper_email', shipper.email_remetente);
+      set('shipper_address_number', shipper.numero_endereco_remetente);
+      set('shipper_complement', shipper.complemento_remetente);
+
+      const ok = Boolean(data.configured);
+      if (badge) {
+        badge.textContent = ok ? 'OK' : 'OFF';
+        badge.className = ok
+          ? 'text-[10px] bg-emerald-900/80 text-emerald-200 px-1.5 py-0.5 rounded font-mono'
+          : 'text-[10px] bg-amber-900/80 text-amber-200 px-1.5 py-0.5 rounded font-mono';
+      }
+      if (grid) {
+        const saldo = data.saldo?.saldo_atual || (data.message ? '—' : '—');
+        grid.innerHTML = `
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Token postagem</span>
+            <div class="mt-1 text-sm font-semibold ${ok ? 'text-emerald-800' : 'text-amber-800'}">${ok ? 'Configurado' : 'Ausente'}</div>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Saldo</span>
+            <div class="mt-1 text-sm font-mono font-semibold text-stone-900">${escapeHtml(String(saldo))}</div>
+            ${data.saldo?.nome_cliente ? `<div class="text-[11px] text-stone-400 mt-0.5">${escapeHtml(data.saldo.nome_cliente)}</div>` : ''}
+          </div>
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">CEP origem</span>
+            <div class="mt-1 text-sm font-mono text-stone-800">${escapeHtml(data.origin_cep || '—')}</div>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Chave consumo CEP</span>
+            <div class="mt-1 text-sm font-semibold ${data.has_consumption_key ? 'text-emerald-800' : 'text-stone-500'}">${data.has_consumption_key ? 'Sim' : 'Não (ViaCEP)'}</div>
+          </div>
+          ${data.message ? `<div class="sm:col-span-2 lg:col-span-4 text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded px-3 py-2">${escapeHtml(data.message)}</div>` : ''}`;
+      }
+    } catch (err) {
+      if (grid) grid.innerHTML = `<div class="text-sm text-red-600">${escapeHtml(err.message || 'Erro')}</div>`;
+    }
+  };
+
+  window.saveCepCertoShipper = async function (event) {
+    event.preventDefault();
+    const payload = {
+      shipper_name: document.getElementById('shipper_name').value.trim(),
+      shipper_doc: document.getElementById('shipper_doc').value.trim(),
+      shipper_phone: document.getElementById('shipper_phone').value.trim(),
+      shipper_email: document.getElementById('shipper_email').value.trim(),
+      shipper_address_number: document.getElementById('shipper_address_number').value.trim(),
+      shipper_complement: document.getElementById('shipper_complement').value.trim(),
+    };
+    try {
+      await TeodoraAPI.api('/api/admin/settings', { method: 'PUT', body: JSON.stringify(payload) });
+      showToast('Remetente salvo.');
+      await loadCepCertoStatus();
+    } catch (err) { showToast(err.message || 'Erro ao salvar remetente.', 'error'); }
+  };
+
+  window.runCepCertoQuote = async function (event) {
+    event.preventDefault();
+    const box = document.getElementById('cc_quote_result');
+    if (box) box.textContent = 'Cotando…';
+    try {
+      const data = await TeodoraAPI.api('/api/admin/cepcerto/quote', {
+        method: 'POST',
+        body: JSON.stringify({
+          cep: document.getElementById('cc_quote_cep').value,
+          weight: document.getElementById('cc_quote_weight').value,
+          height: document.getElementById('cc_quote_h').value,
+          width: document.getElementById('cc_quote_w').value,
+          length: document.getElementById('cc_quote_l').value,
+          declared_value: document.getElementById('cc_quote_value').value,
+        }),
+      });
+      const addr = data.address || {};
+      const opts = data.options || [];
+      if (box) {
+        box.innerHTML = `
+          <p class="font-medium text-stone-800">${escapeHtml([addr.localidade, addr.uf].filter(Boolean).join('/') || 'CEP ok')}${data.demo ? ' · estimativa' : ''}</p>
+          <ul class="mt-2 space-y-1">${opts.map((o) =>
+            `<li class="flex justify-between gap-4 border-b border-stone-100 py-1"><span>${escapeHtml(o.name)}${o.days ? ` · ${escapeHtml(String(o.days))}` : ''}</span><span class="font-mono font-semibold">${money(o.price)}</span></li>`
+          ).join('') || '<li class="text-stone-400">Sem opções</li>'}</ul>`;
+      }
+    } catch (err) {
+      if (box) box.textContent = err.message || 'Erro na cotação';
+      showToast(err.message || 'Erro na cotação', 'error');
+    }
+  };
+
+  window.runCepCertoTrack = async function (event) {
+    event.preventDefault();
+    const box = document.getElementById('cc_track_result');
+    if (box) box.textContent = 'Consultando…';
+    try {
+      const data = await TeodoraAPI.api('/api/admin/cepcerto/track', {
+        method: 'POST',
+        body: JSON.stringify({ codigo: document.getElementById('cc_track_code').value }),
+      });
+      const eventos = data.eventos || [];
+      if (box) {
+        box.innerHTML = `
+          <p><span class="text-stone-400">Objeto</span> <span class="font-mono font-semibold">${escapeHtml(data.objeto || '')}</span>
+          · ${escapeHtml(data.transportadora || '')}</p>
+          ${data.dt_prevista?.texto ? `<p class="text-stone-500">Previsão: ${escapeHtml(data.dt_prevista.texto)}</p>` : ''}
+          <ul class="mt-2 space-y-2 border-l border-stone-200 pl-3">
+            ${eventos.map((e) => `
+              <li>
+                <div class="font-medium text-stone-800">${escapeHtml(e.descricao || '')}</div>
+                <div class="text-stone-400">${escapeHtml(e.data_br || '')}${e.unidade?.cidade ? ` · ${escapeHtml(e.unidade.cidade)}/${escapeHtml(e.unidade.uf || '')}` : ''}</div>
+              </li>`).join('') || '<li class="text-stone-400">Sem eventos</li>'}
+          </ul>`;
+      }
+    } catch (err) {
+      if (box) box.textContent = err.message || 'Erro no rastreio';
+      showToast(err.message || 'Erro no rastreio', 'error');
+    }
   };
 
   // ============================================================

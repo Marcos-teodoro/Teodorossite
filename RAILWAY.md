@@ -33,11 +33,17 @@ CEPCERTO_BASE_URL=https://cepcerto.com
 CEPCERTO_POSTAGE_TOKEN=
 CEPCERTO_CONSUMPTION_KEY=
 CEPCERTO_ORIGIN_CEP=01310100
+CEPCERTO_SHIPPER_NAME=Teodora Perfumes
+CEPCERTO_SHIPPER_DOC=
+CEPCERTO_SHIPPER_PHONE=
+CEPCERTO_SHIPPER_EMAIL=
 
 # Galeria de fotos (Supabase Storage)
 SUPABASE_URL=https://SEU-PROJETO.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=
 ```
+
+No admin: menu **CepCerto** (saldo, cotação, rastreio, remetente) e em **Pedidos → Detalhes** o botão **Gerar etiqueta**.
 
 Railway injeta `PORT=8080` sozinho — **não** fixe 3001 no Start Command. Use:
 

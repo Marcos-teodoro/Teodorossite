@@ -71,7 +71,14 @@ def admin_categories(_admin: dict = Depends(require_admin)):
 
 @router.post("/categories")
 def create_category(body: CategoryBody, _admin: dict = Depends(require_admin)):
+    settings = get_settings()
     with get_connection() as conn:
+        count = conn.execute("SELECT COUNT(*) AS c FROM categories").fetchone()["c"]
+        if count >= settings.max_categories:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Limite de {settings.max_categories} categorias atingido. Exclua ou edite uma existente.",
+            )
         try:
             cur = conn.execute(
                 "INSERT INTO categories (slug, name, sort_order, active, image_url) VALUES (?, ?, ?, ?, ?)",
@@ -97,6 +104,56 @@ def update_category(category_id: int, body: CategoryBody, _admin: dict = Depends
             raise HTTPException(status_code=404, detail="Categoria não encontrada")
     return {"category": row_to_dict(row)}
 
+
+@router.post("/categories/{category_id}/image")
+async def upload_category_image(
+    category_id: int,
+    file: UploadFile = File(...),
+    _admin: dict = Depends(require_admin),
+):
+    settings = get_settings()
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM categories WHERE id = ?", (category_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Categoria não encontrada")
+
+    data = await file.read(8 * 1024 * 1024 + 1)
+    if not data:
+        raise HTTPException(status_code=400, detail="Arquivo de imagem vazio")
+    if len(data) > 8 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Imagem excede o limite de 8 MB")
+    ext = _image_signature(data)
+    if not ext:
+        raise HTTPException(status_code=400, detail="Conteúdo do arquivo não é uma imagem válida")
+    mime = {".jpg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".gif": "image/gif"}[ext]
+
+    object_name = f"categories/{category_id}/{uuid.uuid4().hex}{ext}"
+    storage = "local"
+    if settings.use_supabase:
+        try:
+            url = await upload_bytes(data=data, object_path=object_name, content_type=mime, settings=settings)
+            storage = "supabase"
+        except StorageError as err:
+            raise HTTPException(status_code=err.status_code, detail=str(err)) from err
+    else:
+        settings.uploads_dir.mkdir(parents=True, exist_ok=True)
+        local_name = f"cat_{category_id}_{uuid.uuid4().hex}{ext}"
+        (settings.uploads_dir / local_name).write_bytes(data)
+        url = f"/uploads/product-photos/{local_name}"
+
+    old_url = row_to_dict(row).get("image_url") or ""
+    with get_connection() as conn:
+        conn.execute("UPDATE categories SET image_url = ? WHERE id = ?", (url, category_id))
+        conn.commit()
+        fresh = conn.execute("SELECT * FROM categories WHERE id = ?", (category_id,)).fetchone()
+
+    if old_url and is_supabase_storage_url(old_url) and old_url != url:
+        try:
+            await delete_object(old_url, settings)
+        except Exception:
+            pass
+
+    return {"category": row_to_dict(fresh), "storage": storage, "url": url}
 
 @router.delete("/categories/{category_id}")
 def delete_category(category_id: int, _admin: dict = Depends(require_admin)):

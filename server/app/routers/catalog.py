@@ -39,7 +39,10 @@ def list_categories(all: bool = Query(False)):
             rows = conn.execute(
                 "SELECT * FROM categories WHERE active = 1 ORDER BY sort_order, id"
             ).fetchall()
-    return {"categories": rows_to_list(rows)}
+    cats = rows_to_list(rows)
+    if not all:
+        cats = cats[:8]
+    return {"categories": cats}
 
 
 @router.get("/products")

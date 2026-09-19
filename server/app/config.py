@@ -44,8 +44,15 @@ class Settings(BaseSettings):
     cepcerto_postage_token: str = ""
     cepcerto_consumption_key: str = ""
     cepcerto_origin_cep: str = "01310100"
+    cepcerto_shipper_name: str = "Teodora Perfumes"
+    cepcerto_shipper_doc: str = ""
+    cepcerto_shipper_phone: str = ""
+    cepcerto_shipper_email: str = ""
+    cepcerto_shipper_address_number: str = "0"
+    cepcerto_shipper_complement: str = ""
 
     uploads_dir: Path = ROOT / "uploads" / "product-photos"
+    max_categories: int = 8
 
     @property
     def use_supabase(self) -> bool:

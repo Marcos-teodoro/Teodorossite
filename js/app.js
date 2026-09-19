@@ -1338,7 +1338,11 @@ async function executePaymentTransaction() {
       shippingCost: APP_STATE.shippingCost || 0,
       couponCode: APP_STATE.couponCode || '',
       paymentHint: APP_STATE.paymentMethod || 'pix',
-      shippingOption: APP_STATE.shippingOption || null,
+      shippingOption: {
+        ...(APP_STATE.shippingOption || {}),
+        cep: (document.getElementById('cepInput')?.value || '').replace(/\D/g, ''),
+        address: APP_STATE.shippingInfo || null,
+      },
       payer: { name, email, doc, phone, address },
     };
 

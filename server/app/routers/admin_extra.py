@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import json
+import re
+import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 
 from ..auth import require_admin
+from ..config import get_settings
 from ..db import get_connection, parse_json_field, row_to_dict, rows_to_list
 from ..schemas import CouponBody
+from ..services import cepcerto
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -14,6 +18,8 @@ ALLOWED_SETTINGS = {
     "hero_eyebrow", "hero_title", "hero_image", "hero_button", "whatsapp_url",
     "instagram_url", "facebook_url", "youtube_url", "pinterest_url",
     "installments", "footer_description",
+    "shipper_name", "shipper_doc", "shipper_phone", "shipper_email",
+    "shipper_address_number", "shipper_complement",
 }
 
 
@@ -154,3 +160,228 @@ def audit_log(limit: int = 100, _admin: dict = Depends(require_admin)):
     with get_connection() as conn:
         rows = conn.execute("SELECT * FROM admin_audit_log ORDER BY id DESC LIMIT ?", (max(1, min(limit, 500)),)).fetchall()
     return {"entries": rows_to_list(rows)}
+
+
+def _site_map(conn) -> dict[str, str]:
+    rows = conn.execute("SELECT key, value FROM site_settings").fetchall()
+    return {r["key"]: r["value"] for r in rows}
+
+
+def _shipper_from_settings() -> dict[str, str]:
+    conf = get_settings()
+    with get_connection() as conn:
+        site = _site_map(conn)
+    return {
+        "nome_remetente": site.get("shipper_name") or conf.cepcerto_shipper_name,
+        "cpf_cnpj_remetente": site.get("shipper_doc") or conf.cepcerto_shipper_doc,
+        "whatsapp_remetente": site.get("shipper_phone") or conf.cepcerto_shipper_phone,
+        "email_remetente": site.get("shipper_email") or conf.cepcerto_shipper_email,
+        "numero_endereco_remetente": site.get("shipper_address_number") or conf.cepcerto_shipper_address_number or "0",
+        "complemento_remetente": site.get("shipper_complement") or conf.cepcerto_shipper_complement or "",
+        "cep_remetente": conf.cepcerto_origin_cep,
+    }
+
+
+@router.get("/cepcerto/status")
+async def cepcerto_status(_admin: dict = Depends(require_admin)):
+    conf = get_settings()
+    shipper = _shipper_from_settings()
+    out = {
+        "configured": bool(conf.cepcerto_postage_token),
+        "has_consumption_key": bool(conf.cepcerto_consumption_key),
+        "origin_cep": conf.cepcerto_origin_cep,
+        "base_url": conf.cepcerto_base_url,
+        "shipper": shipper,
+        "saldo": None,
+        "message": "",
+    }
+    if not conf.cepcerto_postage_token:
+        out["message"] = "Defina CEPCERTO_POSTAGE_TOKEN nas variáveis do Railway."
+        return out
+    try:
+        out["saldo"] = await cepcerto.get_balance()
+    except Exception as exc:
+        out["message"] = str(exc)
+    return out
+
+
+@router.post("/cepcerto/quote")
+async def cepcerto_admin_quote(payload: dict, _admin: dict = Depends(require_admin)):
+    try:
+        result = await cepcerto.quote_freight(
+            dest_cep=str(payload.get("cep") or ""),
+            weight_kg=float(payload.get("weight") or 0.5),
+            height_cm=float(payload.get("height") or 12),
+            width_cm=float(payload.get("width") or 8),
+            length_cm=float(payload.get("length") or 8),
+            declared_value=float(payload.get("declared_value") or 50),
+        )
+        return result
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/cepcerto/track")
+async def cepcerto_admin_track(payload: dict, _admin: dict = Depends(require_admin)):
+    try:
+        return await cepcerto.track_object(
+            str(payload.get("codigo") or payload.get("codigo_objeto") or ""),
+            str(payload.get("transportadora") or ""),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+def _guess_address_number(text: str) -> str:
+    if not text:
+        return "0"
+    m = re.search(r"(?:n[ºo°.]?\s*|,\s*)(\d+[A-Za-z\-]?)", text, re.I)
+    if m:
+        return m.group(1)
+    m = re.search(r"\b(\d{1,5})\b", text)
+    return m.group(1) if m else "0"
+
+
+@router.post("/orders/{order_id}/label")
+async def create_order_label(
+    order_id: str,
+    payload: dict = Body(default_factory=dict),
+    admin: dict = Depends(require_admin),
+):
+    """Gera etiqueta CepCerto (declaração) para o pedido e salva rastreio."""
+    payload = payload or {}
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+        order = row_to_dict(row)
+        items = rows_to_list(conn.execute("SELECT * FROM order_items WHERE order_id = ?", (order_id,)).fetchall())
+        snap = parse_json_field(order.get("shipping_snapshot"), {})
+
+    shipper = _shipper_from_settings()
+    dest_cep = (
+        payload.get("cep_destinatario")
+        or snap.get("cep")
+        or (snap.get("address") or {}).get("cep")
+        or ""
+    )
+    dest_cep = re.sub(r"\D", "", str(dest_cep))
+    if len(dest_cep) != 8:
+        raise HTTPException(status_code=400, detail="Informe o CEP do destinatário (8 dígitos) para gerar a etiqueta.")
+
+    # Dimensões a partir dos produtos do pedido
+    product_ids = [i["product_id"] for i in items if i.get("product_id")]
+    weight = float(payload.get("peso") or 0)
+    height = float(payload.get("altura") or 0)
+    width = float(payload.get("largura") or 0)
+    length = float(payload.get("comprimento") or 0)
+    if product_ids and (not weight or not height):
+        with get_connection() as conn:
+            prows = rows_to_list(
+                conn.execute(
+                    f"SELECT weight_kg, height_cm, width_cm, length_cm FROM products WHERE id IN ({','.join('?' * len(product_ids))})",
+                    product_ids,
+                ).fetchall()
+            )
+        if prows:
+            weight = weight or sum(float(p["weight_kg"] or 0.5) for p in prows)
+            height = height or max(float(p["height_cm"] or 12) for p in prows)
+            width = width or max(float(p["width_cm"] or 8) for p in prows)
+            length = length or max(float(p["length_cm"] or 8) for p in prows)
+    weight = max(0.1, weight or 0.5)
+    height = max(1.0, height or 12)
+    width = max(1.0, width or 8)
+    length = max(1.0, length or 8)
+    while height + width + length > 200:
+        height = max(1, height * 0.9)
+        width = max(1, width * 0.9)
+        length = max(1, length * 0.9)
+
+    declared = float(payload.get("valor_encomenda") or order.get("merchandise") or order.get("total") or 50)
+    declared = max(50.0, min(35000.0, declared))
+
+    produtos = []
+    for item in items:
+        produtos.append(
+            {
+                "descricao": (item.get("title") or "Produto")[:80],
+                "valor": f"{float(item.get('unit_price') or 0):.2f}",
+                "quantidade": int(item.get("quantity") or 1),
+            }
+        )
+    if not produtos:
+        produtos = [{"descricao": "Pedido Teodora", "valor": f"{declared:.2f}", "quantidade": 1}]
+
+    tipo = payload.get("tipo_entrega") or snap.get("code") or "pac"
+    request_id = str(payload.get("request_id") or f"teodora-{order_id}-{uuid.uuid4().hex[:8]}")
+
+    body = {
+        **shipper,
+        "request_id": request_id,
+        "tipo_entrega": tipo,
+        "cep_destinatario": dest_cep,
+        "peso": f"{weight:.3f}",
+        "altura": f"{height:.0f}",
+        "largura": f"{width:.0f}",
+        "comprimento": f"{length:.0f}",
+        "valor_encomenda": f"{declared:.2f}",
+        "nome_destinatario": payload.get("nome_destinatario") or order.get("payer_name") or "",
+        "cpf_cnpj_destinatario": payload.get("cpf_cnpj_destinatario") or order.get("payer_doc") or "",
+        "whatsapp_destinatario": payload.get("whatsapp_destinatario") or order.get("payer_phone") or "",
+        "email_destinatario": payload.get("email_destinatario") or order.get("payer_email") or "",
+        "numero_endereco_destinatario": str(
+            payload.get("numero_endereco_destinatario")
+            or _guess_address_number(order.get("payer_address") or "")
+        ),
+        "complemento_destinatario": payload.get("complemento_destinatario") or "",
+        "produtos": produtos,
+    }
+
+    # Override shipper from payload if provided
+    for key in (
+        "nome_remetente", "cpf_cnpj_remetente", "whatsapp_remetente", "email_remetente",
+        "numero_endereco_remetente", "complemento_remetente", "cep_remetente",
+    ):
+        if payload.get(key):
+            body[key] = payload[key]
+
+    try:
+        label = await cepcerto.create_label(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    tracking = label.get("codigo_objeto") or ""
+    pdf = label.get("pdf_url_etiqueta") or ""
+    note_extra = f"Etiqueta CepCerto: {tracking}"
+    if pdf:
+        note_extra += f" | PDF: {pdf}"
+
+    with get_connection() as conn:
+        prev_notes = order.get("admin_notes") or ""
+        notes = (prev_notes + ("\n" if prev_notes else "") + note_extra).strip()
+        conn.execute(
+            """UPDATE orders SET tracking_code=?, tracking_url=?, admin_notes=?,
+               status=CASE WHEN status IN ('pending','approved') THEN 'shipped' ELSE status END,
+               updated_at=datetime('now') WHERE id=?""",
+            (tracking or order.get("tracking_code") or "", pdf or order.get("tracking_url") or "", notes, order_id),
+        )
+        snap2 = dict(snap)
+        snap2["cep"] = dest_cep
+        snap2["label"] = {
+            "codigo_objeto": tracking,
+            "pdf_url_etiqueta": pdf,
+            "pdf_url_dce": label.get("pdf_url_dce") or "",
+            "request_id": request_id,
+            "servico": label.get("servico"),
+        }
+        conn.execute("UPDATE orders SET shipping_snapshot=? WHERE id=?", (json.dumps(snap2, ensure_ascii=False), order_id))
+        audit(conn, admin, "create_label", "order", order_id, {"codigo": tracking, "request_id": request_id})
+        conn.commit()
+
+    return {"label": label, "order_id": order_id}
