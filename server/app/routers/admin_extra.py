@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Body, Depends, HTTPException
 
 from ..auth import require_admin
-from ..config import get_settings
+from ..config import get_settings as get_app_settings
 from ..db import get_connection, parse_json_field, row_to_dict, rows_to_list
 from ..schemas import CouponBody
 from ..services import cepcerto
@@ -33,7 +33,7 @@ def audit(conn, admin: dict, action: str, entity_type: str, entity_id: str | int
 
 
 @router.get("/settings")
-def get_settings(_admin: dict = Depends(require_admin)):
+def list_site_settings(_admin: dict = Depends(require_admin)):
     with get_connection() as conn:
         rows = conn.execute("SELECT key, value, updated_at FROM site_settings ORDER BY key").fetchall()
     return {"settings": {row["key"]: row["value"] for row in rows}}
@@ -170,7 +170,7 @@ def _site_map(conn) -> dict[str, str]:
 
 
 def _shipper_from_settings() -> dict[str, str]:
-    conf = get_settings()
+    conf = get_app_settings()
     with get_connection() as conn:
         site = _site_map(conn)
     origins = load_shipping_origins()
@@ -204,7 +204,7 @@ def _checklist(shipper: dict, origins: dict, configured: bool, saldo_ok: bool | 
 
 @router.get("/cepcerto/status")
 async def cepcerto_status(_admin: dict = Depends(require_admin)):
-    conf = get_settings()
+    conf = get_app_settings()
     shipper = _shipper_from_settings()
     origins = load_shipping_origins()
     out = {
