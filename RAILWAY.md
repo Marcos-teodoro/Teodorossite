@@ -5,6 +5,8 @@
 2. Repo: `Marcos-teodoro/Teodorossite`  
 3. Root do serviço: pasta do repositório (não só `server`)
 
+O deploy usa **Dockerfile** (Python 3.11), não Nixpacks — evita o erro `pip: command not found` causado pelo `package.json` na raiz.
+
 ## 2) Start Command
 ```bash
 cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT
