@@ -54,10 +54,10 @@ CREATE TABLE IF NOT EXISTS products (
   similar_ids TEXT NOT NULL DEFAULT '[]',
   stock INTEGER NOT NULL DEFAULT 50,
   active INTEGER NOT NULL DEFAULT 1,
-  weight_kg REAL NOT NULL DEFAULT 0.5,
-  height_cm REAL NOT NULL DEFAULT 12,
-  width_cm REAL NOT NULL DEFAULT 8,
-  length_cm REAL NOT NULL DEFAULT 8,
+  weight_kg REAL NOT NULL DEFAULT 0.65,
+  height_cm REAL NOT NULL DEFAULT 10,
+  width_cm REAL NOT NULL DEFAULT 20,
+  length_cm REAL NOT NULL DEFAULT 25,
   cover_image TEXT,
   rating REAL DEFAULT 4.8,
   reviews INTEGER DEFAULT 48,
@@ -267,6 +267,17 @@ def init_db() -> None:
             "pinterest_url": "#",
             "installments": "6",
             "footer_description": "Perfumes originais com entrega para todo o Brasil.",
+            "shipping_boxes_json": json.dumps([{
+                "id": "cx-unica",
+                "nome": "Caixa padrão Teodora",
+                "codigo": "CX-01",
+                "desc": "Embalagem única de envio — 25 × 20 × 10 cm",
+                "altura": 10,
+                "largura": 20,
+                "comprimento": 25,
+                "tara": 0.15,
+                "isDefault": True,
+            }], ensure_ascii=False),
         }
         conn.executemany(
             "INSERT OR IGNORE INTO site_settings (key, value) VALUES (?, ?)", defaults.items()

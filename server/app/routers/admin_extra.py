@@ -12,6 +12,7 @@ from ..db import get_connection, parse_json_field, row_to_dict, rows_to_list
 from ..schemas import CouponBody
 from ..services import cepcerto
 from ..services.cepcerto import SERVICE_CODES, load_shipping_origins, resolve_origin_for_code
+from ..services.package import DEFAULT_WEIGHT_KG, default_package_dims
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -22,6 +23,7 @@ ALLOWED_SETTINGS = {
     "shipper_name", "shipper_doc", "shipper_phone", "shipper_email",
     "shipper_address_number", "shipper_complement",
     "shipping_origins_json",
+    "shipping_boxes_json",
 }
 
 
@@ -239,13 +241,14 @@ async def cepcerto_status(_admin: dict = Depends(require_admin)):
 
 @router.post("/cepcerto/quote")
 async def cepcerto_admin_quote(payload: dict, _admin: dict = Depends(require_admin)):
+    pkg = default_package_dims()
     try:
         result = await cepcerto.quote_freight(
             dest_cep=str(payload.get("cep") or ""),
-            weight_kg=float(payload.get("weight") or 0.5),
-            height_cm=float(payload.get("height") or 12),
-            width_cm=float(payload.get("width") or 8),
-            length_cm=float(payload.get("length") or 8),
+            weight_kg=float(payload.get("weight") or (DEFAULT_WEIGHT_KG + pkg["tare_kg"])),
+            height_cm=float(payload.get("height") or pkg["height_cm"]),
+            width_cm=float(payload.get("width") or pkg["width_cm"]),
+            length_cm=float(payload.get("length") or pkg["length_cm"]),
             declared_value=float(payload.get("declared_value") or 50),
         )
         return result
@@ -378,6 +381,7 @@ async def create_order_label(
         raise HTTPException(status_code=400, detail="Informe o CEP do destinatário (8 dígitos) para gerar a etiqueta.")
 
     product_ids = [i["product_id"] for i in items if i.get("product_id")]
+    pkg = default_package_dims()
     weight = float(payload.get("peso") or 0)
     height = float(payload.get("altura") or 0)
     width = float(payload.get("largura") or 0)
@@ -391,14 +395,14 @@ async def create_order_label(
                 ).fetchall()
             )
         if prows:
-            weight = weight or sum(float(p["weight_kg"] or 0.5) for p in prows)
-            height = height or max(float(p["height_cm"] or 12) for p in prows)
-            width = width or max(float(p["width_cm"] or 8) for p in prows)
-            length = length or max(float(p["length_cm"] or 8) for p in prows)
-    weight = max(0.1, weight or 0.5)
-    height = max(1.0, height or 12)
-    width = max(1.0, width or 8)
-    length = max(1.0, length or 8)
+            weight = weight or sum(float(p["weight_kg"] or DEFAULT_WEIGHT_KG) for p in prows)
+            height = height or max(float(p["height_cm"] or pkg["height_cm"]) for p in prows)
+            width = width or max(float(p["width_cm"] or pkg["width_cm"]) for p in prows)
+            length = length or max(float(p["length_cm"] or pkg["length_cm"]) for p in prows)
+    weight = max(0.1, weight or (DEFAULT_WEIGHT_KG + pkg["tare_kg"]))
+    height = max(1.0, height or pkg["height_cm"])
+    width = max(1.0, width or pkg["width_cm"])
+    length = max(1.0, length or pkg["length_cm"])
     while height + width + length > 200:
         height = max(1, height * 0.9)
         width = max(1, width * 0.9)

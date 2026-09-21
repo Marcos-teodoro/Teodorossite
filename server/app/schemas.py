@@ -122,10 +122,10 @@ class ProductBody(BaseModel):
     similar_ids: list[int] = Field(default_factory=list)
     stock: int = 50
     active: bool = True
-    weight_kg: float = 0.5
-    height_cm: float = 12
-    width_cm: float = 8
-    length_cm: float = 8
+    weight_kg: float = 0.65
+    height_cm: float = 10
+    width_cm: float = 20
+    length_cm: float = 25
     cover_image: Optional[str] = None
     variants: list[VariantBody] = Field(default_factory=list)
 
@@ -223,10 +223,10 @@ def product_to_storefront(
         "reviews": int(row.get("reviews") or 48),
         "stock": int(row.get("stock") or 0),
         "active": bool(row.get("active")),
-        "weightKg": float(row.get("weight_kg") or 0.5),
-        "heightCm": float(row.get("height_cm") or 12),
-        "widthCm": float(row.get("width_cm") or 8),
-        "lengthCm": float(row.get("length_cm") or 8),
+        "weightKg": float(row.get("weight_kg") or 0.65),
+        "heightCm": float(row.get("height_cm") or 10),
+        "widthCm": float(row.get("width_cm") or 20),
+        "lengthCm": float(row.get("length_cm") or 25),
         "variants": [
             {
                 "id": variant["id"],

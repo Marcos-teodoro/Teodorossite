@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from ..db import get_connection, rows_to_list
 from ..services import cepcerto
+from ..services.package import DEFAULT_WEIGHT_KG, default_package_dims
 
 router = APIRouter(prefix="/api/shipping", tags=["shipping"])
 
@@ -28,7 +29,8 @@ async def shipping_quote(
     declared_value: float = Query(50, alias="declared_value"),
     product_ids: str | None = Query(None, description="ids separados por vírgula"),
 ):
-    """Cotação CepCerto. Dimensões: soma de pesos; caixa = máximos das dimensões dos itens."""
+    """Cotação CepCerto. Usa embalagem padrão (25×20×10) quando produto não tem dimensões."""
+    pkg = default_package_dims()
     w = weight
     h = height
     wd = width
@@ -45,16 +47,16 @@ async def shipping_quote(
                 ).fetchall()
             ) if ids else []
         if rows:
-            w = sum(float(r["weight_kg"] or 0.5) for r in rows)
-            h = max(float(r["height_cm"] or 12) for r in rows)
-            wd = max(float(r["width_cm"] or 8) for r in rows)
-            ln = max(float(r["length_cm"] or 8) for r in rows)
+            w = sum(float(r["weight_kg"] or DEFAULT_WEIGHT_KG) for r in rows)
+            h = max(float(r["height_cm"] or pkg["height_cm"]) for r in rows)
+            wd = max(float(r["width_cm"] or pkg["width_cm"]) for r in rows)
+            ln = max(float(r["length_cm"] or pkg["length_cm"]) for r in rows)
             declared = max(declared, sum(float(r["price"] or 0) for r in rows))
 
-    w = w if w is not None else 0.5
-    h = h if h is not None else 12
-    wd = wd if wd is not None else 8
-    ln = ln if ln is not None else 8
+    w = w if w is not None else DEFAULT_WEIGHT_KG + pkg["tare_kg"]
+    h = h if h is not None else pkg["height_cm"]
+    wd = wd if wd is not None else pkg["width_cm"]
+    ln = ln if ln is not None else pkg["length_cm"]
 
     # Regra única: soma altura+largura+comprimento <= 200 (CepCerto)
     while (h + wd + ln) > 200:

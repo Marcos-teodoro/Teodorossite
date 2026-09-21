@@ -170,7 +170,7 @@
       const data = await TeodoraAPI.api('/api/admin/categories');
       _categories = data.categories || [];
     } catch (_) {}
-    loadBoxesFromStorage();
+    await loadBoxesFromServer();
     bindGalleryUploadControls();
     navigateView('dashboard');
   }
@@ -608,10 +608,16 @@
       description: g('prod_descricao').trim(),
       ritual: g('prod_ritual').trim(),
       ingredients: g('prod_ingredientes').trim(),
-      weight_kg: parseFloat(g('prod_peso_manual')) || 0,
-      height_cm: parseFloat(g('prod_altura')) || null,
-      width_cm: parseFloat(g('prod_largura')) || null,
-      length_cm: parseFloat(g('prod_comprimento')) || null,
+      weight_kg: (() => {
+        const peso = parseFloat(g('prod_peso_manual')) || 0;
+        const boxId = g('prod_caixa_id');
+        const b = _boxes.find((x) => String(x.id) === String(boxId));
+        const tara = b ? (parseFloat(b.tara) || 0) : 0.15;
+        return Math.max(0.1, peso + tara);
+      })(),
+      height_cm: parseFloat(g('prod_altura')) || 10,
+      width_cm: parseFloat(g('prod_largura')) || 20,
+      length_cm: parseFloat(g('prod_comprimento')) || 25,
     };
     if (!payload.old_price) payload.old_price = null;
 
@@ -1158,16 +1164,57 @@
   };
 
   // ============================================================
-  // CAIXAS DE ENVIO (localStorage)
+  // CAIXAS DE ENVIO (única: 25×20×10 cm, tara 150 g)
   // ============================================================
 
   const BOXES_KEY = 'teodora_shipping_boxes';
+  const DEFAULT_SHIPPING_BOX = {
+    id: 'cx-unica',
+    nome: 'Caixa padrão Teodora',
+    codigo: 'CX-01',
+    desc: 'Embalagem única de envio — 25 × 20 × 10 cm',
+    altura: 10,
+    largura: 20,
+    comprimento: 25,
+    tara: 0.15,
+    isDefault: true,
+  };
 
   function loadBoxesFromStorage() {
     try { _boxes = JSON.parse(localStorage.getItem(BOXES_KEY) || '[]'); } catch (_) { _boxes = []; }
+    if (!_boxes.length) {
+      _boxes = [JSON.parse(JSON.stringify(DEFAULT_SHIPPING_BOX))];
+      saveBoxesToStorage();
+    }
   }
   function saveBoxesToStorage() {
     try { localStorage.setItem(BOXES_KEY, JSON.stringify(_boxes)); } catch (_) {}
+  }
+
+  async function persistBoxesToServer() {
+    try {
+      await TeodoraAPI.api('/api/admin/settings', {
+        method: 'PUT',
+        body: JSON.stringify({ shipping_boxes_json: JSON.stringify(_boxes) }),
+      });
+    } catch (_) {}
+  }
+
+  async function loadBoxesFromServer() {
+    try {
+      const data = await TeodoraAPI.api('/api/admin/settings');
+      const raw = data.settings?.shipping_boxes_json;
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) {
+          _boxes = parsed;
+          saveBoxesToStorage();
+          return;
+        }
+      }
+    } catch (_) {}
+    loadBoxesFromStorage();
+    await persistBoxesToServer();
   }
 
   function renderBoxesTable() {
@@ -1185,7 +1232,7 @@
             ${b.isDefault ? '<span class="ml-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Padrão</span>' : ''}
           </td>
           <td class="py-3.5 px-6 font-mono text-xs">${b.altura ?? '—'} × ${b.largura ?? '—'} × ${b.comprimento ?? '—'} cm</td>
-          <td class="py-3.5 px-6 font-mono text-xs">${b.tara ? `${b.tara} kg` : '—'}</td>
+          <td class="py-3.5 px-6 font-mono text-xs">${b.tara != null ? `${b.tara} kg` : '—'}</td>
           <td class="py-3.5 px-6 text-xs text-stone-500">${escapeHtml(b.desc || '—')}</td>
           <td class="py-3.5 px-6"><span class="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">Ativa</span></td>
           <td class="py-3.5 px-6 text-right">
@@ -1207,7 +1254,7 @@
     document.getElementById('boxForm').reset();
   }
 
-  function handleSaveBox(event) {
+  async function handleSaveBox(event) {
     event.preventDefault();
     const editId = document.getElementById('box_edit_id').value;
     const box = {
@@ -1229,6 +1276,7 @@
       _boxes.push(box);
     }
     saveBoxesToStorage();
+    await persistBoxesToServer();
     renderBoxesTable();
     resetBoxForm();
     showToast('Caixa salva com sucesso!');
@@ -1251,10 +1299,12 @@
     document.getElementById('box_nome').scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  window.deleteBox = function (id) {
+  window.deleteBox = async function (id) {
     if (!confirm('Excluir esta caixa?')) return;
     _boxes = _boxes.filter((b) => String(b.id) !== String(id));
+    if (!_boxes.length) _boxes = [JSON.parse(JSON.stringify(DEFAULT_SHIPPING_BOX))];
     saveBoxesToStorage();
+    await persistBoxesToServer();
     renderBoxesTable();
     showToast('Caixa excluída.');
   };
