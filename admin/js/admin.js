@@ -2243,6 +2243,13 @@
   // LOGIN
   // ============================================================
 
+  const loginPasswordEl = document.getElementById('loginPassword');
+  if (loginPasswordEl) {
+    loginPasswordEl.type = 'text';
+    loginPasswordEl.setAttribute('autocomplete', 'off');
+    loginPasswordEl.style.webkitTextSecurity = 'none';
+  }
+
   document.getElementById('adminLogin').onsubmit = async (e) => {
     e.preventDefault();
     const msg = document.getElementById('loginMsg');

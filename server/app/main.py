@@ -106,7 +106,10 @@ def index_page():
 
 @app.get("/conta.html")
 def conta_page():
-    return FileResponse(PROJECT_ROOT / "conta.html")
+    return FileResponse(
+        PROJECT_ROOT / "conta.html",
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"},
+    )
 
 
 @app.get("/minha-conta.html")
@@ -118,4 +121,7 @@ def minha_conta_page():
 @app.get("/admin/")
 @app.get("/admin/index.html")
 def admin_page():
-    return FileResponse(PROJECT_ROOT / "admin" / "index.html")
+    return FileResponse(
+        PROJECT_ROOT / "admin" / "index.html",
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"},
+    )

@@ -214,6 +214,9 @@
       transition: border-color 0.2s;
     }
     .field input:focus { border-color: #c4b5a5; }
+    #loginPassword {
+      -webkit-text-security: none !important;
+    }
     .field .toggle-pass {
       position: absolute;
       right: 0.8rem;
@@ -404,10 +407,7 @@
             </div>
             <div class="field">
               <i class="fa-solid fa-lock lead"></i>
-              <input type="text" id="loginPassword" required placeholder="Senha" autocomplete="current-password">
-              <button type="button" class="toggle-pass" data-target="loginPassword" aria-label="Mostrar senha">
-                <i class="fa-regular fa-eye"></i>
-              </button>
+              <input type="text" id="loginPassword" name="pass_visible" required placeholder="Senha" autocomplete="off" spellcheck="false" inputmode="text" style="-webkit-text-security: none;">
             </div>
             <a href="#" class="forgot" id="forgotLink">Esqueceu sua senha?</a>
             <button type="submit" class="btn-primary">Entrar</button>
