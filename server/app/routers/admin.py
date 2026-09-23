@@ -342,11 +342,13 @@ def create_product(body: ProductBody, _admin: dict = Depends(require_admin)):
 @router.put("/products/{product_id}")
 def update_product(product_id: int, body: ProductBody, _admin: dict = Depends(require_admin)):
     with get_connection() as conn:
-        if not conn.execute("SELECT id FROM products WHERE id = ?", (product_id,)).fetchone():
+        current = conn.execute("SELECT id, cover_image FROM products WHERE id = ?", (product_id,)).fetchone()
+        if not current:
             raise HTTPException(status_code=404, detail="Produto não encontrado")
         cat = conn.execute(
             "SELECT id FROM categories WHERE slug = ?", (body.category_slug,)
         ).fetchone()
+        cover = body.cover_image or current["cover_image"]
         conn.execute(
             """
             UPDATE products SET
@@ -384,7 +386,7 @@ def update_product(product_id: int, body: ProductBody, _admin: dict = Depends(re
                 body.height_cm,
                 body.width_cm,
                 body.length_cm,
-                body.cover_image,
+                cover,
                 product_id,
             ),
         )

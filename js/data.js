@@ -2,8 +2,10 @@
 const PRICE_FILTER_MAX = 800;
 
 function makeProduct(p) {
-  const image = p.image || p.cover_image || '';
-  const gallery = p.gallery || [image, image, image, image].filter(Boolean);
+  const firstSaved = (p.images || []).map((img) => img && img.url).find(Boolean) || '';
+  const image = p.image || p.cover_image || firstSaved || '';
+  const gallery = (p.gallery || []).filter(Boolean);
+  if (!gallery.length && image) gallery.push(image);
   const variants = p.variants || [{ size: p.volume || "100ml", price: p.price, label: p.volume || "100ml" }];
   return {
     rating: 4.8,
@@ -209,10 +211,14 @@ async function loadCatalogFromApi() {
   });
   APP_STATE.products = (data.products || []).map((p) => {
     const product = makeProduct(p);
-    if (product.image && product.image.startsWith('/')) {
-      product.image = `${apiBase}${product.image}`;
-      product.gallery = (product.gallery || []).map((g) => (g && g.startsWith('/') ? `${apiBase}${g}` : g));
-    }
+    const resolve = (url) => {
+      if (!url) return '';
+      return url.startsWith('/') ? `${apiBase}${url}` : url;
+    };
+    product.image = resolve(product.image);
+    product.gallery = (product.gallery || []).map(resolve).filter(Boolean);
+    if (!product.image && product.gallery.length) product.image = product.gallery[0];
+    if (!product.gallery.length && product.image) product.gallery = [product.image];
     return product;
   });
   if (!APP_STATE.products.length) throw new Error('Catálogo vazio');

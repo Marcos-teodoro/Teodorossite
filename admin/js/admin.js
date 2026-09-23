@@ -397,7 +397,8 @@
     if (!tbody) return;
     tbody.innerHTML = page.length
       ? page.map((p) => {
-          const imgSrc = p.image ? TeodoraAPI.absoluteUrl(p.image) : '';
+          const rawImg = p.image || (p.gallery || []).find(Boolean) || (p.images && p.images[0] && p.images[0].url) || '';
+          const imgSrc = rawImg ? TeodoraAPI.absoluteUrl(rawImg) : '';
           const stockCls = (p.stock ?? 0) < 10 ? 'text-red-700 font-semibold' : 'text-stone-700';
           const badgeHtml = p.badge
             ? `<span class="inline-block text-[10px] font-bold uppercase px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded ml-1">${escapeHtml(p.badge)}</span>`
@@ -636,7 +637,10 @@
         if (bc) bc.textContent = `Produtos / ${escapeHtml(payload.title || 'Novo')}`;
         showToast('Produto criado! Agora adicione as fotos abaixo.');
       }
-      if (productId) {
+      if (productId && _pendingPhotos.length) {
+        document.getElementById('prod_edit_id').value = productId;
+        await uploadGalleryFile();
+      } else if (productId) {
         const fresh = await TeodoraAPI.api(`/api/admin/products/${productId}`);
         renderGallery(fresh.product || {});
       }
@@ -793,8 +797,8 @@
 
     if (hint) {
       hint.textContent = _galleryProduct
-        ? 'Ao selecionar, as fotos aparecem abaixo. Marque a capa e clique em Enviar.'
-        : 'Você pode escolher e visualizar as fotos agora; para enviar, salve o produto antes.';
+        ? 'Ao selecionar, as fotos aparecem abaixo. Marque a capa e salve o produto (ou clique em Enviar).'
+        : 'Você pode escolher as fotos agora. Ao salvar o produto, elas são enviadas sozinhas para a loja.';
     }
 
     updateGalleryFileLabel();
