@@ -1307,6 +1307,7 @@ async function mountPaymentBrick(amount, publicKey, orderId) {
           const data = await res.json().catch(() => ({}));
           if (!res.ok) throw new Error(data.detail || 'Pagamento recusado');
 
+          try { sessionStorage.setItem('teodora_last_order', orderId); } catch (_) { /* ignore */ }
           const status = data.status || 'pending';
           if (status === 'approved') {
             showCheckoutReturnPanel('success');
@@ -1314,8 +1315,8 @@ async function mountPaymentBrick(amount, publicKey, orderId) {
             showCheckoutReturnPanel('failure');
           } else {
             showCheckoutReturnPanel('pending');
+            showPaymentInstructions(orderId, data.pointOfInteraction);
           }
-          try { sessionStorage.setItem('teodora_last_order', orderId); } catch (_) { /* ignore */ }
         } catch (err) {
           displayToast(err.message || 'Erro no pagamento');
           throw err;
@@ -1428,7 +1429,76 @@ async function executePaymentTransaction() {
 }
 
 function copyPixToClipboard() {
-  displayToast('O Pix oficial é gerado no Checkout Pro do Mercado Pago.');
+  const field = document.getElementById('pixCode');
+  if (!field || !field.value) return;
+  const done = () => displayToast('Código Pix copiado.');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(field.value).then(done, () => { field.select(); document.execCommand('copy'); done(); });
+  } else {
+    field.select();
+    document.execCommand('copy');
+    done();
+  }
+}
+
+// Mostra o QR Code / código Pix (ou link do boleto) e acompanha o pagamento até confirmar.
+function showPaymentInstructions(orderId, pointOfInteraction) {
+  const data = (pointOfInteraction && pointOfInteraction.transaction_data) || {};
+  const pixPanel = document.getElementById('pixPanel');
+  const boleto = document.getElementById('boletoLink');
+  if (pixPanel) pixPanel.classList.toggle('hidden', !data.qr_code);
+  if (boleto) {
+    boleto.classList.toggle('hidden', !data.ticket_url || !!data.qr_code);
+    if (data.ticket_url) boleto.href = data.ticket_url;
+  }
+  if (data.qr_code) {
+    const img = document.getElementById('pixQrImg');
+    if (img && data.qr_code_base64) {
+      img.src = `data:image/png;base64,${data.qr_code_base64}`;
+      img.classList.remove('hidden');
+    }
+    const code = document.getElementById('pixCode');
+    if (code) code.value = data.qr_code;
+    const msg = document.getElementById('checkoutResultMessage');
+    if (msg) msg.innerText = 'Pague com o QR Code ou o código Pix abaixo. A confirmação aparece aqui automaticamente.';
+  }
+  startPaymentPolling(orderId);
+}
+
+function stopPaymentPolling() {
+  if (APP_STATE.paymentPollTimer) {
+    clearInterval(APP_STATE.paymentPollTimer);
+    APP_STATE.paymentPollTimer = null;
+  }
+}
+
+function startPaymentPolling(orderId) {
+  stopPaymentPolling();
+  const startedAt = Date.now();
+  const statusEl = document.getElementById('pixPollStatus');
+  APP_STATE.paymentPollTimer = setInterval(async () => {
+    if (Date.now() - startedAt > 15 * 60 * 1000) {
+      stopPaymentPolling();
+      if (statusEl) statusEl.innerText = 'Se você já pagou, a confirmação chega em instantes. Acompanhe em Minha conta.';
+      return;
+    }
+    try {
+      const headers = {};
+      const token = window.TeodoraAPI?.getToken?.();
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(`${teodoraApiBase()}/api/orders/${orderId}/refresh`, { method: 'POST', headers });
+      const data = await res.json().catch(() => ({}));
+      if (data.status === 'approved' || data.status === 'shipped' || data.status === 'delivered') {
+        stopPaymentPolling();
+        document.getElementById('pixPanel')?.classList.add('hidden');
+        showCheckoutReturnPanel('success');
+      } else if (data.status === 'rejected' || data.status === 'cancelled') {
+        stopPaymentPolling();
+        document.getElementById('pixPanel')?.classList.add('hidden');
+        showCheckoutReturnPanel('failure');
+      }
+    } catch (_) { /* tenta de novo no próximo ciclo */ }
+  }, 5000);
 }
 
 function showCheckoutReturnPanel(status) {
@@ -1451,7 +1521,11 @@ function showCheckoutReturnPanel(status) {
   if (orderEl) orderEl.innerText = ref;
 
   if (status === 'success') {
-    if (eyebrow) eyebrow.innerText = 'Pagamento aprovado';
+    if (eyebrow) {
+      eyebrow.innerText = 'Pagamento aprovado';
+      eyebrow.classList.remove('text-amber-700', 'text-red-600');
+      eyebrow.classList.add('text-emerald-700');
+    }
     if (title) title.innerText = 'Pedido confirmado';
     if (message) message.innerText = 'Recebemos a confirmação do Mercado Pago. Obrigado por comprar na Teodora.';
     APP_STATE.cart = [];
@@ -1466,7 +1540,7 @@ function showCheckoutReturnPanel(status) {
       eyebrow.classList.add('text-amber-700');
     }
     if (title) title.innerText = 'Aguardando confirmação';
-    if (message) message.innerText = 'Pix ou boleto ainda estão processando. Você recebe a confirmação por e-mail.';
+    if (message) message.innerText = 'Seu pagamento ainda está sendo processado. Acompanhe o status do pedido em Minha conta.';
     displayToast('Pedido criado. Aguardando pagamento.');
   } else {
     if (eyebrow) {
@@ -1493,6 +1567,7 @@ function handleCheckoutReturnFromQuery() {
 }
 
 function resetStoreAfterPurchase() {
+  stopPaymentPolling();
   if (APP_STATE.cart.length) {
     APP_STATE.cart = [];
   }

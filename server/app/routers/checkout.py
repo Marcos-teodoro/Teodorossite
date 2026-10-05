@@ -274,7 +274,9 @@ def apply_payment_result(conn, order_id: str, payment: dict[str, Any], source: s
     previous = row["status"]
 
     # Não regride pedido já enviado/entregue/cancelado por notificação repetida do MP.
-    if previous in {"shipped", "delivered"} and mapped in {"approved", "pending"}:
+    if previous in PAID_STATES and mapped == "pending":
+        mapped = previous  # notificação atrasada/fora de ordem
+    elif previous in {"shipped", "delivered"} and mapped == "approved":
         mapped = previous
     elif previous == "cancelled" and mapped == "pending":
         mapped = previous
@@ -364,6 +366,34 @@ def create_payment(
         "pointOfInteraction": result.get("point_of_interaction"),
         "transactionDetails": result.get("transaction_details"),
     }
+
+
+@router.post("/orders/{order_id}/refresh")
+def refresh_order_payment(order_id: str, user: dict = Depends(require_user)):
+    """Consulta o Mercado Pago e atualiza o pedido (a loja chama enquanto o cliente paga o Pix)."""
+    with get_connection() as conn:
+        row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Pedido não encontrado")
+        order = row_to_dict(row)
+        if order.get("user_id") != user["id"] and user.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Sem permissão")
+
+    mp_id = str(order.get("mp_payment_id") or "")
+    if order.get("status") == "pending" and mp_id:
+        try:
+            payment = (
+                mercadopago_svc.get_order(mp_id)
+                if mp_id.startswith("ORD")
+                else mercadopago_svc.get_payment(mp_id)
+            )
+            with get_connection() as conn:
+                apply_payment_result(conn, order_id, payment, "refresh")
+        except Exception as exc:
+            print(f"[refresh] erro: {exc}")
+    with get_connection() as conn:
+        fresh = conn.execute("SELECT status, mp_status FROM orders WHERE id = ?", (order_id,)).fetchone()
+    return {"orderId": order_id, "status": fresh["status"], "mpStatus": fresh["mp_status"]}
 
 
 @router.post("/webhooks/mercadopago")

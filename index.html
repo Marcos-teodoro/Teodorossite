@@ -807,6 +807,16 @@
         <p id="checkoutResultEyebrow" class="text-[10px] uppercase tracking-[0.2em] text-teodora-gold">Pedido</p>
         <h3 id="checkoutResultTitle" class="font-heading text-2xl text-teodora-text font-normal">Pedido confirmado</h3>
         <p id="checkoutResultMessage" class="text-sm text-teodora-textMuted max-w-sm mx-auto leading-relaxed">Obrigado. Enviamos os detalhes para o seu e-mail.</p>
+        <div id="pixPanel" class="hidden max-w-xs mx-auto space-y-3 text-left">
+          <img id="pixQrImg" alt="QR Code Pix" class="hidden w-48 h-48 mx-auto border border-teodora-border rounded-2xl p-2 bg-white">
+          <label for="pixCode" class="block text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted">Pix copia e cola</label>
+          <textarea id="pixCode" readonly rows="3" class="w-full p-3 text-[11px] font-mono rounded-xl border border-teodora-border bg-teodora-bgLight resize-none"></textarea>
+          <button type="button" onclick="copyPixToClipboard()" class="w-full py-2.5 border border-teodora-border hover:border-teodora-gold text-[11px] uppercase tracking-[0.14em] font-semibold rounded-xl transition">
+            <i class="fa-regular fa-copy mr-1"></i> Copiar código Pix
+          </button>
+          <p id="pixPollStatus" class="text-[11px] text-center text-teodora-textMuted">Aguardando o pagamento…</p>
+        </div>
+        <a id="boletoLink" href="#" target="_blank" rel="noopener" class="hidden inline-block text-xs underline text-teodora-gold font-semibold">Abrir boleto</a>
         <p class="text-xs text-teodora-textMuted">Ref. <strong class="text-teodora-text font-mono font-normal" id="displayOrderNumber">—</strong></p>
         <button onclick="resetStoreAfterPurchase()" class="mt-2 px-8 py-3 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
           Voltar à loja
@@ -933,6 +943,6 @@
   <script src="js/api.js"></script>
   <script src="js/data.js?v=fotos-auto"></script>
   <script src="js/category-profiles.js?v=perfis3"></script>
-  <script src="js/app.js?v=perfis3"></script>
+  <script src="js/app.js?v=pix1"></script>
 </body>
 </html>
