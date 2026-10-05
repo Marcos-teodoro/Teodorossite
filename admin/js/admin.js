@@ -1457,6 +1457,7 @@
                   `<option value="${s}" ${o.status === s ? 'selected' : ''}>${TeodoraAPI.statusLabel(s)}</option>`
                 ).join('')}
               </select>
+              ${(o.shipping_snapshot && o.shipping_snapshot.label_error) ? '<div class="mt-1 text-[10px] font-semibold text-red-600">Etiqueta falhou</div>' : ''}
             </td>
             <td class="py-3 px-6 text-right">
               <div class="flex items-center justify-end gap-2">
@@ -1510,6 +1511,8 @@
               class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded border border-stone-300 bg-white hover:bg-stone-50 text-stone-700">Fechar</button>
           </div>
           <div class="p-6 space-y-6">
+
+            ${snap.label_error ? `<div class="p-3 rounded border border-red-200 bg-red-50 text-xs text-red-800 leading-relaxed"><strong>A etiqueta automática falhou:</strong> ${escapeHtml(snap.label_error.message || '')}<br>Corrija o problema (saldo, CPF, CEP…) e gere a etiqueta pelo botão do pedido.</div>` : ''}
 
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
               <div><span class="text-stone-400 uppercase tracking-wider font-semibold text-[10px] block">Total</span>
@@ -1793,6 +1796,8 @@
       set('shipper_address_number', shipper.numero_endereco_remetente);
       set('shipper_complement', shipper.complemento_remetente);
       renderOriginsForm(data.origins || {}, data.service_codes);
+      const autoBox = document.getElementById('cc_auto_label');
+      if (autoBox) autoBox.checked = Boolean(data.auto_label_enabled);
 
       const ok = Boolean(data.ready || data.configured);
       if (badge) {
@@ -1872,6 +1877,17 @@
       await loadCepCertoStatus();
     } catch (err) {
       showToast(err.message || 'Erro ao salvar origens.', 'error');
+    }
+  };
+
+  window.saveAutoLabel = async function (box) {
+    const wanted = box.checked;
+    try {
+      await TeodoraAPI.api('/api/admin/settings', { method: 'PUT', body: JSON.stringify({ auto_label_enabled: wanted ? '1' : '0' }) });
+      showToast(wanted ? 'Etiqueta automática ligada.' : 'Etiqueta automática desligada.');
+    } catch (err) {
+      box.checked = !wanted;
+      showToast(err.message || 'Erro ao salvar.', 'error');
     }
   };
 

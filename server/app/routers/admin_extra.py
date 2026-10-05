@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import re
 from datetime import datetime, timezone
 
@@ -24,6 +25,7 @@ ALLOWED_SETTINGS = {
     "shipper_address_number", "shipper_complement",
     "shipping_origins_json",
     "shipping_boxes_json",
+    "auto_label_enabled",
 }
 
 
@@ -236,6 +238,8 @@ async def cepcerto_status(_admin: dict = Depends(require_admin)):
         saldo_ok = False
     out["checklist"] = _checklist(shipper, origins, True, saldo_ok)
     out["ready"] = all(i["ok"] for i in out["checklist"] if i["id"] != "saldo") and bool(conf.cepcerto_postage_token)
+    with get_connection() as conn:
+        out["auto_label_enabled"] = _site_map(conn).get("auto_label_enabled") == "1"
     return out
 
 
@@ -337,6 +341,13 @@ async def create_order_label(
     admin: dict = Depends(require_admin),
 ):
     """Gera etiqueta CepCerto (declaração) para o pedido e salva rastreio + custo."""
+    return await emit_order_label(order_id, payload, admin)
+
+
+SYSTEM_ACTOR = {"id": None, "email": "sistema"}
+
+
+async def emit_order_label(order_id: str, payload: dict | None, admin: dict) -> dict:
     payload = payload or {}
     with get_connection() as conn:
         row = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
@@ -442,9 +453,9 @@ async def create_order_label(
         "cep_remetente": origin_cep,
         "cep_destinatario": dest_cep,
         "peso": f"{weight:.3f}",
-        "altura": f"{height:.0f}",
-        "largura": f"{width:.0f}",
-        "comprimento": f"{length:.0f}",
+        "altura": str(math.ceil(height)),
+        "largura": str(math.ceil(width)),
+        "comprimento": str(math.ceil(length)),
         "valor_encomenda": f"{declared:.2f}",
         "nome_destinatario": payload.get("nome_destinatario") or order.get("payer_name") or "",
         "cpf_cnpj_destinatario": payload.get("cpf_cnpj_destinatario") or order.get("payer_doc") or "",
@@ -500,6 +511,7 @@ async def create_order_label(
             (tracking or order.get("tracking_code") or "", pdf or order.get("tracking_url") or "", notes, order_id),
         )
         snap2 = dict(snap)
+        snap2.pop("label_error", None)
         snap2["cep"] = dest_cep
         snap2["originCep"] = label.get("origin_cep") or origin_cep
         snap2["originLabel"] = label.get("origin_label") or origin_info.get("label") or ""
@@ -539,6 +551,41 @@ async def create_order_label(
         "margin": margin,
         "reused": False,
     }
+
+
+async def auto_emit_label(order_id: str) -> dict:
+    """Emite a etiqueta quando o pagamento é aprovado (se o admin ligou a opção).
+
+    Nunca levanta erro: se falhar (saldo, CEP, dados), o motivo fica no pedido
+    (shipping_snapshot.label_error) para o admin resolver e emitir à mão.
+    """
+    with get_connection() as conn:
+        enabled = _site_map(conn).get("auto_label_enabled") == "1"
+    if not enabled:
+        return {"skipped": "desligado"}
+    if not get_app_settings().cepcerto_postage_token:
+        return {"skipped": "sem token CepCerto"}
+
+    try:
+        result = await emit_order_label(order_id, {}, SYSTEM_ACTOR)
+        return {"ok": True, "reused": bool(result.get("reused"))}
+    except HTTPException as exc:
+        error = str(exc.detail)
+    except Exception as exc:  # noqa: BLE001 - qualquer falha vira aviso no pedido
+        error = str(exc)
+
+    with get_connection() as conn:
+        row = conn.execute("SELECT status, shipping_snapshot FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if row:
+            snap = parse_json_field(row["shipping_snapshot"], {})
+            snap["label_error"] = {"message": error, "at": datetime.now(timezone.utc).isoformat()}
+            conn.execute("UPDATE orders SET shipping_snapshot = ? WHERE id = ?", (json.dumps(snap, ensure_ascii=False), order_id))
+            conn.execute(
+                "INSERT INTO order_status_history (order_id, old_status, new_status, source, note) VALUES (?, ?, ?, 'etiqueta-automatica', ?)",
+                (order_id, row["status"], row["status"], f"Falha ao emitir etiqueta: {error}"[:300]),
+            )
+            conn.commit()
+    return {"ok": False, "error": error}
 
 
 @router.post("/orders/{order_id}/label/cancel")

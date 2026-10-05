@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import re
+import threading
 from typing import Any
 from uuid import uuid4
 
@@ -262,6 +263,21 @@ def checkout_prepare(
 
 
 PAID_STATES = {"approved", "shipped", "delivered"}
+
+
+def _trigger_auto_label(order_id: str) -> None:
+    """Emissão automática de etiqueta em segundo plano (não atrasa a resposta do pagamento)."""
+    from .admin_extra import auto_emit_label  # import tardio: evita ciclo entre os roteadores
+
+    def run() -> None:
+        try:
+            outcome = asyncio.run(auto_emit_label(order_id))
+            if outcome.get("ok") is False:
+                print(f"[etiqueta-automatica] pedido {order_id}: {outcome.get('error')}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"[etiqueta-automatica] erro inesperado no pedido {order_id}: {exc}")
+
+    threading.Thread(target=run, name=f"auto-label-{order_id[:8]}", daemon=True).start()
 FINAL_STATES = PAID_STATES | {"cancelled"}
 
 
@@ -304,6 +320,9 @@ def apply_payment_result(conn, order_id: str, payment: dict[str, Any], source: s
             (order_id, previous, mapped, note),
         )
     conn.commit()
+    # Primeira aprovação (com estoque ok): emite a etiqueta se a opção estiver ligada no admin.
+    if mapped in PAID_STATES and previous not in PAID_STATES and note == source:
+        _trigger_auto_label(order_id)
     return mapped
 
 
