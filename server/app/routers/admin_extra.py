@@ -202,7 +202,7 @@ def _checklist(shipper: dict, origins: dict, configured: bool, saldo_ok: bool | 
     origins_ok = any(len((o.get("cep") or "")) == 8 for o in origins.values())
     items.append({"id": "origins", "ok": origins_ok, "label": "Pelo menos um CEP de origem cadastrado"})
     if saldo_ok is not None:
-        items.append({"id": "saldo", "ok": saldo_ok, "label": "Saldo CepCerto disponível"})
+        items.append({"id": "saldo", "ok": saldo_ok, "label": "Saldo CepCerto suficiente para etiquetas (mín. R$ 30,00) — cada etiqueta debita o valor do frete"})
     return items
 
 
@@ -232,7 +232,7 @@ async def cepcerto_status(_admin: dict = Depends(require_admin)):
     try:
         out["saldo"] = await cepcerto.get_balance()
         num = out["saldo"].get("saldo_numero")
-        saldo_ok = num is None or num > 0
+        saldo_ok = num is None or num >= MIN_LABEL_BALANCE
     except Exception as exc:
         out["message"] = str(exc)
         saldo_ok = False
@@ -345,6 +345,7 @@ async def create_order_label(
 
 
 SYSTEM_ACTOR = {"id": None, "email": "sistema"}
+MIN_LABEL_BALANCE = 30.0  # PAC/SEDEX/Jadlog custam em média R$ 18 a R$ 60
 
 
 async def emit_order_label(order_id: str, payload: dict | None, admin: dict) -> dict:

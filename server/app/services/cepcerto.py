@@ -430,6 +430,10 @@ async def create_label(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("E-mail do destinatário ausente (obrigatório na CepCerto).")
     if not body["cpf_cnpj_remetente"]:
         raise ValueError("Informe o CPF/CNPJ do remetente no painel CepCerto.")
+    if len(body["whatsapp_remetente"]) < 10:
+        raise ValueError("Informe o WhatsApp do remetente em Admin → CepCerto → Dados do remetente (obrigatório na CepCerto).")
+    if "@" not in str(body["email_remetente"]):
+        raise ValueError("Informe o e-mail do remetente em Admin → CepCerto → Dados do remetente (obrigatório na CepCerto).")
 
     data = await _async_post("/api-postagem-frete/", body)
     frete = data.get("frete") or {}
