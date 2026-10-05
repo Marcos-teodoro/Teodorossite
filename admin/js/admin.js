@@ -523,9 +523,6 @@
       if (ta) ta.placeholder = item.placeholder;
     });
 
-    setText('cat-label-ritual', profile.ritual.label);
-    const ritual = document.getElementById('prod_ritual');
-    if (ritual) ritual.placeholder = profile.ritual.placeholder;
     setText('cat-label-ingredients', profile.ingredients.label);
     const ingr = document.getElementById('prod_ingredientes');
     if (ingr) ingr.placeholder = profile.ingredients.placeholder;
@@ -550,7 +547,6 @@
       prod_notas_coracao: '',
       prod_notas_fundo: '',
       prod_descricao: '',
-      prod_ritual: '',
       prod_ingredientes: '',
       prod_peso_manual: '0.38',
       prod_altura: '',
@@ -601,7 +597,6 @@
       set('prod_notas_coracao', p.pyramid?.heart || '');
       set('prod_notas_fundo', p.pyramid?.base || '');
       set('prod_descricao', p.description || '');
-      set('prod_ritual', p.ritual || '');
       set('prod_ingredientes', p.ingredients || '');
       set('prod_peso_manual', p.weightKg ?? 0.38);
       set('prod_altura', p.heightCm ?? '');
@@ -648,7 +643,6 @@
       pyramid_heart: g('prod_notas_coracao').trim(),
       pyramid_base: g('prod_notas_fundo').trim(),
       description: g('prod_descricao').trim(),
-      ritual: g('prod_ritual').trim(),
       ingredients: g('prod_ingredientes').trim(),
       weight_kg: (() => {
         const peso = parseFloat(g('prod_peso_manual')) || 0;

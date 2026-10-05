@@ -211,7 +211,7 @@ def product_to_storefront(
         "gallery": gallery or [cover],
         "notes": row.get("notes") or "",
         "description": row.get("description") or "",
-        "ritual": row.get("ritual") or "Borrife nos pulsos e na nuca.",
+        "ritual": row.get("ritual") or "",
         "ingredients": row.get("ingredients") or "",
         "pyramid": {
             "top": row.get("pyramid_top") or "Notas de saída",

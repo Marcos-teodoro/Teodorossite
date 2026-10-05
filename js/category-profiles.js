@@ -4,7 +4,7 @@
  * e modo de uso, etc.). Os valores continuam nas mesmas colunas do banco:
  *   selects.family/intensity/occasion/sensation  -> products.family/intensity/occasion/sensation
  *   details.top/heart/base                       -> products.pyramid_top/heart/base
- *   ritual / ingredients                         -> products.ritual / products.ingredients
+ *   ingredients                                  -> products.ingredients
  * Categoria nova criada no admin (slug desconhecido) usa o perfil "generic".
  */
 (function () {
@@ -46,7 +46,6 @@
         },
       },
       description: { placeholder: 'Conte a história e o perfil da fragrância.' },
-      ritual: { label: 'Ritual de Uso', tab: 'Descrição', placeholder: 'Ex: Borrife a 15 cm da pele, em pulsos, pescoço e dobras dos cotovelos.' },
       ingredients: { label: 'Ingredientes / Composição', placeholder: 'Ex: Alcohol Denat., Parfum (Fragrance), Aqua...' },
       similarHelp: 'Automatizado com base na marca e na família olfativa cadastrada.',
     },
@@ -84,7 +83,6 @@
         },
       },
       description: { placeholder: 'Descreva o produto, a marca e para quem ele é indicado.' },
-      ritual: { label: 'Modo de Uso', tab: 'Como usar', placeholder: 'Ex: Aplique no rosto limpo e seco, 2 vezes ao dia. Use protetor solar durante o dia.' },
       ingredients: { label: 'Ingredientes (INCI)', placeholder: 'Lista de ingredientes conforme a embalagem / Anvisa...' },
       similarHelp: 'Automatizado com base na marca e no tipo de produto cadastrado.',
     },
@@ -120,7 +118,6 @@
         },
       },
       description: { placeholder: 'Descreva o produto, o efeito e para quem é indicado.' },
-      ritual: { label: 'Modo de Aplicação', tab: 'Como aplicar', placeholder: 'Ex: Aplique com pincel ou esponja do centro do rosto para fora, em camadas finas.' },
       ingredients: { label: 'Ingredientes', placeholder: 'Lista de ingredientes conforme a embalagem / Anvisa...' },
       similarHelp: 'Automatizado com base na marca e no tipo de produto cadastrado.',
     },
@@ -158,7 +155,6 @@
         },
       },
       description: { placeholder: 'Descreva o produto, a linha e para quem é indicado.' },
-      ritual: { label: 'Modo de Uso', tab: 'Como usar', placeholder: 'Ex: Aplique nos fios úmidos, deixe agir por 5 minutos e enxágue.' },
       ingredients: { label: 'Ingredientes', placeholder: 'Lista de ingredientes conforme a embalagem / Anvisa...' },
       similarHelp: 'Automatizado com base na marca e no tipo de produto cadastrado.',
     },
@@ -194,7 +190,6 @@
         },
       },
       description: { placeholder: 'Descreva o produto e para quem é indicado.' },
-      ritual: { label: 'Modo de Uso', tab: 'Como usar', placeholder: 'Ex: Aplique após o banho com a pele ainda levemente úmida.' },
       ingredients: { label: 'Ingredientes', placeholder: 'Lista de ingredientes conforme a embalagem / Anvisa...' },
       similarHelp: 'Automatizado com base na marca e no tipo de produto cadastrado.',
     },
@@ -230,7 +225,6 @@
         },
       },
       description: { placeholder: 'Descreva o kit e o que o torna um bom presente.' },
-      ritual: { label: 'Como Usar / Observações', tab: 'Como usar', placeholder: 'Ex: Siga o modo de uso de cada item. Embalagem pronta para presente.' },
       ingredients: { label: 'Composição dos Itens', placeholder: 'Ingredientes de cada item, se aplicável...' },
       similarHelp: 'Automatizado com base na marca e no tipo de kit cadastrado.',
     },
@@ -251,7 +245,6 @@
         },
       },
       description: { placeholder: 'Descreva o produto.' },
-      ritual: { label: 'Modo de Uso', tab: 'Como usar', placeholder: 'Como usar o produto...' },
       ingredients: { label: 'Ingredientes / Composição', placeholder: 'Composição do produto...' },
       similarHelp: 'Automatizado com base na marca e na categoria cadastrada.',
     },

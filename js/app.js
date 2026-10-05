@@ -565,11 +565,6 @@ function openProductPage(productId) {
   // Abas descritivas
   const descEl = document.getElementById('pdpDescription');
   if (descEl) descEl.innerText = product.description || '';
-  const ritualText = (product.ritual || '').trim();
-  const ritualWrap = document.getElementById('pdpRitualWrap');
-  if (ritualWrap) ritualWrap.classList.toggle('hidden', !ritualText);
-  setPdpText('pdpRitualLabel', `${profile.ritual.label}:`);
-  setPdpText('pdpRitualAdvice', ritualText);
   const ingrText = (product.ingredients || '').trim();
   const ingrTab = document.getElementById('tabBtnAtivos');
   if (ingrTab) ingrTab.classList.toggle('hidden', !ingrText);
