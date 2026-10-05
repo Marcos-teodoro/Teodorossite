@@ -32,7 +32,6 @@ function renderStorefrontSettings() {
   setText('topInstallments', `${installmentCount()}x sem juros`);
   setText('benefitInstallments', `Até ${installmentCount()}x sem juros no cartão.`);
   setText('pdpInstallmentCount', `${installmentCount()}x`);
-  setText('checkoutInstallments', `até ${installmentCount()}x`);
   setText('footerInstallments', `Até ${installmentCount()}x sem juros no cartão · Pix e boleto.`);
   setText('footerDescription', settings.footer_description);
   setHref('topWhatsapp', settings.whatsapp_url); setHref('footerWhatsapp', settings.whatsapp_url);
@@ -1228,9 +1227,11 @@ async function openMercadoPagoModal() {
   document.getElementById('checkoutFormPanel').style.display = 'block';
   document.getElementById('checkoutSuccessPanel').classList.add('hidden');
   document.getElementById('paymentBrick_container').innerHTML = '';
-  document.getElementById('paymentBrickWrap').classList.add('hidden');
-  document.getElementById('btnSubmitPayment').classList.remove('hidden');
   document.getElementById('checkoutModalHeader')?.classList.remove('hidden');
+  document.getElementById('checkoutFooter')?.classList.remove('hidden');
+  const submit = document.getElementById('btnSubmitPayment');
+  if (submit) { submit.disabled = false; submit.innerHTML = '<span>Continuar para pagar</span>'; }
+  setCheckoutStep(1);
   document.getElementById('mercadoPagoModal').classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.add('flex');
   lockPageScroll(true);
@@ -1238,6 +1239,42 @@ async function openMercadoPagoModal() {
     .map((id) => document.getElementById(id))
     .find((el) => el && !el.value.trim());
   if (firstEmpty && window.matchMedia('(min-width: 640px)').matches) setTimeout(() => firstEmpty.focus(), 50);
+}
+
+// Passo 1 = dados e entrega; passo 2 = pagamento (o formulário some e vira um resumo curto).
+function setCheckoutStep(step) {
+  const two = step === 2;
+  document.getElementById('checkoutStep1')?.classList.toggle('hidden', two);
+  document.getElementById('checkoutSummary')?.classList.toggle('hidden', !two);
+  document.getElementById('paymentBrickWrap')?.classList.toggle('hidden', !two);
+  document.getElementById('btnSubmitPayment')?.classList.toggle('hidden', two);
+  const label = document.getElementById('checkoutStepLabel');
+  if (label) label.innerText = two ? '· Passo 2 de 2' : '· Passo 1 de 2';
+  const title = document.getElementById('checkoutModalTitle');
+  if (title) title.innerText = two ? 'Pagamento' : 'Seus dados';
+  const scroll = document.getElementById('checkoutScroll');
+  if (scroll) scroll.scrollTop = 0;
+  if (two) {
+    const val = (id) => (document.getElementById(id)?.value || '').trim();
+    document.getElementById('checkoutSummaryName').innerText = `${val('buyerName')} · ${val('buyerPhone')}`;
+    document.getElementById('checkoutSummaryAddress').innerText = [
+      `${val('buyerAddress')}, ${val('buyerAddressNumber')}`,
+      val('buyerAddressComplement'),
+      val('buyerNeighborhood'),
+      val('buyerCityUf'),
+    ].filter(Boolean).join(' · ');
+  }
+}
+
+function backToCheckoutForm() {
+  if (APP_STATE.mpBrickController?.unmount) {
+    try { APP_STATE.mpBrickController.unmount(); } catch (_) { /* ignore */ }
+  }
+  APP_STATE.mpBrickController = null;
+  document.getElementById('paymentBrick_container').innerHTML = '';
+  const btn = document.getElementById('btnSubmitPayment');
+  if (btn) { btn.disabled = false; btn.innerHTML = '<span>Continuar para pagar</span>'; }
+  setCheckoutStep(1);
 }
 
 function showCheckoutError(text, fieldId) {
@@ -1269,11 +1306,11 @@ function refreshGuestAccountBlock() {
   const login = APP_STATE.guestMode === 'login';
   document.getElementById('guestAccountTitle').innerText = login ? 'Entre na sua conta' : 'Crie sua conta para finalizar';
   document.getElementById('guestAccountHelp').innerText = login
-    ? 'Use o e-mail acima e a senha da sua conta para continuar a compra.'
-    : 'Usamos os dados acima para criar sua conta e você acompanhar o pedido. Falta só escolher uma senha.';
+    ? 'Use o e-mail acima e a senha da sua conta.'
+    : 'Criamos sua conta com esses dados para você acompanhar o pedido.';
   document.getElementById('buyerPassword').placeholder = login ? 'Senha da sua conta' : 'Senha (mínimo 8 caracteres)';
   document.getElementById('buyerPassword').autocomplete = login ? 'current-password' : 'new-password';
-  document.getElementById('guestModeToggle').innerText = login ? 'Não tenho conta — criar agora' : 'Já tenho conta — entrar';
+  document.getElementById('guestModeToggle').innerText = login ? 'Criar conta' : 'Já tenho conta';
 }
 
 function toggleGuestMode() {
@@ -1347,37 +1384,6 @@ function closeMercadoPagoModal() {
   lockPageScroll(false);
 }
 
-function changePaymentOption(method) {
-  APP_STATE.paymentMethod = method;
-  document.querySelectorAll('.pay-tab').forEach(t => {
-    t.classList.remove('border-teodora-gold', 'bg-teodora-cream');
-    t.classList.add('border-teodora-border', 'bg-white');
-  });
-
-  document.getElementById('panelPix').classList.add('hidden');
-  document.getElementById('panelCard').classList.add('hidden');
-  document.getElementById('panelBoleto').classList.add('hidden');
-
-  if (method === 'pix') {
-    document.getElementById('payTabPix').classList.add('border-teodora-gold', 'bg-teodora-cream');
-    document.getElementById('payTabPix').classList.remove('border-teodora-border', 'bg-white');
-    document.getElementById('panelPix').classList.remove('hidden');
-  } else if (method === 'card') {
-    document.getElementById('payTabCard').classList.add('border-teodora-gold', 'bg-teodora-cream');
-    document.getElementById('payTabCard').classList.remove('border-teodora-border', 'bg-white');
-    document.getElementById('panelCard').classList.remove('hidden');
-  } else {
-    document.getElementById('payTabBoleto').classList.add('border-teodora-gold', 'bg-teodora-cream');
-    document.getElementById('payTabBoleto').classList.remove('border-teodora-border', 'bg-white');
-    document.getElementById('panelBoleto').classList.remove('hidden');
-  }
-
-  const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discount = calculateCouponDiscount(subtotal);
-  let total = Math.max(0, subtotal - discount + APP_STATE.shippingCost);
-  document.getElementById('checkoutFinalTotal').innerText = formatBRL(total);
-}
-
 async function mountPaymentBrick(amount, publicKey, orderId) {
   if (!window.MercadoPago) throw new Error('SDK Mercado Pago não carregou.');
   if (!publicKey) throw new Error('MP_PUBLIC_KEY não configurada no servidor.');
@@ -1388,15 +1394,13 @@ async function mountPaymentBrick(amount, publicKey, orderId) {
   container.innerHTML = '';
 
   // O Brick só mostra os meios informados (o valor 'none' é rejeitado pelo SDK).
-  const paymentMethods = { maxInstallments: installmentCount() };
-  if (APP_STATE.paymentMethod === 'pix') {
-    paymentMethods.bankTransfer = 'all';
-  } else if (APP_STATE.paymentMethod === 'boleto') {
-    paymentMethods.ticket = 'all';
-  } else {
-    paymentMethods.creditCard = 'all';
-    paymentMethods.debitCard = 'all';
-  }
+  const paymentMethods = {
+    maxInstallments: installmentCount(),
+    bankTransfer: 'all',
+    creditCard: 'all',
+    debitCard: 'all',
+    ticket: 'all',
+  };
 
   APP_STATE.mpBrickController = await bricksBuilder.create('payment', 'paymentBrick_container', {
     initialization: {
@@ -1525,7 +1529,7 @@ async function executePaymentTransaction() {
       items: APP_STATE.cart.map((item) => ({ id: item.id, variantId: item.variantId || null, quantity: item.quantity })),
       shippingCost: APP_STATE.shippingCost || 0,
       couponCode: APP_STATE.couponCode || '',
-      paymentHint: APP_STATE.paymentMethod || 'pix',
+      paymentHint: 'checkout',
       shippingOption: {
         ...(APP_STATE.shippingOption || {}),
         cep: (document.getElementById('cepInput')?.value || APP_STATE.shippingOption?.cep || '').replace(/\D/g, ''),
@@ -1558,8 +1562,7 @@ async function executePaymentTransaction() {
     try { sessionStorage.setItem('teodora_last_order', data.orderId); } catch (_) { /* ignore */ }
 
     document.getElementById('checkoutFinalTotal').innerText = formatBRL(data.amount);
-    document.getElementById('paymentBrickWrap').classList.remove('hidden');
-    btn.classList.add('hidden');
+    setCheckoutStep(2);
 
     await mountPaymentBrick(data.amount, data.publicKey, data.orderId);
     displayToast('Escolha a forma de pagamento abaixo.');
@@ -1650,6 +1653,7 @@ function showCheckoutReturnPanel(status) {
   if (brickWrap) brickWrap.classList.add('hidden');
   document.getElementById('checkoutSuccessPanel').classList.remove('hidden');
   document.getElementById('checkoutModalHeader')?.classList.add('hidden');
+  document.getElementById('checkoutFooter')?.classList.add('hidden');
   document.getElementById('mercadoPagoModal').classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.add('flex');
   lockPageScroll(true);

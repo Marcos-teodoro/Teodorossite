@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Estilos e tema Teodora -->
-  <link rel="stylesheet" href="css/tailwind.css?v=guest1">
+  <link rel="stylesheet" href="css/tailwind.css?v=sheet1">
   <link rel="stylesheet" href="css/styles.css">
   <script>
     // Prefere 127.0.0.1 no local para evitar falha IPv6 (localhost → ::1)
@@ -724,102 +724,68 @@
     </div>
   </div>
 
-  <div id="mercadoPagoModal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle" class="fixed inset-0 z-50 bg-black/50 hidden items-start sm:items-center justify-center p-3 sm:p-4 overflow-y-auto overscroll-contain">
-    <div class="bg-teodora-page max-w-lg w-full p-5 sm:p-8 shadow-drawer border border-teodora-border my-3 sm:my-8 relative">
+  <div id="mercadoPagoModal" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle" class="fixed inset-0 z-50 bg-black/50 hidden items-end sm:items-center justify-center sm:p-4 overscroll-contain">
+    <div class="bg-teodora-page w-full sm:max-w-lg flex flex-col max-h-[92dvh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-none shadow-drawer border border-teodora-border relative">
 
-      <button onclick="closeMercadoPagoModal()" class="absolute top-5 right-5 text-teodora-textMuted hover:text-teodora-text p-1.5" aria-label="Fechar">
+      <button onclick="closeMercadoPagoModal()" class="absolute top-2.5 right-2.5 z-10 w-9 h-9 flex items-center justify-center text-teodora-textMuted hover:text-teodora-text" aria-label="Fechar">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
 
-      <div id="checkoutModalHeader" class="pb-5 border-b border-teodora-border pr-8">
-        <p class="text-[10px] uppercase tracking-[0.2em] text-teodora-textMuted mb-1"><i class="fa-solid fa-lock text-teodora-gold mr-1"></i> Pagamento seguro</p>
-        <h3 id="checkoutModalTitle" class="font-heading text-2xl text-teodora-text font-normal">Seus dados</h3>
-        <p class="text-xs text-teodora-textMuted mt-1.5">Preencha os dados de entrega e escolha como pagar. Pix, cartão ou boleto abrem logo abaixo.</p>
+      <div id="checkoutModalHeader" class="px-4 sm:px-6 pt-4 pb-3 pr-12 border-b border-teodora-border shrink-0">
+        <p class="text-[10px] uppercase tracking-[0.18em] text-teodora-textMuted"><i class="fa-solid fa-lock text-teodora-gold mr-1"></i> Pagamento seguro <span id="checkoutStepLabel" class="ml-1 text-teodora-gold">· Passo 1 de 2</span></p>
+        <h3 id="checkoutModalTitle" class="font-heading text-xl text-teodora-text font-normal mt-0.5">Seus dados</h3>
       </div>
 
-      <div id="checkoutFormPanel" class="mt-5 space-y-6">
+      <div id="checkoutScroll" class="flex-1 overflow-y-auto overscroll-contain px-4 sm:px-6 py-4">
 
-        <div class="space-y-3">
-          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted">Seus dados</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-base sm:text-sm">
-            <input type="text" id="buyerName" autocomplete="name" placeholder="Nome completo" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="email" id="buyerEmail" autocomplete="email" inputmode="email" placeholder="E-mail" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="tel" id="buyerPhone" autocomplete="tel-national" inputmode="tel" maxlength="15" placeholder="WhatsApp com DDD" oninput="BrUtils.maskPhone(this)" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="text" id="buyerDoc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder="CPF (ou CNPJ)" oninput="BrUtils.maskDoc(this)" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+        <div id="checkoutFormPanel" class="space-y-4">
+
+          <div id="checkoutStep1" class="space-y-4">
+            <div class="grid grid-cols-2 gap-2 text-base sm:text-sm">
+              <input type="text" id="buyerName" autocomplete="name" placeholder="Nome completo" class="col-span-2 p-2.5 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+              <input type="email" id="buyerEmail" autocomplete="email" inputmode="email" placeholder="E-mail" class="col-span-2 p-2.5 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+              <input type="tel" id="buyerPhone" autocomplete="tel-national" inputmode="tel" maxlength="15" placeholder="WhatsApp (DDD)" oninput="BrUtils.maskPhone(this)" class="p-2.5 min-w-0 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+              <input type="text" id="buyerDoc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder="CPF" oninput="BrUtils.maskDoc(this)" class="p-2.5 min-w-0 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            </div>
+
+            <div>
+              <p class="text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted mb-1.5">Entrega <span class="normal-case tracking-normal">· CEP do frete calculado na sacola</span></p>
+              <div class="grid grid-cols-2 gap-2 text-base sm:text-sm">
+                <input type="text" id="buyerCep" readonly tabindex="-1" placeholder="CEP" class="p-2.5 min-w-0 bg-teodora-bgLight border border-teodora-border text-teodora-textMuted focus:outline-none">
+                <input type="text" id="buyerCityUf" readonly tabindex="-1" placeholder="Cidade / UF" class="p-2.5 min-w-0 bg-teodora-bgLight border border-teodora-border text-teodora-textMuted focus:outline-none">
+                <input type="text" id="buyerAddress" autocomplete="address-line1" placeholder="Rua / avenida" class="col-span-2 p-2.5 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+                <input type="text" id="buyerAddressNumber" inputmode="numeric" autocomplete="off" placeholder="Número" class="p-2.5 min-w-0 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+                <input type="text" id="buyerAddressComplement" autocomplete="address-line2" placeholder="Complemento" class="p-2.5 min-w-0 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+                <input type="text" id="buyerNeighborhood" autocomplete="off" placeholder="Bairro" class="col-span-2 p-2.5 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+              </div>
+            </div>
+
+            <div id="guestAccountBlock" class="hidden">
+              <p id="guestAccountTitle" class="text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted mb-1.5">Crie sua conta para finalizar</p>
+              <div class="relative text-base sm:text-sm">
+                <input type="password" id="buyerPassword" autocomplete="new-password" placeholder="Senha (mínimo 8 caracteres)" class="w-full pr-11 p-2.5 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+                <button type="button" onclick="toggleBuyerPassword()" aria-label="Mostrar senha" class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 text-teodora-textMuted hover:text-teodora-text"><i id="buyerPasswordEye" class="fa-regular fa-eye"></i></button>
+              </div>
+              <p class="mt-1.5 text-[11px] text-teodora-textMuted leading-snug"><span id="guestAccountHelp">Criamos sua conta com esses dados para você acompanhar o pedido.</span> <button type="button" id="guestModeToggle" onclick="toggleGuestMode()" class="underline text-teodora-gold font-semibold whitespace-nowrap">Já tenho conta</button></p>
+            </div>
+
+            <p id="checkoutFormError" role="alert" class="hidden text-xs text-red-600 leading-relaxed"></p>
+          </div>
+
+          <div id="checkoutSummary" class="hidden flex items-start justify-between gap-3 p-3 border border-teodora-border bg-white text-xs leading-relaxed">
+            <div class="min-w-0">
+              <p id="checkoutSummaryName" class="font-semibold text-teodora-text truncate"></p>
+              <p id="checkoutSummaryAddress" class="text-teodora-textMuted"></p>
+            </div>
+            <button type="button" onclick="backToCheckoutForm()" class="shrink-0 underline text-teodora-gold font-semibold">Alterar</button>
+          </div>
+
+          <div id="paymentBrickWrap" class="hidden">
+            <div id="paymentBrick_container" class="min-h-[120px]"></div>
           </div>
         </div>
 
-        <div class="space-y-3 pt-1 border-t border-teodora-border">
-          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Endereço de entrega</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-base sm:text-sm">
-            <input type="text" id="buyerCep" readonly tabindex="-1" placeholder="CEP" class="p-3 bg-teodora-bgLight border border-teodora-border text-teodora-textMuted focus:outline-none">
-            <input type="text" id="buyerCityUf" readonly tabindex="-1" placeholder="Cidade / UF" class="sm:col-span-2 p-3 bg-teodora-bgLight border border-teodora-border text-teodora-textMuted focus:outline-none">
-            <input type="text" id="buyerAddress" autocomplete="address-line1" placeholder="Rua / avenida" class="sm:col-span-3 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="text" id="buyerAddressNumber" inputmode="numeric" autocomplete="off" placeholder="Número" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="text" id="buyerAddressComplement" autocomplete="address-line2" placeholder="Complemento (opcional)" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="text" id="buyerNeighborhood" autocomplete="off" placeholder="Bairro" class="sm:col-span-3 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-          </div>
-          <p class="text-[11px] text-teodora-textMuted">O CEP vem do frete calculado na sacola. Para entregar em outro CEP, volte à sacola e calcule de novo.</p>
-        </div>
-
-        <div id="guestAccountBlock" class="hidden space-y-3 pt-1 border-t border-teodora-border">
-          <h4 id="guestAccountTitle" class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Crie sua conta para finalizar</h4>
-          <p id="guestAccountHelp" class="text-xs text-teodora-textMuted leading-relaxed">Usamos os dados acima para criar sua conta e você acompanhar o pedido. Falta só escolher uma senha.</p>
-          <div class="relative text-base sm:text-sm">
-            <input type="password" id="buyerPassword" autocomplete="new-password" placeholder="Senha (mínimo 8 caracteres)" class="w-full pr-11 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <button type="button" onclick="toggleBuyerPassword()" aria-label="Mostrar senha" class="absolute right-3 top-1/2 -translate-y-1/2 text-teodora-textMuted hover:text-teodora-text"><i id="buyerPasswordEye" class="fa-regular fa-eye"></i></button>
-          </div>
-          <button type="button" id="guestModeToggle" onclick="toggleGuestMode()" class="text-xs underline text-teodora-gold font-semibold">Já tenho conta — entrar</button>
-        </div>
-
-        <p id="checkoutFormError" role="alert" class="hidden text-xs text-red-600 leading-relaxed"></p>
-
-        <div class="space-y-3 pt-1 border-t border-teodora-border">
-          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Preferência de pagamento</h4>
-
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" onclick="changePaymentOption('pix')" id="payTabPix" class="pay-tab py-3 px-2 border border-teodora-gold bg-teodora-cream text-center transition">
-              <span class="block text-xs font-semibold text-teodora-text">Pix</span>
-              <span class="block text-[10px] text-teodora-textMuted mt-0.5">à vista</span>
-            </button>
-            <button type="button" onclick="changePaymentOption('card')" id="payTabCard" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
-              <span class="block text-xs font-semibold text-teodora-text">Cartão</span>
-              <span id="checkoutInstallments" class="block text-[10px] text-teodora-textMuted mt-0.5">até 6x</span>
-            </button>
-            <button type="button" onclick="changePaymentOption('boleto')" id="payTabBoleto" class="pay-tab py-3 px-2 border border-teodora-border bg-white text-center transition">
-              <span class="block text-xs font-semibold text-teodora-text">Boleto</span>
-              <span class="block text-[10px] text-teodora-textMuted mt-0.5">1–2 dias</span>
-            </button>
-          </div>
-
-          <div id="panelPix" class="text-xs text-teodora-textMuted leading-relaxed">
-            O Pix é gerado no formulário Mercado Pago abaixo.
-          </div>
-          <div id="panelCard" class="hidden text-xs text-teodora-textMuted leading-relaxed">
-            Parcelamento confirmado no formulário Mercado Pago.
-          </div>
-          <div id="panelBoleto" class="hidden text-xs text-teodora-textMuted leading-relaxed">
-            O boleto é gerado no formulário Mercado Pago.
-          </div>
-        </div>
-
-        <div id="paymentBrickWrap" class="hidden pt-2 border-t border-teodora-border">
-          <div id="paymentBrick_container" class="min-h-[120px]"></div>
-        </div>
-
-        <div class="pt-4 border-t border-teodora-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span class="text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted">Total</span>
-            <p id="checkoutFinalTotal" class="font-heading text-2xl text-teodora-text">R$ 0,00</p>
-          </div>
-          <button onclick="executePaymentTransaction()" id="btnSubmitPayment" class="w-full sm:w-auto px-8 py-3.5 bg-teodora-text hover:bg-black text-white text-[11px] uppercase tracking-[0.16em] font-semibold transition flex items-center justify-center gap-2">
-            <span>Continuar para pagar</span>
-          </button>
-        </div>
-
-      </div>
-
-      <div id="checkoutSuccessPanel" class="hidden py-8 text-center space-y-4">
+        <div id="checkoutSuccessPanel" class="hidden py-8 text-center space-y-4">
         <p id="checkoutResultEyebrow" class="text-[10px] uppercase tracking-[0.2em] text-teodora-gold">Pedido</p>
         <h3 id="checkoutResultTitle" class="font-heading text-2xl text-teodora-text font-normal">Pedido confirmado</h3>
         <p id="checkoutResultMessage" class="text-sm text-teodora-textMuted max-w-sm mx-auto leading-relaxed">Obrigado. Enviamos os detalhes para o seu e-mail.</p>
@@ -836,6 +802,18 @@
         <p class="text-xs text-teodora-textMuted">Ref. <strong class="text-teodora-text font-mono font-normal" id="displayOrderNumber">—</strong></p>
         <button onclick="resetStoreAfterPurchase()" class="mt-2 px-8 py-3 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
           Voltar à loja
+        </button>
+      </div>
+
+      </div>
+
+      <div id="checkoutFooter" class="shrink-0 border-t border-teodora-border bg-teodora-page px-4 sm:px-6 py-3 flex items-center justify-between gap-3" style="padding-bottom:max(0.75rem, env(safe-area-inset-bottom))">
+        <div>
+          <span class="text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted">Total</span>
+          <p id="checkoutFinalTotal" class="font-heading text-xl text-teodora-text leading-tight">R$ 0,00</p>
+        </div>
+        <button onclick="executePaymentTransaction()" id="btnSubmitPayment" class="flex-1 sm:flex-none sm:px-8 py-3.5 bg-teodora-text hover:bg-black text-white text-[11px] uppercase tracking-[0.16em] font-semibold transition flex items-center justify-center gap-2">
+          <span>Continuar para pagar</span>
         </button>
       </div>
 
@@ -960,6 +938,6 @@
   <script src="js/br-utils.js?v=1"></script>
   <script src="js/data.js?v=fotos-auto"></script>
   <script src="js/category-profiles.js?v=sem-ritual"></script>
-  <script src="js/app.js?v=guest5"></script>
+  <script src="js/app.js?v=sheet1"></script>
 </body>
 </html>
