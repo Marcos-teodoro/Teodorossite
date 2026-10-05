@@ -1217,9 +1217,41 @@ async function openMercadoPagoModal() {
   document.getElementById('paymentBrick_container').innerHTML = '';
   document.getElementById('paymentBrickWrap').classList.add('hidden');
   document.getElementById('btnSubmitPayment').classList.remove('hidden');
+  document.getElementById('checkoutModalHeader')?.classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.add('flex');
+  lockPageScroll(true);
+  const firstEmpty = ['buyerName', 'buyerEmail', 'buyerDoc', 'buyerPhone', 'buyerAddress']
+    .map((id) => document.getElementById(id))
+    .find((el) => el && !el.value.trim());
+  if (firstEmpty && window.matchMedia('(min-width: 640px)').matches) setTimeout(() => firstEmpty.focus(), 50);
 }
+
+// Trava/destrava a rolagem da página atrás do pop-up (no celular o fundo rolava junto).
+function lockPageScroll(lock) {
+  document.documentElement.style.overflow = lock ? 'hidden' : '';
+  document.body.style.overflow = lock ? 'hidden' : '';
+}
+
+function maskBuyerDoc(el) {
+  const d = el.value.replace(/\D/g, '').slice(0, 14);
+  el.value = d.length <= 11
+    ? d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+    : d.replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+}
+
+function maskBuyerPhone(el) {
+  const d = el.value.replace(/\D/g, '').slice(0, 11);
+  el.value = d.length > 10
+    ? d.replace(/(\d{2})(\d{5})(\d{1,4})$/, '($1) $2-$3')
+    : d.replace(/(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3').replace(/-$/, '');
+}
+
+document.addEventListener('keydown', (ev) => {
+  if (ev.key !== 'Escape') return;
+  const modal = document.getElementById('mercadoPagoModal');
+  if (modal && !modal.classList.contains('hidden')) closeMercadoPagoModal();
+});
 
 function closeMercadoPagoModal() {
   if (APP_STATE.mpBrickController?.unmount) {
@@ -1228,6 +1260,7 @@ function closeMercadoPagoModal() {
   APP_STATE.mpBrickController = null;
   document.getElementById('mercadoPagoModal').classList.add('hidden');
   document.getElementById('mercadoPagoModal').classList.remove('flex');
+  lockPageScroll(false);
 }
 
 function changePaymentOption(method) {
@@ -1506,8 +1539,11 @@ function showCheckoutReturnPanel(status) {
   const brickWrap = document.getElementById('paymentBrickWrap');
   if (brickWrap) brickWrap.classList.add('hidden');
   document.getElementById('checkoutSuccessPanel').classList.remove('hidden');
+  document.getElementById('checkoutModalHeader')?.classList.add('hidden');
   document.getElementById('mercadoPagoModal').classList.remove('hidden');
   document.getElementById('mercadoPagoModal').classList.add('flex');
+  lockPageScroll(true);
+  document.getElementById('mercadoPagoModal').scrollTop = 0;
 
   const eyebrow = document.getElementById('checkoutResultEyebrow');
   const title = document.getElementById('checkoutResultTitle');
