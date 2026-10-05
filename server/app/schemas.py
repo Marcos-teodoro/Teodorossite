@@ -11,6 +11,15 @@ class RegisterBody(BaseModel):
     password: str
     name: str = ""
     phone: str = ""
+    cpf: str = ""
+    # Endereço de entrega (opcional): salvo como endereço padrão da conta.
+    cep: str = ""
+    logradouro: str = ""
+    numero: str = ""
+    complemento: str = ""
+    bairro: str = ""
+    cidade: str = ""
+    uf: str = ""
 
 
 class LoginBody(BaseModel):

@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   email TEXT UNIQUE,
   name TEXT NOT NULL DEFAULT '',
   phone TEXT DEFAULT '',
+  cpf TEXT DEFAULT '',
   role TEXT NOT NULL DEFAULT 'customer',
   password_hash TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
@@ -234,6 +235,9 @@ def init_db() -> None:
     with get_connection() as conn:
         conn.executescript(SCHEMA_SQL)
         # Lightweight migrations for databases created by older versions.
+        profile_columns = {row["name"] for row in conn.execute("PRAGMA table_info(profiles)").fetchall()}
+        if "cpf" not in profile_columns:
+            conn.execute("ALTER TABLE profiles ADD COLUMN cpf TEXT DEFAULT ''")
         order_columns = {row["name"] for row in conn.execute("PRAGMA table_info(orders)").fetchall()}
         if "stock_deducted" not in order_columns:
             conn.execute("ALTER TABLE orders ADD COLUMN stock_deducted INTEGER NOT NULL DEFAULT 0")

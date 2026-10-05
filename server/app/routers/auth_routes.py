@@ -15,6 +15,7 @@ from ..auth import (
 )
 from ..db import get_connection, row_to_dict, rows_to_list
 from ..schemas import AddressBody, LoginBody, RegisterBody
+from ..validators import normalize_cpf, normalize_phone
 
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -26,13 +27,48 @@ def _public_user(user: dict) -> dict:
         "email": user.get("email"),
         "name": user.get("name") or "",
         "phone": user.get("phone") or "",
+        "cpf": user.get("cpf") or "",
         "role": user.get("role") or "customer",
     }
 
 
 @router.post("/register")
 def register(body: RegisterBody):
-    user = register_user(body.email, body.password, body.name, body.phone)
+    # Mercado Pago e CepCerto exigem CPF e WhatsApp válidos: cadastro público só com dados corretos.
+    if len((body.name or "").strip()) < 3 or " " not in (body.name or "").strip():
+        raise HTTPException(status_code=400, detail="Informe seu nome completo.")
+    try:
+        cpf = normalize_cpf(body.cpf)
+        phone = normalize_phone(body.phone)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    address = None
+    if body.cep.strip():
+        address = _clean_address(
+            AddressBody(
+                label="Casa",
+                cep=body.cep,
+                logradouro=body.logradouro,
+                numero=body.numero,
+                complemento=body.complemento,
+                bairro=body.bairro,
+                cidade=body.cidade,
+                uf=body.uf,
+                is_default=True,
+            )
+        )
+    user = register_user(body.email, body.password, body.name, phone, cpf=cpf)
+    if address is not None:
+        with get_connection() as conn:
+            conn.execute(
+                """
+                INSERT INTO addresses (user_id, label, cep, logradouro, numero, complemento, bairro, cidade, uf, is_default)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+                """,
+                (user["id"], address.label, address.cep, address.logradouro, address.numero,
+                 address.complemento, address.bairro, address.cidade, address.uf),
+            )
+            conn.commit()
     token = create_access_token(user["id"], {"role": user["role"], "email": user["email"]})
     return {"token": token, "user": _public_user(user)}
 
@@ -52,11 +88,15 @@ def me(user: dict = Depends(require_user)):
 @router.patch("/me")
 def update_me(payload: dict, user: dict = Depends(require_user)):
     name = str(payload.get("name") or user.get("name") or "").strip()
-    phone = str(payload.get("phone") or user.get("phone") or "").strip()
+    try:
+        phone = normalize_phone(payload["phone"]) if payload.get("phone") else (user.get("phone") or "")
+        cpf = normalize_cpf(payload["cpf"]) if payload.get("cpf") else (user.get("cpf") or "")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     with get_connection() as conn:
         conn.execute(
-            "UPDATE profiles SET name = ?, phone = ?, updated_at = datetime('now') WHERE id = ?",
-            (name, phone, user["id"]),
+            "UPDATE profiles SET name = ?, phone = ?, cpf = ?, updated_at = datetime('now') WHERE id = ?",
+            (name, phone, cpf, user["id"]),
         )
         conn.commit()
         row = conn.execute("SELECT * FROM profiles WHERE id = ?", (user["id"],)).fetchone()

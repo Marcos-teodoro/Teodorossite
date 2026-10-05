@@ -279,6 +279,19 @@
       transition: background 0.2s;
     }
     .btn-outline:hover { background: var(--auth-tab); }
+    .form-section {
+      margin: 1rem 0 0.4rem;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #8a7f74;
+    }
+    .hint { margin: -0.2rem 0 0.6rem; font-size: 0.72rem; color: #8a7f74; }
+    .hint.error { color: #b3261e; }
+    .hint.ok { color: #2e7d32; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    .field input[readonly] { background: #f6f3ee; color: #6f655c; }
+    .field input.invalid { border-color: #b3261e; }
     .auth-msg {
       margin-top: 0.85rem;
       font-size: 0.82rem;
@@ -421,19 +434,58 @@
           <h2>Crie sua conta</h2>
           <p class="sub">Cadastre-se para comprar e acompanhar pedidos.</p>
 
-          <form id="registerForm">
+          <form id="registerForm" novalidate>
             <div class="field">
               <i class="fa-regular fa-user lead"></i>
-              <input type="text" id="regName" placeholder="Nome completo" autocomplete="name">
+              <input type="text" id="regName" required placeholder="Nome completo" autocomplete="name">
             </div>
             <div class="field">
               <i class="fa-regular fa-envelope lead"></i>
-              <input type="email" id="regEmail" required placeholder="E-mail" autocomplete="email">
+              <input type="email" id="regEmail" required placeholder="E-mail" autocomplete="email" inputmode="email">
+            </div>
+            <div class="field">
+              <i class="fa-regular fa-id-card lead"></i>
+              <input type="text" id="regCpf" required placeholder="CPF (000.000.000-00)" inputmode="numeric" autocomplete="off" maxlength="14">
             </div>
             <div class="field">
               <i class="fa-brands fa-whatsapp lead"></i>
-              <input type="tel" id="regPhone" placeholder="WhatsApp" autocomplete="tel">
+              <input type="tel" id="regPhone" required placeholder="WhatsApp com DDD" autocomplete="tel-national" inputmode="tel" maxlength="15">
             </div>
+
+            <p class="form-section">Endereço de entrega</p>
+            <div class="field">
+              <i class="fa-solid fa-location-dot lead"></i>
+              <input type="text" id="regCep" required placeholder="CEP (00000-000)" inputmode="numeric" autocomplete="postal-code" maxlength="9">
+            </div>
+            <p class="hint" id="cepHint">Digite o CEP e preenchemos o endereço para você.</p>
+            <div class="field">
+              <i class="fa-solid fa-road lead"></i>
+              <input type="text" id="regLogradouro" placeholder="Rua / avenida" autocomplete="address-line1">
+            </div>
+            <div class="row2">
+              <div class="field">
+                <i class="fa-solid fa-hashtag lead"></i>
+                <input type="text" id="regNumero" required placeholder="Número" inputmode="numeric" autocomplete="off">
+              </div>
+              <div class="field">
+                <input type="text" id="regComplemento" placeholder="Complemento (opcional)" autocomplete="address-line2" style="padding-left:0.9rem">
+              </div>
+            </div>
+            <div class="field">
+              <i class="fa-solid fa-map lead"></i>
+              <input type="text" id="regBairro" placeholder="Bairro" autocomplete="off">
+            </div>
+            <div class="row2">
+              <div class="field">
+                <i class="fa-solid fa-city lead"></i>
+                <input type="text" id="regCidade" placeholder="Cidade" readonly tabindex="-1">
+              </div>
+              <div class="field">
+                <input type="text" id="regUf" placeholder="UF" readonly tabindex="-1" maxlength="2" style="padding-left:0.9rem">
+              </div>
+            </div>
+
+            <p class="form-section">Acesso</p>
             <div class="field">
               <i class="fa-solid fa-lock lead"></i>
               <input type="password" id="regPassword" required minlength="8" placeholder="Senha (mín. 8)" autocomplete="new-password">
@@ -454,6 +506,7 @@
   </div>
 
   <script src="js/api.js?v=status-pt"></script>
+  <script src="js/br-utils.js?v=1"></script>
   <script>
     const tabLogin = document.getElementById('tabLogin');
     const tabRegister = document.getElementById('tabRegister');
@@ -546,18 +599,87 @@
       }
     };
 
+    // ----- máscaras e busca de CEP no cadastro -----
+    const $ = (id) => document.getElementById(id);
+    const cepHint = $('cepHint');
+    let cepOk = false;
+
+    $('regCpf').addEventListener('input', (e) => BrUtils.maskCpf(e.target));
+    $('regPhone').addEventListener('input', (e) => BrUtils.maskPhone(e.target));
+    $('regCep').addEventListener('input', async (e) => {
+      BrUtils.maskCep(e.target);
+      cepOk = false;
+      if (BrUtils.digits(e.target.value).length !== 8) {
+        cepHint.textContent = 'Digite o CEP e preenchemos o endereço para você.';
+        cepHint.className = 'hint';
+        return;
+      }
+      cepHint.textContent = 'Buscando endereço…';
+      cepHint.className = 'hint';
+      try {
+        const a = await BrUtils.lookupCep(e.target.value);
+        $('regLogradouro').value = a.logradouro || '';
+        $('regBairro').value = a.bairro || '';
+        $('regCidade').value = a.localidade || '';
+        $('regUf').value = a.uf || '';
+        cepOk = true;
+        cepHint.textContent = `${a.localidade || ''}/${a.uf || ''} — confira a rua e informe o número.`;
+        cepHint.className = 'hint ok';
+        (a.logradouro ? $('regNumero') : $('regLogradouro')).focus();
+      } catch (err) {
+        $('regCidade').value = '';
+        $('regUf').value = '';
+        cepHint.textContent = err.message || 'CEP não encontrado.';
+        cepHint.className = 'hint error';
+      }
+    });
+
+    function validateRegister() {
+      const checks = [
+        ['regName', () => ($('regName').value.trim().split(/\s+/).length < 2 ? 'Informe seu nome completo.' : '')],
+        ['regEmail', () => (/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test($('regEmail').value.trim()) ? '' : 'Informe um e-mail válido.')],
+        ['regCpf', () => BrUtils.docError($('regCpf').value, false)],
+        ['regPhone', () => BrUtils.phoneError($('regPhone').value)],
+        ['regCep', () => (cepOk ? '' : 'Informe um CEP válido para buscarmos o endereço.')],
+        ['regLogradouro', () => ($('regLogradouro').value.trim() ? '' : 'Informe a rua / avenida.')],
+        ['regNumero', () => ($('regNumero').value.trim() ? '' : 'Informe o número do endereço (ou S/N).')],
+        ['regPassword', () => ($('regPassword').value.length >= 8 ? '' : 'A senha precisa ter no mínimo 8 caracteres.')],
+      ];
+      document.querySelectorAll('#registerForm input.invalid').forEach((el) => el.classList.remove('invalid'));
+      for (const [id, check] of checks) {
+        const err = check();
+        if (err) {
+          $(id).classList.add('invalid');
+          $(id).focus();
+          return err;
+        }
+      }
+      return '';
+    }
+
     registerForm.onsubmit = async (e) => {
       e.preventDefault();
+      const problem = validateRegister();
+      if (problem) { showMsg(problem); return; }
+      msg.classList.remove('show');
       const btn = registerForm.querySelector('button[type="submit"]');
       btn.disabled = true;
       try {
         const data = await TeodoraAPI.api('/api/auth/register', {
           method: 'POST',
           body: JSON.stringify({
-            name: document.getElementById('regName').value,
-            email: document.getElementById('regEmail').value,
-            phone: document.getElementById('regPhone').value,
-            password: document.getElementById('regPassword').value,
+            name: $('regName').value.trim(),
+            email: $('regEmail').value.trim(),
+            cpf: BrUtils.digits($('regCpf').value),
+            phone: BrUtils.digits($('regPhone').value),
+            cep: BrUtils.digits($('regCep').value),
+            logradouro: $('regLogradouro').value.trim(),
+            numero: $('regNumero').value.trim(),
+            complemento: $('regComplemento').value.trim(),
+            bairro: $('regBairro').value.trim(),
+            cidade: $('regCidade').value.trim(),
+            uf: $('regUf').value.trim(),
+            password: $('regPassword').value,
           }),
         });
         TeodoraAPI.setSession(data.token, data.user);

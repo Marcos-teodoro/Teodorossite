@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Estilos e tema Teodora -->
-  <link rel="stylesheet" href="css/tailwind.css">
+  <link rel="stylesheet" href="css/tailwind.css?v=guest1">
   <link rel="stylesheet" href="css/styles.css">
   <script>
     // Prefere 127.0.0.1 no local para evitar falha IPv6 (localhost → ::1)
@@ -740,19 +740,39 @@
       <div id="checkoutFormPanel" class="mt-5 space-y-6">
 
         <div class="space-y-3">
-          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted">Entrega</h4>
+          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted">Seus dados</h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-base sm:text-sm">
-            <input type="text" id="buyerName" autocomplete="name" placeholder="Nome completo" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerName" autocomplete="name" placeholder="Nome completo" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
             <input type="email" id="buyerEmail" autocomplete="email" inputmode="email" placeholder="E-mail" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="text" id="buyerDoc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder="CPF ou CNPJ" oninput="maskBuyerDoc(this)" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <input type="tel" id="buyerPhone" autocomplete="tel-national" inputmode="tel" maxlength="15" placeholder="WhatsApp com DDD" oninput="maskBuyerPhone(this)" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              <input type="text" id="buyerAddress" autocomplete="address-line1" placeholder="Rua / avenida" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-              <input type="text" id="buyerAddressNumber" inputmode="numeric" autocomplete="off" placeholder="Nº" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-              <input type="text" id="buyerAddressComplement" autocomplete="address-line2" placeholder="Complemento (opcional)" class="sm:col-span-3 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
-            </div>
+            <input type="tel" id="buyerPhone" autocomplete="tel-national" inputmode="tel" maxlength="15" placeholder="WhatsApp com DDD" oninput="BrUtils.maskPhone(this)" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerDoc" inputmode="numeric" autocomplete="off" maxlength="18" placeholder="CPF (ou CNPJ)" oninput="BrUtils.maskDoc(this)" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
           </div>
         </div>
+
+        <div class="space-y-3 pt-1 border-t border-teodora-border">
+          <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Endereço de entrega</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-base sm:text-sm">
+            <input type="text" id="buyerCep" readonly tabindex="-1" placeholder="CEP" class="p-3 bg-teodora-bgLight border border-teodora-border text-teodora-textMuted focus:outline-none">
+            <input type="text" id="buyerCityUf" readonly tabindex="-1" placeholder="Cidade / UF" class="sm:col-span-2 p-3 bg-teodora-bgLight border border-teodora-border text-teodora-textMuted focus:outline-none">
+            <input type="text" id="buyerAddress" autocomplete="address-line1" placeholder="Rua / avenida" class="sm:col-span-3 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerAddressNumber" inputmode="numeric" autocomplete="off" placeholder="Número" class="p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerAddressComplement" autocomplete="address-line2" placeholder="Complemento (opcional)" class="sm:col-span-2 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <input type="text" id="buyerNeighborhood" autocomplete="off" placeholder="Bairro" class="sm:col-span-3 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+          </div>
+          <p class="text-[11px] text-teodora-textMuted">O CEP vem do frete calculado na sacola. Para entregar em outro CEP, volte à sacola e calcule de novo.</p>
+        </div>
+
+        <div id="guestAccountBlock" class="hidden space-y-3 pt-1 border-t border-teodora-border">
+          <h4 id="guestAccountTitle" class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Crie sua conta para finalizar</h4>
+          <p id="guestAccountHelp" class="text-xs text-teodora-textMuted leading-relaxed">Usamos os dados acima para criar sua conta e você acompanhar o pedido. Falta só escolher uma senha.</p>
+          <div class="relative text-base sm:text-sm">
+            <input type="password" id="buyerPassword" autocomplete="new-password" placeholder="Senha (mínimo 8 caracteres)" class="w-full pr-11 p-3 bg-white border border-teodora-border focus:border-teodora-gold focus:outline-none">
+            <button type="button" onclick="toggleBuyerPassword()" aria-label="Mostrar senha" class="absolute right-3 top-1/2 -translate-y-1/2 text-teodora-textMuted hover:text-teodora-text"><i id="buyerPasswordEye" class="fa-regular fa-eye"></i></button>
+          </div>
+          <button type="button" id="guestModeToggle" onclick="toggleGuestMode()" class="text-xs underline text-teodora-gold font-semibold">Já tenho conta — entrar</button>
+        </div>
+
+        <p id="checkoutFormError" role="alert" class="hidden text-xs text-red-600 leading-relaxed"></p>
 
         <div class="space-y-3 pt-1 border-t border-teodora-border">
           <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted pt-4">Preferência de pagamento</h4>
@@ -937,8 +957,9 @@
   <!-- Dados e lógica da loja -->
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <script src="js/api.js?v=status-pt"></script>
+  <script src="js/br-utils.js?v=1"></script>
   <script src="js/data.js?v=fotos-auto"></script>
   <script src="js/category-profiles.js?v=sem-ritual"></script>
-  <script src="js/app.js?v=sem-ritual"></script>
+  <script src="js/app.js?v=guest5"></script>
 </body>
 </html>

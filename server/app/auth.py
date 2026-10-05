@@ -87,7 +87,9 @@ def is_valid_email(email: str) -> bool:
     return bool(EMAIL_RE.match((email or "").strip()))
 
 
-def register_user(email: str, password: str, name: str, phone: str = "", role: str = "customer") -> dict:
+def register_user(
+    email: str, password: str, name: str, phone: str = "", role: str = "customer", cpf: str = ""
+) -> dict:
     email = email.strip().lower()
     if not email or not password:
         raise HTTPException(status_code=400, detail="E-mail e senha obrigatórios")
@@ -103,10 +105,10 @@ def register_user(email: str, password: str, name: str, phone: str = "", role: s
             raise HTTPException(status_code=409, detail="E-mail já cadastrado")
         conn.execute(
             """
-            INSERT INTO profiles (id, email, name, phone, role, password_hash)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO profiles (id, email, name, phone, cpf, role, password_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (user_id, email, name.strip() or email.split("@")[0], phone, role, hash_password(password)),
+            (user_id, email, name.strip() or email.split("@")[0], phone, cpf, role, hash_password(password)),
         )
         conn.commit()
     user = get_user_by_id(user_id)

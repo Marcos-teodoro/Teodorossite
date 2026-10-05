@@ -12,6 +12,7 @@ from ..auth import is_valid_email, require_user
 from ..config import get_settings
 from ..db import get_connection, row_to_dict, rows_to_list
 from ..schemas import PaymentBody, PrepareBody
+from ..validators import normalize_doc, normalize_phone
 from ..services import cepcerto, mercadopago_svc
 from ..services.inventory import transition_order_stock
 from .shipping import build_package
@@ -163,16 +164,16 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
 
 
 def _validate_payer(payer: dict[str, Any]) -> None:
-    if not str(payer.get("name") or "").strip():
-        raise HTTPException(status_code=400, detail="Informe o nome do comprador.")
+    """Valida e normaliza (in place) os dados do comprador exigidos pelo Mercado Pago e pela CepCerto."""
+    if len(str(payer.get("name") or "").strip()) < 3:
+        raise HTTPException(status_code=400, detail="Informe o nome completo do comprador.")
     if not is_valid_email(str(payer.get("email") or "")):
         raise HTTPException(status_code=400, detail="Informe um e-mail válido.")
-    doc = re.sub(r"\D", "", str(payer.get("doc") or ""))
-    if len(doc) not in (11, 14):
-        raise HTTPException(status_code=400, detail="Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.")
-    phone = re.sub(r"\D", "", str(payer.get("phone") or ""))
-    if len(phone) < 10:
-        raise HTTPException(status_code=400, detail="Informe um telefone com DDD.")
+    try:
+        payer["doc"] = normalize_doc(payer.get("doc"))
+        payer["phone"] = normalize_phone(payer.get("phone"))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     if not str(payer.get("addressNumber") or payer.get("address_number") or "").strip():
         raise HTTPException(status_code=400, detail="Informe o número do endereço de entrega.")
 

@@ -722,7 +722,6 @@ function requireLoginForCheckout() {
 }
 
 function buyNowFromPdp() {
-  if (!requireLoginForCheckout()) return;
   addToCartFromPdp();
   openMercadoPagoModal();
 }
@@ -1179,7 +1178,6 @@ async function applyDiscountCoupon() {
 }
 
 async function openMercadoPagoModal() {
-  if (!requireLoginForCheckout()) return;
   if (APP_STATE.cart.length === 0) {
     displayToast('Sua sacola está vazia. Adicione produtos antes de comprar.');
     return;
@@ -1192,20 +1190,40 @@ async function openMercadoPagoModal() {
 
   document.getElementById('checkoutFinalTotal').innerText = formatBRL(finalTotal);
 
-  if (APP_STATE.shippingInfo) {
-    const info = APP_STATE.shippingInfo;
-    const parts = [info.logradouro, info.bairro, info.localidade && info.uf ? `${info.localidade}/${info.uf}` : ''].filter(Boolean);
-    if (parts.length) {
-      document.getElementById('buyerAddress').value = parts.join(', ');
-    }
-  }
+  // Endereço vem do CEP do frete calculado na sacola (busca na API de CEP)
+  const info = APP_STATE.shippingInfo || {};
+  const cepDigits = (document.getElementById('cepInput')?.value || APP_STATE.shippingOption?.cep || info.cep || '').replace(/\D/g, '');
+  const setVal = (id, value) => { const el = document.getElementById(id); if (el) el.value = value || ''; };
+  setVal('buyerCep', cepDigits.length === 8 ? `${cepDigits.slice(0, 5)}-${cepDigits.slice(5)}` : '');
+  setVal('buyerAddress', info.logradouro);
+  setVal('buyerNeighborhood', info.bairro);
+  setVal('buyerCityUf', info.localidade && info.uf ? `${info.localidade}/${info.uf}` : '');
+  setVal('buyerAddressNumber', '');
+  setVal('buyerAddressComplement', '');
+  setVal('buyerPassword', '');
+  hideCheckoutError();
 
   const user = window.TeodoraAPI?.getUser?.();
-  if (user) {
-    if (user.name) document.getElementById('buyerName').value = user.name;
-    if (user.email) document.getElementById('buyerEmail').value = user.email;
-    if (user.phone) document.getElementById('buyerPhone').value = user.phone;
+  if (user && isUserLoggedIn()) {
+    setVal('buyerName', user.name);
+    setVal('buyerEmail', user.email);
+    setVal('buyerPhone', user.phone ? BrUtils.formatPhone(user.phone) : '');
+    setVal('buyerDoc', user.cpf || '');
+    const docEl = document.getElementById('buyerDoc');
+    if (docEl && docEl.value) BrUtils.maskDoc(docEl);
+    // Reaproveita número/complemento do endereço salvo quando o CEP é o mesmo
+    window.TeodoraAPI.api('/api/addresses').then((res) => {
+      const saved = (res.addresses || []).find((ad) => (ad.cep || '').replace(/\D/g, '') === cepDigits);
+      if (saved) {
+        setVal('buyerAddressNumber', saved.numero);
+        setVal('buyerAddressComplement', saved.complemento);
+        if (!document.getElementById('buyerAddress').value) setVal('buyerAddress', saved.logradouro);
+        if (!document.getElementById('buyerNeighborhood').value) setVal('buyerNeighborhood', saved.bairro);
+      }
+    }).catch(() => {});
   }
+  APP_STATE.guestMode = 'register';
+  refreshGuestAccountBlock();
 
   document.getElementById('checkoutFormPanel').style.display = 'block';
   document.getElementById('checkoutSuccessPanel').classList.add('hidden');
@@ -1222,24 +1240,95 @@ async function openMercadoPagoModal() {
   if (firstEmpty && window.matchMedia('(min-width: 640px)').matches) setTimeout(() => firstEmpty.focus(), 50);
 }
 
+function showCheckoutError(text, fieldId) {
+  const box = document.getElementById('checkoutFormError');
+  if (box) { box.textContent = text; box.classList.remove('hidden'); }
+  document.querySelectorAll('#checkoutFormPanel input.ring-1').forEach((el) => el.classList.remove('ring-1', 'ring-red-500'));
+  const field = fieldId ? document.getElementById(fieldId) : null;
+  if (field) {
+    field.classList.add('ring-1', 'ring-red-500');
+    field.focus();
+    field.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  } else if (box) {
+    box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }
+  displayToast(text);
+}
+
+function hideCheckoutError() {
+  document.getElementById('checkoutFormError')?.classList.add('hidden');
+  document.querySelectorAll('#checkoutFormPanel input.ring-1').forEach((el) => el.classList.remove('ring-1', 'ring-red-500'));
+}
+
+function refreshGuestAccountBlock() {
+  const block = document.getElementById('guestAccountBlock');
+  if (!block) return;
+  const logged = isUserLoggedIn();
+  block.classList.toggle('hidden', logged);
+  if (logged) return;
+  const login = APP_STATE.guestMode === 'login';
+  document.getElementById('guestAccountTitle').innerText = login ? 'Entre na sua conta' : 'Crie sua conta para finalizar';
+  document.getElementById('guestAccountHelp').innerText = login
+    ? 'Use o e-mail acima e a senha da sua conta para continuar a compra.'
+    : 'Usamos os dados acima para criar sua conta e você acompanhar o pedido. Falta só escolher uma senha.';
+  document.getElementById('buyerPassword').placeholder = login ? 'Senha da sua conta' : 'Senha (mínimo 8 caracteres)';
+  document.getElementById('buyerPassword').autocomplete = login ? 'current-password' : 'new-password';
+  document.getElementById('guestModeToggle').innerText = login ? 'Não tenho conta — criar agora' : 'Já tenho conta — entrar';
+}
+
+function toggleGuestMode() {
+  APP_STATE.guestMode = APP_STATE.guestMode === 'login' ? 'register' : 'login';
+  refreshGuestAccountBlock();
+  hideCheckoutError();
+}
+
+function toggleBuyerPassword() {
+  const input = document.getElementById('buyerPassword');
+  const eye = document.getElementById('buyerPasswordEye');
+  if (!input) return;
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  if (eye) eye.className = show ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
+}
+
+// Compra sem login: cria a conta (ou entra) com os dados do checkout antes de gerar o pedido.
+async function ensureCheckoutAccount(data) {
+  if (isUserLoggedIn()) return;
+  const password = document.getElementById('buyerPassword').value;
+  if (APP_STATE.guestMode === 'login') {
+    const res = await window.TeodoraAPI.api('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email: data.email, password }),
+    });
+    window.TeodoraAPI.setSession(res.token, res.user);
+  } else {
+    const res = await window.TeodoraAPI.api('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        name: data.name,
+        email: data.email,
+        cpf: BrUtils.digits(data.doc),
+        phone: BrUtils.digits(data.phone),
+        password,
+        cep: BrUtils.digits(data.cep),
+        logradouro: data.address,
+        numero: data.addressNumber,
+        complemento: data.addressComplement,
+        bairro: data.neighborhood,
+        cidade: data.city,
+        uf: data.uf,
+      }),
+    });
+    window.TeodoraAPI.setSession(res.token, res.user);
+  }
+  updateHeaderAccountLink();
+  refreshGuestAccountBlock();
+}
+
 // Trava/destrava a rolagem da página atrás do pop-up (no celular o fundo rolava junto).
 function lockPageScroll(lock) {
   document.documentElement.style.overflow = lock ? 'hidden' : '';
   document.body.style.overflow = lock ? 'hidden' : '';
-}
-
-function maskBuyerDoc(el) {
-  const d = el.value.replace(/\D/g, '').slice(0, 14);
-  el.value = d.length <= 11
-    ? d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2')
-    : d.replace(/(\d{2})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1/$2').replace(/(\d{4})(\d{1,2})$/, '$1-$2');
-}
-
-function maskBuyerPhone(el) {
-  const d = el.value.replace(/\D/g, '').slice(0, 11);
-  el.value = d.length > 10
-    ? d.replace(/(\d{2})(\d{5})(\d{1,4})$/, '($1) $2-$3')
-    : d.replace(/(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3').replace(/-$/, '');
 }
 
 document.addEventListener('keydown', (ev) => {
@@ -1298,23 +1387,31 @@ async function mountPaymentBrick(amount, publicKey, orderId) {
   const container = document.getElementById('paymentBrick_container');
   container.innerHTML = '';
 
+  // O Brick só mostra os meios informados (o valor 'none' é rejeitado pelo SDK).
   const paymentMethods = { maxInstallments: installmentCount() };
   if (APP_STATE.paymentMethod === 'pix') {
-    paymentMethods.creditCard = 'none';
-    paymentMethods.debitCard = 'none';
-    paymentMethods.ticket = 'none';
+    paymentMethods.bankTransfer = 'all';
   } else if (APP_STATE.paymentMethod === 'boleto') {
-    paymentMethods.creditCard = 'none';
-    paymentMethods.debitCard = 'none';
-    paymentMethods.bankTransfer = 'none';
+    paymentMethods.ticket = 'all';
   } else {
-    paymentMethods.ticket = 'none';
-    paymentMethods.bankTransfer = 'none';
+    paymentMethods.creditCard = 'all';
+    paymentMethods.debitCard = 'all';
   }
 
   APP_STATE.mpBrickController = await bricksBuilder.create('payment', 'paymentBrick_container', {
     initialization: {
       amount: Number(amount),
+      // Dados já digitados no checkout: o cliente não precisa repetir e-mail e CPF dentro do formulário.
+      payer: (() => {
+        const email = (document.getElementById('buyerEmail')?.value || '').trim();
+        const docDigits = (document.getElementById('buyerDoc')?.value || '').replace(/\D/g, '');
+        const names = (document.getElementById('buyerName')?.value || '').trim().split(/\s+/);
+        const payer = { email, firstName: names[0] || '', lastName: names.slice(1).join(' ') };
+        if (docDigits.length === 11 || docDigits.length === 14) {
+          payer.identification = { type: docDigits.length === 11 ? 'CPF' : 'CNPJ', number: docDigits };
+        }
+        return payer;
+      })(),
     },
     customization: {
       paymentMethods,
@@ -1359,36 +1456,37 @@ async function mountPaymentBrick(amount, publicKey, orderId) {
 }
 
 async function executePaymentTransaction() {
-  const name = (document.getElementById('buyerName')?.value || '').trim();
-  const email = (document.getElementById('buyerEmail')?.value || '').trim();
-  const doc = (document.getElementById('buyerDoc')?.value || '').trim();
-  const phone = (document.getElementById('buyerPhone')?.value || '').trim();
-  const address = (document.getElementById('buyerAddress')?.value || '').trim();
-  const addressNumber = (document.getElementById('buyerAddressNumber')?.value || '').trim();
-  const addressComplement = (document.getElementById('buyerAddressComplement')?.value || '').trim();
+  const val = (id) => (document.getElementById(id)?.value || '').trim();
+  const name = val('buyerName');
+  const email = val('buyerEmail');
+  const doc = val('buyerDoc');
+  const phone = val('buyerPhone');
+  const address = val('buyerAddress');
+  const addressNumber = val('buyerAddressNumber');
+  const addressComplement = val('buyerAddressComplement');
+  const neighborhood = val('buyerNeighborhood');
+  const cityUf = val('buyerCityUf');
+  const [city, uf] = cityUf.split('/').map((p) => p.trim());
+  const cep = (document.getElementById('cepInput')?.value || APP_STATE.shippingOption?.cep || '').replace(/\D/g, '');
+  const logged = isUserLoggedIn();
+  hideCheckoutError();
 
-  if (!name || !email) {
-    displayToast('Informe nome e e-mail para continuar.');
-    return;
-  }
-  if (doc.replace(/\D/g, '').length !== 11 && doc.replace(/\D/g, '').length !== 14) {
-    displayToast('Informe um CPF ou CNPJ válido.');
-    return;
-  }
-  if (phone.replace(/\D/g, '').length < 10) {
-    displayToast('Informe um telefone com DDD.');
-    return;
-  }
-  if (!addressNumber) {
-    displayToast('Informe o número do endereço de entrega.');
-    return;
-  }
-  if (!APP_STATE.shippingOption || !(APP_STATE.shippingOption.cep || document.getElementById('cepInput')?.value)) {
-    displayToast('Calcule e selecione o frete antes de pagar.');
-    return;
-  }
-  if (APP_STATE.cart.length === 0) {
-    displayToast('Sua sacola está vazia.');
+  const emailOk = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email);
+  const problems = [
+    [name.split(/\s+/).filter(Boolean).length < 2, 'Informe seu nome completo (nome e sobrenome).', 'buyerName'],
+    [!emailOk, 'Informe um e-mail válido.', 'buyerEmail'],
+    [!!BrUtils.phoneError(phone), BrUtils.phoneError(phone), 'buyerPhone'],
+    [!!BrUtils.docError(doc, true), BrUtils.docError(doc, true), 'buyerDoc'],
+    [!APP_STATE.shippingOption || cep.length !== 8, 'Calcule e selecione o frete antes de pagar.', null],
+    [!address, 'Informe a rua / avenida.', 'buyerAddress'],
+    [!addressNumber, 'Informe o número do endereço de entrega (ou S/N).', 'buyerAddressNumber'],
+    [!logged && val('buyerPassword').length < 8 && APP_STATE.guestMode !== 'login', 'Escolha uma senha com no mínimo 8 caracteres para criar sua conta.', 'buyerPassword'],
+    [!logged && !document.getElementById('buyerPassword').value && APP_STATE.guestMode === 'login', 'Digite a senha da sua conta.', 'buyerPassword'],
+    [APP_STATE.cart.length === 0, 'Sua sacola está vazia.', null],
+  ];
+  const failed = problems.find(([bad]) => bad);
+  if (failed) {
+    showCheckoutError(failed[1], failed[2]);
     return;
   }
 
@@ -1400,11 +1498,28 @@ async function executePaymentTransaction() {
   const apiBase = teodoraApiBase();
 
   try {
+    try {
+      await ensureCheckoutAccount({ name, email, doc, phone, cep, address, addressNumber, addressComplement, neighborhood, city, uf });
+    } catch (accountErr) {
+      if (/já cadastrado/i.test(accountErr.message || '')) {
+        APP_STATE.guestMode = 'login';
+        refreshGuestAccountBlock();
+        showCheckoutError('Este e-mail já tem cadastro. Digite a senha da sua conta para continuar.', 'buyerPassword');
+        btn.disabled = false;
+        btn.innerHTML = prevHtml;
+        return;
+      }
+      showCheckoutError(accountErr.message || 'Não foi possível criar sua conta.', null);
+      btn.disabled = false;
+      btn.innerHTML = prevHtml;
+      return;
+    }
+
     const headers = { 'Content-Type': 'application/json' };
     const token = window.TeodoraAPI?.getToken?.();
     if (token) headers.Authorization = `Bearer ${token}`;
 
-    const addressLine = [address, addressNumber && `nº ${addressNumber}`, addressComplement].filter(Boolean).join(', ');
+    const addressLine = [address, addressNumber && `nº ${addressNumber}`, addressComplement, neighborhood, cityUf].filter(Boolean).join(', ');
 
     const payload = {
       items: APP_STATE.cart.map((item) => ({ id: item.id, variantId: item.variantId || null, quantity: item.quantity })),
@@ -1414,7 +1529,7 @@ async function executePaymentTransaction() {
       shippingOption: {
         ...(APP_STATE.shippingOption || {}),
         cep: (document.getElementById('cepInput')?.value || APP_STATE.shippingOption?.cep || '').replace(/\D/g, ''),
-        address: APP_STATE.shippingInfo || null,
+        address: { ...(APP_STATE.shippingInfo || {}), logradouro: address, bairro: neighborhood, localidade: city, uf },
         address_number: addressNumber,
         address_complement: addressComplement,
         originCep: APP_STATE.shippingOption?.originCep || '',
@@ -1450,7 +1565,7 @@ async function executePaymentTransaction() {
     displayToast('Escolha a forma de pagamento abaixo.');
   } catch (err) {
     console.error(err);
-    displayToast(err.message || 'Erro ao conectar com o Mercado Pago.');
+    showCheckoutError(err.message || 'Erro ao conectar com o Mercado Pago.', null);
     btn.disabled = false;
     btn.innerHTML = prevHtml;
   }
