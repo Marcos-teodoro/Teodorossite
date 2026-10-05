@@ -337,7 +337,16 @@ def create_payment(
         payment_payload["payer"].setdefault("email", order["payer_email"])
 
     try:
-        result = mercadopago_svc.create_payment(payment_payload)
+        if get_settings().mp_api == "payments":
+            result = mercadopago_svc.create_payment(payment_payload)
+        else:
+            result = mercadopago_svc.create_order(
+                order_ref=order["id"],
+                total=float(order["total"]),
+                form=form,
+                payer_email=order.get("payer_email") or (form.get("payer") or {}).get("email") or "",
+                description=payment_payload["description"],
+            )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
@@ -375,11 +384,16 @@ async def mercadopago_webhook(request: Request):
     if not payment_id:
         payment_id = request.query_params.get("data.id") or request.query_params.get("id")
 
-    # Só processa notificações de pagamento (ignora merchant_order etc.)
-    if payment_id and (not topic or str(topic).startswith("payment")):
+    # Só processa notificações de pagamento/order (ignora merchant_order etc.)
+    is_order = str(payment_id or "").startswith("ORD") or str(topic or "").startswith("order")
+    if payment_id and (not topic or str(topic).startswith("payment") or is_order):
         try:
-            # Sempre consulta o pagamento direto na API do MP: o corpo do webhook não é confiável.
-            payment = mercadopago_svc.get_payment(payment_id)
+            # Sempre consulta direto na API do MP: o corpo do webhook não é confiável.
+            payment = (
+                mercadopago_svc.get_order(str(payment_id))
+                if is_order
+                else mercadopago_svc.get_payment(payment_id)
+            )
             ext = payment.get("external_reference")
             if ext:
                 with get_connection() as conn:

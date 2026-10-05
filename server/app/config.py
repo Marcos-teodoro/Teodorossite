@@ -38,6 +38,9 @@ class Settings(BaseSettings):
     mp_access_token: str = ""
     mp_public_key: str = ""
     mp_sandbox: bool = True
+    # "orders" = API Orders (/v1/orders); "payments" = API de Pagamentos (/v1/payments).
+    # Depende de como a aplicação foi criada no painel do Mercado Pago.
+    mp_api: str = "orders"
 
     # CepCerto
     cepcerto_base_url: str = "https://cepcerto.com"
