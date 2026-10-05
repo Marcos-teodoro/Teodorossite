@@ -94,38 +94,6 @@
     'Edição Especial': 'exclusivo',
   };
 
-  // Concentração: texto do <select> → intensity code da API
-  const INTENSITY_OUT = {
-    'Eau de Parfum': 'edp',
-    'Eau de Toilette': 'edt',
-    'Parfum': 'parfum',
-    'Eau de Cologne': 'edt',
-  };
-  // Intensity code da API → texto do <select>
-  const INTENSITY_IN = {
-    edp: 'Eau de Parfum',
-    edt: 'Eau de Toilette',
-    parfum: 'Parfum',
-    'body-splash': 'Eau de Parfum',
-  };
-
-  // Família: valor interno do <select> → family code da API
-  const FAMILY_OUT = {
-    oriental_gourmand: 'oriental',
-    floral: 'floral',
-    citrico: 'cítrico',
-    chypre: 'amadeirado',
-    amadeirado: 'amadeirado',
-  };
-  // Family code da API → valor interno do <select>
-  const FAMILY_IN = {
-    floral: 'floral',
-    amadeirado: 'amadeirado',
-    oriental: 'oriental_gourmand',
-    'cítrico': 'citrico',
-    'aromático': 'floral',
-  };
-
   // Mapeamento label-texto → name do campo de configurações da loja
   const STORE_FIELD_MAP = {
     'Chamada': 'hero_eyebrow',
@@ -257,7 +225,9 @@
     const price = parseFloat(g('prod_preco')) || 0;
     const oldPrice = parseFloat(g('prod_preco_antigo')) || 0;
     const volume = g('prod_volume');
-    const conc = g('prod_concentracao');
+    const intensityCfg = currentProfile().selects.intensity;
+    const intensityOpt = intensityCfg && intensityCfg.titleSuffix ? intensityCfg.options.find((op) => op.value === g('prod_concentracao')) : null;
+    const conc = intensityOpt ? (intensityOpt.title || intensityOpt.label) : '';
     const badge = BADGE_OUT[g('prod_selo')] || '';
     const inst = 6;
 
@@ -491,6 +461,79 @@
   // PRODUTOS — FORMULÁRIO
   // ============================================================
 
+  // ============================================================
+  // PERFIL POR CATEGORIA (campos do card "Conteúdo" mudam conforme a categoria)
+  // ============================================================
+
+  const SELECT_FIELDS = [
+    { key: 'family', id: 'prod_familia', wrap: 'cat-wrap-family', label: 'cat-label-family' },
+    { key: 'intensity', id: 'prod_concentracao', wrap: 'cat-wrap-intensity', label: 'cat-label-intensity' },
+    { key: 'occasion', id: 'prod_ocasiao', wrap: 'cat-wrap-occasion', label: 'cat-label-occasion' },
+    { key: 'sensation', id: 'prod_sensacao', wrap: 'cat-wrap-sensation', label: 'cat-label-sensation' },
+  ];
+
+  function currentProfile() {
+    const slug = document.getElementById('prod_categoria')?.value || 'perfumes';
+    return window.TeodoraCategoryProfiles.getProfile(slug);
+  }
+
+  function setSelectValue(el, value) {
+    if (!el) return;
+    const v = String(value ?? '');
+    if (v && ![...el.options].some((op) => op.value === v)) {
+      // valor antigo/fora da lista: mantém para não perder o dado ao salvar de novo
+      const op = document.createElement('option');
+      op.value = v;
+      op.textContent = v;
+      el.appendChild(op);
+    }
+    el.value = v || (el.options[0] ? el.options[0].value : '');
+  }
+
+  // Aplica rótulos/opções da categoria. reset=true (troca de categoria) volta cada campo ao primeiro valor.
+  function applyCategoryProfile(slug, reset) {
+    const profile = window.TeodoraCategoryProfiles.getProfile(slug);
+    const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+
+    setText('cat-card-title', profile.cardTitle);
+    setText('cat-card-help', profile.cardHelp);
+
+    SELECT_FIELDS.forEach((f) => {
+      const cfg = profile.selects[f.key];
+      const wrap = document.getElementById(f.wrap);
+      const sel = document.getElementById(f.id);
+      if (wrap) wrap.classList.toggle('hidden', !cfg);
+      if (!sel) return;
+      if (!cfg) { sel.innerHTML = ''; return; }
+      setText(f.label, cfg.label);
+      sel.innerHTML = cfg.options
+        .map((op) => `<option value="${escapeHtml(op.value)}">${escapeHtml(op.label)}</option>`)
+        .join('');
+    });
+
+    const d = profile.details;
+    setText('cat-details-title', d.title);
+    setText('cat-details-help', d.help);
+    [['top', 'prod_notas_saida'], ['heart', 'prod_notas_coracao'], ['base', 'prod_notas_fundo']].forEach(([k, id]) => {
+      const item = d.items[k];
+      setText(`cat-detail-label-${k}`, item.label);
+      const hint = document.getElementById(`cat-detail-hint-${k}`);
+      if (hint) { hint.textContent = item.hint; hint.classList.toggle('hidden', !item.hint); }
+      const ta = document.getElementById(id);
+      if (ta) ta.placeholder = item.placeholder;
+    });
+
+    setText('cat-label-ritual', profile.ritual.label);
+    const ritual = document.getElementById('prod_ritual');
+    if (ritual) ritual.placeholder = profile.ritual.placeholder;
+    setText('cat-label-ingredients', profile.ingredients.label);
+    const ingr = document.getElementById('prod_ingredientes');
+    if (ingr) ingr.placeholder = profile.ingredients.placeholder;
+    const desc = document.getElementById('prod_descricao');
+    if (desc) desc.placeholder = profile.description.placeholder;
+    setText('cat-similar-help', profile.similarHelp);
+  }
+
   function openNewProductForm() {
     const fields = {
       prod_edit_id: '',
@@ -503,10 +546,6 @@
       prod_preco_antigo: '',
       prod_estoque: '50',
       prod_ativo: 'sim',
-      prod_familia: 'oriental_gourmand',
-      prod_concentracao: 'Eau de Parfum',
-      prod_ocasiao: 'noite',
-      prod_sensacao: 'romantico',
       prod_notas_saida: '',
       prod_notas_coracao: '',
       prod_notas_fundo: '',
@@ -522,6 +561,7 @@
       const el = document.getElementById(id);
       if (el) el.value = val;
     });
+    applyCategoryProfile(document.getElementById('prod_categoria')?.value || 'perfumes', true);
     const heading = document.getElementById('form-product-heading');
     if (heading) heading.textContent = 'Novo produto';
     const bc = document.getElementById('breadcrumb-current');
@@ -552,10 +592,11 @@
       set('prod_preco_antigo', p.oldPrice ?? '');
       set('prod_estoque', p.stock ?? 0);
       set('prod_ativo', p.active !== false ? 'sim' : 'nao');
-      set('prod_familia', FAMILY_IN[p.family || ''] || 'oriental_gourmand');
-      set('prod_concentracao', INTENSITY_IN[p.intensity || ''] || 'Eau de Parfum');
-      set('prod_ocasiao', ({ noite: 'noite', dia: 'dia', festa: 'encontros' })[p.occasion] || p.occasion || 'noite');
-      set('prod_sensacao', ({ romantico: 'romantico', marcante: 'sedutor', fresco: 'fresco', elegante: 'elegante' })[p.sensation] || p.sensation || 'romantico');
+      applyCategoryProfile(p.category || 'perfumes', true);
+      setSelectValue(document.getElementById('prod_familia'), p.family);
+      setSelectValue(document.getElementById('prod_concentracao'), p.intensity);
+      setSelectValue(document.getElementById('prod_ocasiao'), p.occasion);
+      setSelectValue(document.getElementById('prod_sensacao'), p.sensation);
       set('prod_notas_saida', p.pyramid?.top || '');
       set('prod_notas_coracao', p.pyramid?.heart || '');
       set('prod_notas_fundo', p.pyramid?.base || '');
@@ -599,10 +640,10 @@
       old_price: parseFloat(g('prod_preco_antigo')) || null,
       stock: parseInt(g('prod_estoque')) || 0,
       active: g('prod_ativo') === 'sim',
-      family: FAMILY_OUT[g('prod_familia')] || g('prod_familia'),
-      intensity: INTENSITY_OUT[g('prod_concentracao')] || 'edp',
-      occasion: ({ noite: 'noite', dia: 'dia', encontros: 'festa', verao: 'dia', festa: 'festa' })[g('prod_ocasiao')] || 'dia',
-      sensation: ({ romantico: 'romantico', sedutor: 'marcante', fresco: 'fresco', elegante: 'elegante', marcante: 'marcante' })[g('prod_sensacao')] || 'romantico',
+      family: g('prod_familia'),
+      intensity: g('prod_concentracao'),
+      occasion: g('prod_ocasiao'),
+      sensation: g('prod_sensacao'),
       pyramid_top: g('prod_notas_saida').trim(),
       pyramid_heart: g('prod_notas_coracao').trim(),
       pyramid_base: g('prod_notas_fundo').trim(),
@@ -906,7 +947,10 @@
     if (!force && titleEl.value.trim()) return;
     const brand = document.getElementById('prod_marca')?.value?.trim() || '';
     const volume = document.getElementById('prod_volume')?.value?.trim() || '';
-    const conc = document.getElementById('prod_concentracao')?.value || '';
+    const cfg = currentProfile().selects.intensity;
+    const sel = document.getElementById('prod_concentracao');
+    const opt = cfg && cfg.titleSuffix ? cfg.options.find((op) => op.value === sel?.value) : null;
+    const conc = opt ? (opt.title || opt.label) : '';
     if (!brand) return;
     titleEl.value = [brand, volume, conc].filter(Boolean).join(' ');
   }
@@ -2339,6 +2383,7 @@
   window.closeProductForm     = closeProductForm;
   window.handleSaveProduct    = handleSaveProduct;
   window.autoGenerateTitle    = autoGenerateTitle;
+  window.applyCategoryProfile = applyCategoryProfile;
   window.calculateDiscount    = calculateDiscount;
   window.handleCatalogSearch          = handleCatalogSearch;
   window.handleCatalogCategoryChange  = handleCatalogCategoryChange;

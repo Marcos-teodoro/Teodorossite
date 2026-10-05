@@ -477,28 +477,28 @@
             <div id="pdpShippingResults" class="hidden text-xs pt-1"></div>
           </div>
 
-          <!-- Notas olfativas -->
-          <div class="p-5 rounded-3xl bg-teodora-bgLight border border-teodora-border space-y-4">
+          <!-- Destaques por categoria (notas olfativas, benefícios, itens do kit...) -->
+          <div id="pdpDetailsBox" class="p-5 rounded-3xl bg-teodora-bgLight border border-teodora-border space-y-4">
             <div class="flex items-center gap-2">
-              <i class="fa-solid fa-feather-pointed text-teodora-gold"></i>
-              <h4 class="text-xs uppercase tracking-[0.2em] font-bold text-teodora-text">Notas olfativas</h4>
+              <i id="pdpDetailsIcon" class="fa-solid fa-feather-pointed text-teodora-gold"></i>
+              <h4 id="pdpDetailsTitle" class="text-xs uppercase tracking-[0.2em] font-bold text-teodora-text">Notas olfativas</h4>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div class="p-3 bg-white rounded-2xl border border-teodora-border space-y-1">
-                <span class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Topo</span>
-                <p id="pdpTopNotes" class="text-teodora-textMuted text-[11px] leading-relaxed">Mandarina e Rosas</p>
-                <span class="text-[9px] text-teodora-textMuted/70 block">Primeiros 15 minutos</span>
+                <span id="pdpDetailLabelTop" class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Topo</span>
+                <p id="pdpTopNotes" class="text-teodora-textMuted text-[11px] leading-relaxed"></p>
+                <span id="pdpDetailSubTop" class="text-[9px] text-teodora-textMuted/70 block">Primeiros 15 minutos</span>
               </div>
               <div class="p-3 bg-white rounded-2xl border border-teodora-border space-y-1">
-                <span class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Coração</span>
-                <p id="pdpHeartNotes" class="text-teodora-textMuted text-[11px] leading-relaxed">Peônia e Magnólia</p>
-                <span class="text-[9px] text-teodora-textMuted/70 block">Corpo da fragrância (6h)</span>
+                <span id="pdpDetailLabelHeart" class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Coração</span>
+                <p id="pdpHeartNotes" class="text-teodora-textMuted text-[11px] leading-relaxed"></p>
+                <span id="pdpDetailSubHeart" class="text-[9px] text-teodora-textMuted/70 block">Corpo da fragrância (6h)</span>
               </div>
               <div class="p-3 bg-white rounded-2xl border border-teodora-border space-y-1">
-                <span class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Fundo</span>
-                <p id="pdpBaseNotes" class="text-teodora-textMuted text-[11px] leading-relaxed">Almíscar e Âmbar</p>
-                <span class="text-[9px] text-teodora-textMuted/70 block">Fixação na pele (+16h)</span>
+                <span id="pdpDetailLabelBase" class="text-[10px] uppercase font-bold text-teodora-gold tracking-wider block">Notas de Fundo</span>
+                <p id="pdpBaseNotes" class="text-teodora-textMuted text-[11px] leading-relaxed"></p>
+                <span id="pdpDetailSubBase" class="text-[9px] text-teodora-textMuted/70 block">Fixação na pele (+16h)</span>
               </div>
             </div>
           </div>
@@ -514,7 +514,7 @@
             Descrição
           </button>
           <button id="tabBtnAtivos" onclick="switchPdpTab('ativos')" class="pdp-tab-btn pb-3 border-b-2 border-transparent text-teodora-textMuted hover:text-teodora-text transition">
-            Ingredientes
+            <span id="pdpIngredientsTab">Ingredientes</span>
           </button>
           <button id="tabBtnAvaliacoes" onclick="switchPdpTab('avaliacoes')" class="pdp-tab-btn pb-3 border-b-2 border-transparent text-teodora-textMuted hover:text-teodora-text transition">
             Avaliações
@@ -523,11 +523,14 @@
 
         <div id="pdpTabContentRitual" class="text-xs sm:text-sm text-teodora-textMuted leading-relaxed space-y-3">
           <p id="pdpDescription" class="text-teodora-text font-medium"></p>
-          <p id="pdpRitualAdvice"></p>
+          <div id="pdpRitualWrap" class="hidden pt-1">
+            <p id="pdpRitualLabel" class="font-bold text-teodora-text mb-1">Modo de uso</p>
+            <p id="pdpRitualAdvice" class="whitespace-pre-line"></p>
+          </div>
         </div>
 
         <div id="pdpTabContentAtivos" class="hidden text-xs sm:text-sm text-teodora-textMuted leading-relaxed space-y-3">
-          <p class="font-bold text-teodora-text">Composição:</p>
+          <p id="pdpIngredientsLabel" class="font-bold text-teodora-text">Composição:</p>
           <p id="pdpIngredients" class="font-mono text-xs text-teodora-textMuted bg-teodora-bgLight p-4 rounded-2xl border border-teodora-border"></p>
           <div class="flex flex-wrap gap-4 pt-2 text-xs text-teodora-text">
             <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-600"></i> Produto original</span>
@@ -929,6 +932,7 @@
   <script src="https://sdk.mercadopago.com/js/v2"></script>
   <script src="js/api.js"></script>
   <script src="js/data.js?v=fotos-auto"></script>
-  <script src="js/app.js"></script>
+  <script src="js/category-profiles.js?v=perfis3"></script>
+  <script src="js/app.js?v=perfis3"></script>
 </body>
 </html>

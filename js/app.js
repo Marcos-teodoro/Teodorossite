@@ -538,21 +538,44 @@ function openProductPage(productId) {
     }
   }
 
-  // Notas olfativas
-  const topNotes = document.getElementById('pdpTopNotes');
-  if (topNotes) topNotes.innerText = product.pyramid ? product.pyramid.top : product.notes;
-  const heartNotes = document.getElementById('pdpHeartNotes');
-  if (heartNotes) heartNotes.innerText = product.pyramid ? product.pyramid.heart : product.notes;
-  const baseNotes = document.getElementById('pdpBaseNotes');
-  if (baseNotes) baseNotes.innerText = product.pyramid ? product.pyramid.base : 'Madeiras e almíscar';
+  // Destaques, modo de uso e composição seguem o perfil da categoria (perfume ≠ skincare ≠ kit)
+  const profile = window.TeodoraCategoryProfiles.getProfile(product.category);
+  const setPdpText = (id, txt) => { const el = document.getElementById(id); if (el) el.innerText = txt; };
+  const detailsBox = document.getElementById('pdpDetailsBox');
+  const detailItems = [
+    ['Top', 'top', 'pdpTopNotes'],
+    ['Heart', 'heart', 'pdpHeartNotes'],
+    ['Base', 'base', 'pdpBaseNotes'],
+  ];
+  const hasDetails = window.TeodoraCategoryProfiles.hasContent(product);
+  if (detailsBox) detailsBox.classList.toggle('hidden', !hasDetails);
+  if (hasDetails) {
+    setPdpText('pdpDetailsTitle', profile.details.storeTitle || profile.details.title);
+    const icon = document.getElementById('pdpDetailsIcon');
+    if (icon) icon.className = `fa-solid ${profile.details.icon} text-teodora-gold`;
+    detailItems.forEach(([cap, key, valueId]) => {
+      const item = profile.details.items[key];
+      setPdpText(`pdpDetailLabel${cap}`, item.label.replace(/\s*\(.*\)$/, ''));
+      setPdpText(`pdpDetailSub${cap}`, item.sub || '');
+      const value = product.pyramid ? product.pyramid[key] : '';
+      setPdpText(valueId, value || '—');
+    });
+  }
 
   // Abas descritivas
   const descEl = document.getElementById('pdpDescription');
-  if (descEl) descEl.innerText = product.description;
-  const ritualEl = document.getElementById('pdpRitualAdvice');
-  if (ritualEl) ritualEl.innerText = product.ritual || 'Borrife nos pulsos e na nuca.';
-  const ingrEl = document.getElementById('pdpIngredients');
-  if (ingrEl) ingrEl.innerText = product.ingredients || 'Alcohol Denat, Parfum, Aqua.';
+  if (descEl) descEl.innerText = product.description || '';
+  const ritualText = (product.ritual || '').trim();
+  const ritualWrap = document.getElementById('pdpRitualWrap');
+  if (ritualWrap) ritualWrap.classList.toggle('hidden', !ritualText);
+  setPdpText('pdpRitualLabel', `${profile.ritual.label}:`);
+  setPdpText('pdpRitualAdvice', ritualText);
+  const ingrText = (product.ingredients || '').trim();
+  const ingrTab = document.getElementById('tabBtnAtivos');
+  if (ingrTab) ingrTab.classList.toggle('hidden', !ingrText);
+  setPdpText('pdpIngredientsTab', profile.ingredients.label.replace(/\s*\(.*\)$/, '').split(' / ')[0]);
+  setPdpText('pdpIngredientsLabel', `${profile.ingredients.label}:`);
+  setPdpText('pdpIngredients', ingrText);
   switchPdpTab('ritual');
 
   // Quantidade

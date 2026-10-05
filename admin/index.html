@@ -509,7 +509,7 @@
                     <label for="prod_categoria" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
                       Categoria
                     </label>
-                    <select id="prod_categoria" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
+                    <select id="prod_categoria" onchange="applyCategoryProfile(this.value, true)" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
                       <option value="perfumes" selected>Perfumes</option>
                       <option value="skincare">Skincare</option>
                       <option value="maquiagem">Maquiagem</option>
@@ -657,64 +657,35 @@
               </div>
             </div>
 
-            <!-- CARD 4: CONTEÚDO E PERFUMARIA (PIRÂMIDE OLFATIVA ORGANIZADA) -->
+            <!-- CARD 4: CONTEÚDO POR CATEGORIA (campos mudam conforme a categoria; ver js/category-profiles.js) -->
             <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
               <div class="px-6 py-4 border-b border-stone-100 bg-[#FCFBF9]">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-stone-800">Conteúdo & Perfumaria</h3>
-                <p class="text-xs text-stone-500 mt-0.5">Informações sensoriais e pirâmide olfativa exibidas com exclusividade na página do produto.</p>
+                <h3 id="cat-card-title" class="text-xs font-bold uppercase tracking-widest text-stone-800">Conteúdo & Perfumaria</h3>
+                <p id="cat-card-help" class="text-xs text-stone-500 mt-0.5">Informações da categoria exibidas na página do produto.</p>
               </div>
 
               <div class="p-6 space-y-6">
 
-                <!-- Classificação Rápida -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div>
-                    <label for="prod_familia" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
-                      Família Olfativa
-                    </label>
-                    <select id="prod_familia" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
-                      <option value="oriental_gourmand" selected>Oriental Gourmand</option>
-                      <option value="floral">Floral Amadeirado</option>
-                      <option value="citrico">Cítrico Refrescante</option>
-                      <option value="chypre">Chypre Frutado</option>
-                      <option value="amadeirado">Amadeirado Nobre</option>
-                    </select>
+                <!-- Classificação Rápida (rótulos e opções vêm do perfil da categoria) -->
+                <div id="cat-selects" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div id="cat-wrap-family">
+                    <label id="cat-label-family" for="prod_familia" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Família Olfativa</label>
+                    <select id="prod_familia" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded"></select>
                   </div>
 
-                  <div>
-                    <label for="prod_concentracao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
-                      Concentração
-                    </label>
-                    <select id="prod_concentracao" onchange="autoGenerateTitle()" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
-                      <option value="Eau de Parfum" selected>Eau de Parfum (EDP)</option>
-                      <option value="Eau de Toilette">Eau de Toilette (EDT)</option>
-                      <option value="Parfum">Parfum / Extrait</option>
-                      <option value="Eau de Cologne">Eau de Cologne (EDC)</option>
-                    </select>
+                  <div id="cat-wrap-intensity">
+                    <label id="cat-label-intensity" for="prod_concentracao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Concentração</label>
+                    <select id="prod_concentracao" onchange="autoGenerateTitle()" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded"></select>
                   </div>
 
-                  <div>
-                    <label for="prod_ocasiao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
-                      Ocasião Recomendada
-                    </label>
-                    <select id="prod_ocasiao" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
-                      <option value="noite" selected>Noite & Eventos</option>
-                      <option value="dia">Uso Diário / Assinatura</option>
-                      <option value="encontros">Encontros & Romântico</option>
-                      <option value="verao">Dias Quentes / Verão</option>
-                    </select>
+                  <div id="cat-wrap-occasion">
+                    <label id="cat-label-occasion" for="prod_ocasiao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Ocasião Recomendada</label>
+                    <select id="prod_ocasiao" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded"></select>
                   </div>
 
-                  <div>
-                    <label for="prod_sensacao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
-                      Sensação / Acorde
-                    </label>
-                    <select id="prod_sensacao" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded">
-                      <option value="romantico" selected>Romântico & Marcante</option>
-                      <option value="sedutor">Sensual & Magnético</option>
-                      <option value="fresco">Energizante & Leve</option>
-                      <option value="elegante">Clássico & Imponente</option>
-                    </select>
+                  <div id="cat-wrap-sensation">
+                    <label id="cat-label-sensation" for="prod_sensacao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Sensação / Acorde</label>
+                    <select id="prod_sensacao" class="w-full px-3 py-2 text-sm bg-white border border-stone-200 rounded"></select>
                   </div>
                 </div>
 
@@ -723,43 +694,43 @@
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-2">
                       <span class="text-amber-700">✦</span>
-                      <span class="text-xs font-bold uppercase tracking-wider text-stone-800">Pirâmide Olfativa (Notas Oficiais)</span>
+                      <span id="cat-details-title" class="text-xs font-bold uppercase tracking-wider text-stone-800">Pirâmide Olfativa (Notas Oficiais)</span>
                     </div>
-                    <span class="text-[11px] text-stone-400">Preenche o card olfativo na loja</span>
+                    <span id="cat-details-help" class="text-[11px] text-stone-400">Preenche o card olfativo na loja</span>
                   </div>
 
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <!-- Saída / Topo -->
                     <div class="bg-white p-3.5 rounded border border-stone-200 shadow-xs">
                       <div class="flex items-center justify-between mb-1">
-                        <label for="prod_notas_saida" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
+                        <label for="prod_notas_saida" id="cat-detail-label-top" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
                           Notas de Topo (Saída)
                         </label>
-                        <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">0 a 15 min</span>
+                        <span id="cat-detail-hint-top" class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">0 a 15 min</span>
                       </div>
-                      <textarea id="prod_notas_saida" rows="3" placeholder="Ex: Pêra Suculenta e Bergamota" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none">Pêra verde radiante e bergamota fresca italiana.</textarea>
+                      <textarea id="prod_notas_saida" rows="3" placeholder="Ex: Pêra Suculenta e Bergamota" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none"></textarea>
                     </div>
 
                     <!-- Coração -->
                     <div class="bg-white p-3.5 rounded border border-stone-200 shadow-xs">
                       <div class="flex items-center justify-between mb-1">
-                        <label for="prod_notas_coracao" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
+                        <label for="prod_notas_coracao" id="cat-detail-label-heart" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
                           Notas de Coração (Corpo)
                         </label>
-                        <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">15 min a 4h</span>
+                        <span id="cat-detail-hint-heart" class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">15 min a 4h</span>
                       </div>
-                      <textarea id="prod_notas_coracao" rows="3" placeholder="Ex: Vetiver e Flores Brancas" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none">Fava Tonka tostada e jasmim sambac envolvente.</textarea>
+                      <textarea id="prod_notas_coracao" rows="3" placeholder="Ex: Vetiver e Flores Brancas" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none"></textarea>
                     </div>
 
                     <!-- Fundo -->
                     <div class="bg-white p-3.5 rounded border border-stone-200 shadow-xs">
                       <div class="flex items-center justify-between mb-1">
-                        <label for="prod_notas_fundo" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
+                        <label for="prod_notas_fundo" id="cat-detail-label-base" class="text-[11px] font-bold uppercase tracking-wider text-stone-800">
                           Notas de Fundo (Base)
                         </label>
-                        <span class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">Fixação 8h+</span>
+                        <span id="cat-detail-hint-base" class="text-[10px] text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">Fixação 8h+</span>
                       </div>
-                      <textarea id="prod_notas_fundo" rows="3" placeholder="Ex: Baunilha de Madagascar e Âmbar" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none">Baunilha negra de Madagascar, fava tonka e âmbar quente.</textarea>
+                      <textarea id="prod_notas_fundo" rows="3" placeholder="Ex: Baunilha de Madagascar e Âmbar" class="w-full text-xs p-2 bg-stone-50 border border-stone-200 rounded focus:bg-white resize-none"></textarea>
                     </div>
                   </div>
                 </div>
@@ -769,23 +740,23 @@
                   <label for="prod_descricao" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
                     Descrição do Produto (Aba da Loja)
                   </label>
-                  <textarea id="prod_descricao" rows="4" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded">Jean Paul Gaultier La Belle Feminino Eau de Parfum. Um perfume original, magnético e hipnotizante. Uma fusão ultra sensual de pêra fresca e baunilha viciante.</textarea>
+                  <textarea id="prod_descricao" rows="4" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded"></textarea>
                 </div>
 
                 <!-- RITUAL DE USO E INGREDIENTES -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label for="prod_ritual" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                    <label id="cat-label-ritual" for="prod_ritual" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
                       Ritual de Uso
                     </label>
-                    <textarea id="prod_ritual" rows="3" placeholder="Dicas de aplicação nos pontos de pulsação..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded text-xs">Borrife nos pontos de maior circulação sanguínea como pulsos, pescoço e dobras dos cotovelos a 15 cm da pele.</textarea>
+                    <textarea id="prod_ritual" rows="3" placeholder="Dicas de aplicação nos pontos de pulsação..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded text-xs"></textarea>
                   </div>
 
                   <div>
-                    <label for="prod_ingredientes" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
+                    <label id="cat-label-ingredients" for="prod_ingredientes" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">
                       Ingredientes / Composição
                     </label>
-                    <textarea id="prod_ingredientes" rows="3" placeholder="Composição química e ativos conforme Anvisa..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded text-xs font-mono">ALCOHOL DENAT., PARFUM (FRAGRANCE), AQUA (WATER), BENZYL SALICYLATE, LINALOOL, HYDROXYCITRONELLAL, COUMARIN.</textarea>
+                    <textarea id="prod_ingredientes" rows="3" placeholder="Composição química e ativos conforme Anvisa..." class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded text-xs font-mono"></textarea>
                   </div>
                 </div>
 
@@ -793,7 +764,7 @@
                 <div class="p-4 rounded bg-stone-50 border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
                     <span class="text-xs font-bold uppercase tracking-wider text-stone-800 block">Recomendação "Você Também Pode Gostar"</span>
-                    <p class="text-xs text-stone-500 mt-0.5">Automatizado com base na marca e na família olfativa cadastrada.</p>
+                    <p id="cat-similar-help" class="text-xs text-stone-500 mt-0.5">Automatizado com base na marca e na família olfativa cadastrada.</p>
                   </div>
                   <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded border border-emerald-200 shrink-0">
                     ✓ Recomendação Automática Ativa
@@ -1832,6 +1803,7 @@ Entrega em todo o Brasil.</textarea>
 
 
   <script src="/js/api.js"></script>
-  <script src="/admin/js/admin.js?v=fotos-auto"></script>
+  <script src="/js/category-profiles.js?v=perfis"></script>
+  <script src="/admin/js/admin.js?v=perfis"></script>
 </body>
 </html>
