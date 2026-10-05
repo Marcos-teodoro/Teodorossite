@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Any, Optional
 from uuid import uuid4
@@ -79,10 +80,19 @@ def require_admin(user: dict = Depends(require_user)) -> dict:
     return user
 
 
+EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$")
+
+
+def is_valid_email(email: str) -> bool:
+    return bool(EMAIL_RE.match((email or "").strip()))
+
+
 def register_user(email: str, password: str, name: str, phone: str = "", role: str = "customer") -> dict:
     email = email.strip().lower()
     if not email or not password:
         raise HTTPException(status_code=400, detail="E-mail e senha obrigatórios")
+    if not is_valid_email(email):
+        raise HTTPException(status_code=400, detail="E-mail inválido")
     if len(password) < 8:
         raise HTTPException(status_code=400, detail="Senha com no mínimo 8 caracteres")
 

@@ -1082,7 +1082,8 @@ async function calculateFreightViaCEP() {
     const apiBase = teodoraApiBase();
     const ids = APP_STATE.cart.map((i) => i.id).join(',');
     const declared = APP_STATE.cart.reduce((s, i) => s + i.price * i.quantity, 0);
-    const url = `${apiBase}/api/shipping/quote?cep=${raw}&product_ids=${ids}&declared_value=${declared}`;
+    const qtys = APP_STATE.cart.map((i) => i.quantity).join(',');
+    const url = `${apiBase}/api/shipping/quote?cep=${raw}&product_ids=${ids}&quantities=${qtys}&declared_value=${declared}`;
     const resp = await fetch(url);
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.detail || 'Falha na cotação');
@@ -1316,6 +1317,14 @@ async function executePaymentTransaction() {
 
   if (!name || !email) {
     displayToast('Informe nome e e-mail para continuar.');
+    return;
+  }
+  if (doc.replace(/\D/g, '').length !== 11 && doc.replace(/\D/g, '').length !== 14) {
+    displayToast('Informe um CPF ou CNPJ válido.');
+    return;
+  }
+  if (phone.replace(/\D/g, '').length < 10) {
+    displayToast('Informe um telefone com DDD.');
     return;
   }
   if (!addressNumber) {

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -62,6 +63,27 @@ def update_me(payload: dict, user: dict = Depends(require_user)):
     return {"user": _public_user(row_to_dict(row))}
 
 
+def _clean_address(body: AddressBody) -> AddressBody:
+    digits = re.sub(r"\D", "", body.cep or "")
+    if len(digits) != 8:
+        raise HTTPException(status_code=400, detail="CEP inválido (8 dígitos).")
+    uf = (body.uf or "").strip().upper()
+    if uf and not re.fullmatch(r"[A-Z]{2}", uf):
+        raise HTTPException(status_code=400, detail="UF inválida (2 letras).")
+    return body.model_copy(
+        update={
+            "cep": f"{digits[:5]}-{digits[5:]}",
+            "uf": uf,
+            "label": (body.label or "Casa").strip()[:40] or "Casa",
+            "logradouro": body.logradouro.strip()[:200],
+            "numero": body.numero.strip()[:20],
+            "complemento": body.complemento.strip()[:100],
+            "bairro": body.bairro.strip()[:100],
+            "cidade": body.cidade.strip()[:100],
+        }
+    )
+
+
 addresses_router = APIRouter(prefix="/api/addresses", tags=["addresses"])
 
 
@@ -77,6 +99,7 @@ def list_addresses(user: dict = Depends(require_user)):
 
 @addresses_router.post("")
 def create_address(body: AddressBody, user: dict = Depends(require_user)):
+    body = _clean_address(body)
     with get_connection() as conn:
         if body.is_default:
             conn.execute("UPDATE addresses SET is_default = 0 WHERE user_id = ?", (user["id"],))
@@ -105,6 +128,7 @@ def create_address(body: AddressBody, user: dict = Depends(require_user)):
 
 @addresses_router.put("/{address_id}")
 def update_address(address_id: int, body: AddressBody, user: dict = Depends(require_user)):
+    body = _clean_address(body)
     with get_connection() as conn:
         existing = conn.execute(
             "SELECT * FROM addresses WHERE id = ? AND user_id = ?", (address_id, user["id"])

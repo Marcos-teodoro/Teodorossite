@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import re
 from typing import Any
@@ -7,12 +8,13 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
-from ..auth import require_user
+from ..auth import is_valid_email, require_user
 from ..config import get_settings
 from ..db import get_connection, row_to_dict, rows_to_list
 from ..schemas import PaymentBody, PrepareBody
-from ..services import mercadopago_svc
+from ..services import cepcerto, mercadopago_svc
 from ..services.inventory import transition_order_stock
+from .shipping import build_package
 
 router = APIRouter(prefix="/api", tags=["checkout"])
 
@@ -84,15 +86,60 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
                 coupon_discount = min(merchandise, round_money(coupon["discount_value"]))
             merchandise = round_money(merchandise - coupon_discount)
 
-    shipping_cost = max(0.0, round_money(body.shipping_cost or 0))
-    settings = get_settings()
-    shipping_option = body.shipping_option or {}
-    if settings.cepcerto_postage_token:
-        dest_cep = re.sub(r"\D", "", str(shipping_option.get("cep") or ""))
-        if len(dest_cep) != 8:
-            raise HTTPException(status_code=400, detail="Informe um CEP válido e calcule o frete.")
-        if not shipping_option.get("code") and not shipping_option.get("name"):
-            raise HTTPException(status_code=400, detail="Selecione uma opção de frete antes de pagar.")
+    shipping_option = dict(body.shipping_option or {})
+    dest_cep = re.sub(r"\D", "", str(shipping_option.get("cep") or ""))
+    if len(dest_cep) != 8:
+        raise HTTPException(status_code=400, detail="Informe um CEP válido e calcule o frete.")
+    chosen_code = str(shipping_option.get("code") or "").strip()
+    chosen_name = str(shipping_option.get("name") or "").strip()
+    if not chosen_code and not chosen_name:
+        raise HTTPException(status_code=400, detail="Selecione uma opção de frete antes de pagar.")
+
+    # O valor do frete NUNCA vem do navegador: recotamos no servidor (CepCerto) e usamos esse preço.
+    qty_map: dict[int, int] = {}
+    for line in lines:
+        qty_map[line["product_id"]] = qty_map.get(line["product_id"], 0) + line["quantity"]
+    subtotal_lines = round_money(sum(l["unit_price"] * l["quantity"] for l in lines))
+    pkg = build_package(list(qty_map), qty_map, declared_value=subtotal_lines)
+    try:
+        quote = asyncio.run(
+            cepcerto.quote_freight(
+                dest_cep=dest_cep,
+                weight_kg=pkg["weight_kg"],
+                height_cm=pkg["height_cm"],
+                width_cm=pkg["width_cm"],
+                length_cm=pkg["length_cm"],
+                declared_value=pkg["declared_value"],
+            )
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Não foi possível confirmar o frete: {exc}") from exc
+    match = next(
+        (
+            o
+            for o in quote.get("options", [])
+            if (chosen_code and o.get("code") == chosen_code)
+            or (not chosen_code and o.get("name") == chosen_name)
+        ),
+        None,
+    )
+    if not match:
+        raise HTTPException(status_code=400, detail="Opção de frete indisponível. Recalcule o frete.")
+    shipping_cost = max(0.0, round_money(match["price"]))
+    shipping_option.update(
+        {
+            "code": match.get("code"),
+            "name": match.get("name"),
+            "price": shipping_cost,
+            "days": match.get("days"),
+            "carrier": match.get("carrier"),
+            "originCep": match.get("originCep"),
+            "originLabel": match.get("originLabel"),
+            "cep": dest_cep,
+        }
+    )
 
     total = round_money(merchandise + shipping_cost)
 
@@ -106,12 +153,28 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
         "lines": lines,
         "merchandise": merchandise,
         "shipping_cost": shipping_cost,
+        "shipping_option": shipping_option,
         "coupon_code": coupon_code,
         "coupon_discount": coupon_discount,
         "pix_discount": pix_discount,
         "payment_hint": payment_hint,
         "total": total,
     }
+
+
+def _validate_payer(payer: dict[str, Any]) -> None:
+    if not str(payer.get("name") or "").strip():
+        raise HTTPException(status_code=400, detail="Informe o nome do comprador.")
+    if not is_valid_email(str(payer.get("email") or "")):
+        raise HTTPException(status_code=400, detail="Informe um e-mail válido.")
+    doc = re.sub(r"\D", "", str(payer.get("doc") or ""))
+    if len(doc) not in (11, 14):
+        raise HTTPException(status_code=400, detail="Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido.")
+    phone = re.sub(r"\D", "", str(payer.get("phone") or ""))
+    if len(phone) < 10:
+        raise HTTPException(status_code=400, detail="Informe um telefone com DDD.")
+    if not str(payer.get("addressNumber") or payer.get("address_number") or "").strip():
+        raise HTTPException(status_code=400, detail="Informe o número do endereço de entrega.")
 
 
 @router.post("/checkout/prepare")
@@ -122,7 +185,12 @@ def checkout_prepare(
     validated = build_validated_order(body)
     order_id = str(uuid4())
     payer = body.payer or {}
-    shipping_snapshot = dict(body.shipping_option or {})
+    _validate_payer(payer)
+    shipping_snapshot = dict(validated["shipping_option"])
+    if body.shipping_option:
+        for key in ("address", "address_number", "address_complement"):
+            if body.shipping_option.get(key) not in (None, ""):
+                shipping_snapshot[key] = body.shipping_option[key]
     # Normaliza campos de endereço no snapshot
     if payer.get("addressNumber") or payer.get("address_number"):
         shipping_snapshot["address_number"] = payer.get("addressNumber") or payer.get("address_number")
@@ -192,6 +260,50 @@ def checkout_prepare(
     }
 
 
+PAID_STATES = {"approved", "shipped", "delivered"}
+FINAL_STATES = PAID_STATES | {"cancelled"}
+
+
+def apply_payment_result(conn, order_id: str, payment: dict[str, Any], source: str) -> str:
+    """Grava o resultado do Mercado Pago no pedido (usado pela rota de pagamento e pelo webhook)."""
+    mp_status = payment.get("status")
+    mapped = mercadopago_svc.map_mp_status(mp_status)
+    row = conn.execute("SELECT status FROM orders WHERE id = ?", (order_id,)).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Pedido não encontrado")
+    previous = row["status"]
+
+    # Não regride pedido já enviado/entregue/cancelado por notificação repetida do MP.
+    if previous in {"shipped", "delivered"} and mapped in {"approved", "pending"}:
+        mapped = previous
+    elif previous == "cancelled" and mapped == "pending":
+        mapped = previous
+
+    note = source
+    try:
+        transition_order_stock(conn, order_id, mapped)
+    except HTTPException as exc:
+        if exc.status_code != 409 or mapped not in PAID_STATES:
+            raise
+        # Pago, mas o estoque acabou no meio do caminho: registra o pagamento e sinaliza para o admin.
+        note = f"{source}:sem-estoque"
+
+    conn.execute(
+        """
+        UPDATE orders SET mp_payment_id = ?, mp_status = ?, status = ?, updated_at = datetime('now')
+        WHERE id = ?
+        """,
+        (str(payment.get("id") or ""), mp_status, mapped, order_id),
+    )
+    if previous != mapped or note != source:
+        conn.execute(
+            "INSERT INTO order_status_history (order_id, old_status, new_status, source) VALUES (?, ?, ?, ?)",
+            (order_id, previous, mapped, note),
+        )
+    conn.commit()
+    return mapped
+
+
 @router.post("/payments")
 def create_payment(
     body: PaymentBody,
@@ -204,6 +316,8 @@ def create_payment(
         order = row_to_dict(row)
         if order.get("user_id") != user["id"] and user.get("role") != "admin":
             raise HTTPException(status_code=403, detail="Sem permissão")
+        if order.get("status") in FINAL_STATES:
+            raise HTTPException(status_code=409, detail="Este pedido já foi pago ou encerrado.")
 
     form = body.form_data or {}
     # Brick envia transaction_amount; forçamos o valor revalidado no servidor
@@ -212,8 +326,11 @@ def create_payment(
         "transaction_amount": float(order["total"]),
         "external_reference": order["id"],
         "description": f"Pedido Teodora {order['id'][:8]}",
-        "notification_url": f"{get_settings().base_url.rstrip('/')}/api/webhooks/mercadopago",
     }
+    base_url = get_settings().base_url.rstrip("/")
+    if base_url.startswith("https://"):
+        # O MP recusa URL de notificação local/http; em dev o status vem na resposta do pagamento.
+        payment_payload["notification_url"] = f"{base_url}/api/webhooks/mercadopago"
     if order.get("payer_email") and not payment_payload.get("payer"):
         payment_payload["payer"] = {"email": order["payer_email"]}
     elif order.get("payer_email") and isinstance(payment_payload.get("payer"), dict):
@@ -226,24 +343,8 @@ def create_payment(
 
     mp_id = str(result.get("id") or "")
     mp_status = result.get("status")
-    mapped = mercadopago_svc.map_mp_status(mp_status)
-
     with get_connection() as conn:
-        previous = conn.execute("SELECT status FROM orders WHERE id = ?", (body.order_id,)).fetchone()["status"]
-        transition_order_stock(conn, body.order_id, mapped)
-        conn.execute(
-            """
-            UPDATE orders SET mp_payment_id = ?, mp_status = ?, status = ?, updated_at = datetime('now')
-            WHERE id = ?
-            """,
-            (mp_id, mp_status, mapped, body.order_id),
-        )
-        if previous != mapped:
-            conn.execute(
-                "INSERT INTO order_status_history (order_id, old_status, new_status, source) VALUES (?, ?, ?, 'mercadopago')",
-                (body.order_id, previous, mapped),
-            )
-        conn.commit()
+        mapped = apply_payment_result(conn, body.order_id, result, "mercadopago")
 
     return {
         "orderId": body.order_id,
@@ -265,35 +366,24 @@ async def mercadopago_webhook(request: Request):
         payload = {}
 
     payment_id = None
+    topic = request.query_params.get("type") or request.query_params.get("topic")
     if isinstance(payload, dict):
+        topic = topic or payload.get("type") or payload.get("topic")
         data = payload.get("data") or {}
         payment_id = data.get("id") or payload.get("id")
     # Também aceita query ?data.id=
     if not payment_id:
         payment_id = request.query_params.get("data.id") or request.query_params.get("id")
 
-    if payment_id:
+    # Só processa notificações de pagamento (ignora merchant_order etc.)
+    if payment_id and (not topic or str(topic).startswith("payment")):
         try:
+            # Sempre consulta o pagamento direto na API do MP: o corpo do webhook não é confiável.
             payment = mercadopago_svc.get_payment(payment_id)
             ext = payment.get("external_reference")
-            status = mercadopago_svc.map_mp_status(payment.get("status"))
             if ext:
                 with get_connection() as conn:
-                    previous_row = conn.execute("SELECT status FROM orders WHERE id = ?", (ext,)).fetchone()
-                    transition_order_stock(conn, ext, status)
-                    conn.execute(
-                        """
-                        UPDATE orders SET mp_payment_id = ?, mp_status = ?, status = ?, updated_at = datetime('now')
-                        WHERE id = ?
-                        """,
-                        (str(payment.get("id")), payment.get("status"), status, ext),
-                    )
-                    if previous_row and previous_row["status"] != status:
-                        conn.execute(
-                            "INSERT INTO order_status_history (order_id, old_status, new_status, source) VALUES (?, ?, ?, 'webhook')",
-                            (ext, previous_row["status"], status),
-                        )
-                    conn.commit()
+                    apply_payment_result(conn, ext, payment, "webhook")
         except Exception as exc:
             print(f"[webhook] erro: {exc}")
 
