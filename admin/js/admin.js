@@ -506,7 +506,7 @@
       if (!sel) return;
       if (!cfg) { sel.innerHTML = ''; return; }
       setText(f.label, cfg.label);
-      sel.innerHTML = cfg.options
+      sel.innerHTML = '<option value="">Não informar</option>' + cfg.options
         .map((op) => `<option value="${escapeHtml(op.value)}">${escapeHtml(op.label)}</option>`)
         .join('');
     });
@@ -531,17 +531,90 @@
     setText('cat-similar-help', profile.similarHelp);
   }
 
+  // ============================================================
+  // CADASTRO SIMPLES: descrição automática, "o que falta" e validação amigável
+  // ============================================================
+
+  const CATEGORY_NOUN = {
+    perfumes: 'Perfume',
+    skincare: 'Produto de skincare',
+    maquiagem: 'Produto de maquiagem',
+    cabelos: 'Produto para os cabelos',
+    corpo: 'Produto para corpo e banho',
+    kits: 'Kit presente',
+  };
+
+  // Texto básico só com o que foi digitado (nome, marca, tamanho) — nada de inventar características.
+  function buildDescription() {
+    const val = (id) => (document.getElementById(id)?.value || '').trim();
+    const title = val('prod_titulo');
+    if (!title) return '';
+    const brand = val('prod_marca');
+    const volume = val('prod_volume');
+    const noun = CATEGORY_NOUN[val('prod_categoria')] || 'Produto';
+    const head = `${title}${volume && !title.toLowerCase().includes(volume.toLowerCase()) ? ` (${volume})` : ''}`;
+    const maker = brand && !title.toLowerCase().includes(brand.toLowerCase()) ? ` da marca ${brand}` : '';
+    return `${head}${maker ? ',' + maker : ''}. ${noun} original, com envio para todo o Brasil.`;
+  }
+
+  window.generateDescription = function (force) {
+    const el = document.getElementById('prod_descricao');
+    if (!el) return;
+    if (!force && el.value.trim()) return;
+    const text = buildDescription();
+    if (!text) { showToast('Preencha o nome do produto primeiro.', 'error'); return; }
+    el.value = text;
+    updateReadiness();
+  };
+
+  function photoCount() {
+    const saved = _galleryProduct && _galleryProduct.images ? _galleryProduct.images.length : 0;
+    return saved + _pendingPhotos.length;
+  }
+
+  // Lista, em linguagem simples, o que ainda falta para publicar.
+  function missingItems() {
+    const val = (id) => (document.getElementById(id)?.value || '').trim();
+    const missing = [];
+    if (!val('prod_titulo')) missing.push('nome do produto');
+    if (!(parseFloat(val('prod_preco')) > 0)) missing.push('preço');
+    if (val('prod_estoque') === '' || !(parseInt(val('prod_estoque'), 10) >= 0)) missing.push('quantidade em estoque');
+    if (photoCount() === 0) missing.push('pelo menos 1 foto');
+    return missing;
+  }
+
+  function updateReadiness() {
+    const box = document.getElementById('prod-readiness');
+    if (!box) return;
+    const missing = missingItems();
+    if (!missing.length) {
+      box.className = 'text-xs rounded border px-4 py-2.5 bg-emerald-50 border-emerald-200 text-emerald-800';
+      box.textContent = '✓ Tudo certo! Pode salvar e publicar o produto.';
+    } else {
+      box.className = 'text-xs rounded border px-4 py-2.5 bg-amber-50 border-amber-200 text-amber-900';
+      box.textContent = `Falta preencher: ${missing.join(', ')}.`;
+    }
+  }
+
+  function bindReadiness() {
+    const form = document.getElementById('productForm');
+    if (!form || form.dataset.readinessBound) return;
+    form.dataset.readinessBound = '1';
+    form.addEventListener('input', updateReadiness);
+    form.addEventListener('change', updateReadiness);
+  }
+
   function openNewProductForm() {
     const fields = {
       prod_edit_id: '',
       prod_titulo: '',
       prod_marca: '',
-      prod_volume: '100ml',
+      prod_volume: '',
       prod_categoria: 'perfumes',
       prod_selo: 'sem_selo',
       prod_preco: '',
       prod_preco_antigo: '',
-      prod_estoque: '50',
+      prod_estoque: '',
       prod_ativo: 'sim',
       prod_notas_saida: '',
       prod_notas_coracao: '',
@@ -564,6 +637,10 @@
     if (bc) bc.textContent = 'Produtos / Novo';
     renderGallery(null);
     populateBoxSelect(null);
+    const adv = document.getElementById('prod-advanced');
+    if (adv) adv.open = false;
+    bindReadiness();
+    updateReadiness();
     document.getElementById('product-list-container').classList.add('hidden');
     document.getElementById('product-form-container').classList.remove('hidden');
     calculateDiscount();
@@ -608,6 +685,10 @@
       renderGallery(p);
       populateBoxSelect(p.box_id || null);
       calculateDiscount();
+      const adv = document.getElementById('prod-advanced');
+      if (adv) adv.open = Boolean(p.oldPrice || p.badge || p.ingredients || p.family || p.intensity || p.occasion || p.sensation || (p.pyramid && (p.pyramid.top || p.pyramid.heart || p.pyramid.base)));
+      bindReadiness();
+      updateReadiness();
     } catch (err) {
       showToast('Erro ao carregar produto: ' + (err.message || ''), 'error');
     }
@@ -625,6 +706,19 @@
     if (event && event.preventDefault) event.preventDefault();
     const id = document.getElementById('prod_edit_id').value;
     const g = (elId) => { const el = document.getElementById(elId); return el ? el.value : ''; };
+
+    const missing = missingItems();
+    const publishing = g('prod_ativo') === 'sim';
+    // Rascunho pode ficar sem foto; produto publicado precisa de tudo.
+    const blocking = publishing ? missing : missing.filter((m) => !m.includes('foto'));
+    if (blocking.length) {
+      showToast(`Falta preencher: ${blocking.join(', ')}.`, 'error');
+      updateReadiness();
+      return;
+    }
+    if (!g('prod_descricao').trim()) {
+      document.getElementById('prod_descricao').value = buildDescription();
+    }
     const payload = {
       title: g('prod_titulo').trim(),
       brand_tag: g('prod_marca').trim(),
@@ -661,7 +755,6 @@
       let productId = id;
       if (id) {
         await TeodoraAPI.api(`/api/admin/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
-        showToast('Produto atualizado com sucesso!');
       } else {
         const created = await TeodoraAPI.api('/api/admin/products', { method: 'POST', body: JSON.stringify(payload) });
         productId = created.product?.id || created.id;
@@ -670,7 +763,6 @@
         if (heading) heading.textContent = payload.title || 'Produto criado';
         const bc = document.getElementById('breadcrumb-current');
         if (bc) bc.textContent = `Produtos / ${escapeHtml(payload.title || 'Novo')}`;
-        showToast('Produto criado! Agora adicione as fotos abaixo.');
       }
       if (productId && _pendingPhotos.length) {
         document.getElementById('prod_edit_id').value = productId;
@@ -679,6 +771,8 @@
         const fresh = await TeodoraAPI.api(`/api/admin/products/${productId}`);
         renderGallery(fresh.product || {});
       }
+      showToast(publishing ? 'Produto salvo e publicado na loja!' : 'Produto salvo como rascunho.');
+      closeProductForm();
     } catch (err) {
       showToast(err.message || 'Erro ao salvar produto.', 'error');
     }
@@ -770,6 +864,7 @@
     const pending = _pendingPhotos;
 
     if (counter) counter.textContent = `${saved.length + pending.length} foto(s)`;
+    setTimeout(updateReadiness, 0);
 
     if (!saved.length && !pending.length) {
       grid.innerHTML = hasProduct

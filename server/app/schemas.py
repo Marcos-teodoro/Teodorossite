@@ -114,10 +114,10 @@ class ProductBody(BaseModel):
     brand_tag: str = ""
     volume: str = ""
     category_slug: str = "perfumes"
-    family: str = "floral"
-    intensity: str = "edp"
-    occasion: str = "dia"
-    sensation: str = "romantico"
+    family: str = ""
+    intensity: str = ""
+    occasion: str = ""
+    sensation: str = ""
     price: float
     old_price: Optional[float] = None
     badge: str = ""
@@ -209,10 +209,10 @@ def product_to_storefront(
         "brandTag": row.get("brand_tag") or "",
         "volume": row.get("volume") or "",
         "category": row.get("category_slug") or "perfumes",
-        "family": row.get("family") or "floral",
-        "intensity": row.get("intensity") or "edp",
-        "occasion": row.get("occasion") or "dia",
-        "sensation": row.get("sensation") or "romantico",
+        "family": row.get("family") or "",
+        "intensity": row.get("intensity") or "",
+        "occasion": row.get("occasion") or "",
+        "sensation": row.get("sensation") or "",
         "price": float(row["price"]),
         "oldPrice": float(row["old_price"]) if row.get("old_price") is not None else None,
         "badge": row.get("badge") or "",
