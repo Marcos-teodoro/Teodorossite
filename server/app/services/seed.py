@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 from ..auth import hash_password
@@ -63,7 +64,8 @@ def seed_if_empty() -> None:
                 )
 
         prod_count = conn.execute("SELECT COUNT(*) AS c FROM products").fetchone()["c"]
-        if prod_count == 0:
+        # Produtos de exemplo só com SEED_DEMO_PRODUCTS=1; o catálogo real vem do admin.
+        if prod_count == 0 and os.environ.get("SEED_DEMO_PRODUCTS") == "1":
             products = _load_seed_products()
             slug_to_id = {
                 r["slug"]: r["id"]
