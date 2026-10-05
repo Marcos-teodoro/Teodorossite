@@ -138,12 +138,12 @@ function getFilteredProducts() {
     case 'preco-decrescente':
       result.sort((a, b) => b.price - a.price);
       break;
-    case 'avaliacao':
-      result.sort((a, b) => b.rating - a.rating);
+    default: {
+      // Relevância: destaques (Mais Vendido, Lançamento) primeiro; depois os cadastrados mais recentemente.
+      const weight = (p) => (p.badge === 'Mais Vendido' ? 2 : p.badge === 'Lançamento' ? 1 : 0);
+      result.sort((a, b) => weight(b) - weight(a) || b.id - a.id);
       break;
-    default:
-      result.sort((a, b) => b.reviews - a.reviews);
-      break;
+    }
   }
 
   return result;
@@ -496,10 +496,6 @@ function openProductPage(productId) {
   if (pdpTitle) pdpTitle.innerText = product.title;
   const badgeTag = document.getElementById('pdpBadgeTag');
   if (badgeTag) badgeTag.innerText = product.badge || 'Destaque';
-  const ratingEl = document.getElementById('pdpRating');
-  if (ratingEl) ratingEl.innerText = product.rating.toFixed(1);
-  const reviewsCount = document.getElementById('pdpReviewsCount');
-  if (reviewsCount) reviewsCount.innerText = `${product.reviews} avaliações`;
 
   // Imagem principal e galeria
   const mainImg = document.getElementById('pdpMainImage');
@@ -510,7 +506,7 @@ function openProductPage(productId) {
     const galleryList = product.gallery || [product.image];
     thumbBox.innerHTML = galleryList.map((src, idx) => `
       <button onclick="changePdpGalleryImage('${src}', this)" class="pdp-thumb-item rounded-2xl overflow-hidden aspect-[4/5] border-2 ${idx === 0 ? 'border-teodora-gold' : 'border-teodora-border'} bg-white hover:border-teodora-gold transition">
-        <img src="${escapeStorefront(src)}" alt="${escapeStorefront(product.title)}" class="w-full h-full object-cover">
+        <img src="${escapeStorefront(src)}" alt="${escapeStorefront(product.title)}" class="w-full h-full object-contain p-[6%] mix-blend-multiply">
       </button>
     `).join('');
   }
@@ -745,15 +741,12 @@ function switchPdpTab(tab) {
 
   const tabRitual = document.getElementById('pdpTabContentRitual');
   const tabAtivos = document.getElementById('pdpTabContentAtivos');
-  const tabAval = document.getElementById('pdpTabContentAvaliacoes');
 
   if (tabRitual) tabRitual.classList.add('hidden');
   if (tabAtivos) tabAtivos.classList.add('hidden');
-  if (tabAval) tabAval.classList.add('hidden');
 
   const btnRitual = document.getElementById('tabBtnRitual');
   const btnAtivos = document.getElementById('tabBtnAtivos');
-  const btnAval = document.getElementById('tabBtnAvaliacoes');
 
   if (tab === 'ritual') {
     if (btnRitual) {
@@ -767,12 +760,6 @@ function switchPdpTab(tab) {
       btnAtivos.classList.remove('border-transparent', 'text-teodora-textMuted');
     }
     if (tabAtivos) tabAtivos.classList.remove('hidden');
-  } else {
-    if (btnAval) {
-      btnAval.classList.add('border-teodora-gold', 'text-teodora-text', 'font-bold');
-      btnAval.classList.remove('border-transparent', 'text-teodora-textMuted');
-    }
-    if (tabAval) tabAval.classList.remove('hidden');
   }
 }
 
@@ -832,7 +819,7 @@ function renderSimilarProducts(product) {
   container.innerHTML = similarList.map(item => `
     <article class="group bg-white rounded-3xl border border-teodora-border hover:border-teodora-gold/50 shadow-card-clean hover:shadow-card-hover transition-all duration-300 flex flex-col h-full overflow-hidden p-4">
       <div onclick="openProductPage(${item.id})" class="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-teodora-bgLight mb-4 flex-shrink-0 cursor-pointer">
-        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-full h-full object-contain p-[6%] mix-blend-multiply group-hover:scale-105 transition-transform duration-700">
         ${item.badge ? `
           <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
             ${escapeStorefront(item.badge)}
@@ -845,11 +832,6 @@ function renderSimilarProducts(product) {
           <h3 onclick="openProductPage(${item.id})" class="font-heading text-base font-semibold text-teodora-text group-hover:text-teodora-gold transition-colors leading-tight line-clamp-1 cursor-pointer">
             ${escapeStorefront(item.title)}
           </h3>
-          <div class="flex items-center gap-1.5 text-xs mt-1.5">
-            <span class="text-teodora-gold text-xs"><i class="fa-solid fa-star"></i></span>
-            <span class="font-bold text-teodora-text">${item.rating.toFixed(1)}</span>
-            <span class="text-teodora-textMuted">(${item.reviews})</span>
-          </div>
         </div>
         <div class="pt-2 border-t border-teodora-border space-y-2">
           <span class="text-lg font-bold text-teodora-text block">${formatBRL(item.price)}</span>
@@ -903,41 +885,43 @@ function createProductCardHTML(item) {
   if (item.badge === 'Mais Vendido') badgeClass = 'badge-vendido';
   else if (item.badge === 'Lançamento') badgeClass = 'badge-lancamento';
   else if (item.badge === 'Edição Especial') badgeClass = 'badge-especial';
+  const brand = item.brandTag || '';
+  const volume = item.volume || '';
 
   return `
     <article class="product-card group flex flex-col h-full overflow-hidden">
       <div onclick="openProductPage(${item.id})" class="product-card__media relative w-full overflow-hidden cursor-pointer">
-        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
+        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
         ${item.badge ? `
           <span class="absolute top-2.5 left-2.5 text-[9px] sm:text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 ${badgeClass}">
             ${escapeStorefront(item.badge)}
           </span>
         ` : ''}
-        <button onclick="event.stopPropagation(); toggleWishlist(${item.id})" class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full flex items-center justify-center text-teodora-text/80 hover:text-teodora-text bg-white/95 shadow-sm transition" aria-label="Favoritar">
+        <button onclick="event.stopPropagation(); toggleWishlist(${item.id})" aria-label="Favoritar" class="absolute top-2.5 right-2.5 w-9 h-9 rounded-full flex items-center justify-center text-teodora-text/80 hover:text-teodora-text bg-white/95 shadow-sm transition">
           <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart text-sm"></i>
         </button>
       </div>
 
-      <div class="p-3 sm:p-4 flex-1 flex flex-col gap-2">
-        <div class="space-y-1 cursor-pointer" onclick="openProductPage(${item.id})">
-          <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted line-clamp-1">${escapeStorefront(item.brandTag || item.volume)}</p>
-          <h3 class="font-heading text-sm sm:text-[15px] font-normal text-teodora-text leading-snug line-clamp-3 sm:line-clamp-2">
+      <div class="p-3 sm:p-4 flex-1 flex flex-col">
+        <div class="cursor-pointer" onclick="openProductPage(${item.id})">
+          ${brand ? `<p class="text-[10px] uppercase tracking-[0.16em] text-teodora-textMuted line-clamp-1">${escapeStorefront(brand)}</p>` : ''}
+          <h3 class="mt-1 font-heading text-[15px] sm:text-base font-normal text-teodora-text leading-snug line-clamp-3 sm:line-clamp-2">
             ${escapeStorefront(item.title)}
           </h3>
-          <p class="hidden sm:block text-[11px] text-teodora-textMuted font-light line-clamp-2 leading-relaxed">${escapeStorefront(item.notes)}</p>
+          ${volume ? `<p class="mt-1 text-[11px] text-teodora-textMuted line-clamp-1">${escapeStorefront(volume)}</p>` : ''}
         </div>
 
-        <div class="mt-auto pt-2 space-y-2.5">
-          <div onclick="openProductPage(${item.id})" class="cursor-pointer space-y-1">
-            <div class="flex items-baseline gap-2 flex-wrap">
-              <span class="text-base sm:text-lg font-semibold text-teodora-text tracking-tight">${formatBRL(item.price)}</span>
+        <div class="mt-auto pt-3">
+          <div onclick="openProductPage(${item.id})" class="cursor-pointer">
+            <div class="flex items-baseline gap-x-2 gap-y-0.5 flex-wrap">
+              <span class="text-lg sm:text-xl font-semibold text-teodora-text tracking-tight">${formatBRL(item.price)}</span>
               ${item.oldPrice ? `<span class="text-xs text-teodora-textMuted line-through">${formatBRL(item.oldPrice)}</span>` : ''}
               ${savings ? `<span class="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 px-1.5 py-0.5">−${formatBRL(savings)}</span>` : ''}
             </div>
-            <p class="text-[11px] text-teodora-textMuted">ou ${installmentCount()}x de ${formatBRL(installment)} sem juros</p>
+            <p class="mt-0.5 text-[11px] text-teodora-textMuted/90">ou ${installmentCount()}x de ${formatBRL(installment)} sem juros</p>
           </div>
 
-          <button onclick="quickAddToCart(${item.id})" class="btn-comprar w-full py-2.5 text-[11px] uppercase tracking-[0.16em] font-semibold">
+          <button onclick="quickAddToCart(${item.id})" class="btn-comprar mt-3 w-full py-2.5 text-[11px] uppercase tracking-[0.16em] font-semibold">
             Comprar
           </button>
         </div>
@@ -969,7 +953,7 @@ function renderProducts() {
   if (emptyState) emptyState.classList.add('hidden');
 
   container.innerHTML = `
-    <div class="product-grid grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
+    <div class="product-grid grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
       ${items.map(item => createProductCardHTML(item)).join('')}
     </div>
   `;

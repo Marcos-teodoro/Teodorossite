@@ -14,8 +14,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Estilos e tema Teodora -->
-  <link rel="stylesheet" href="css/tailwind.css?v=home1">
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/tailwind.css?v=cat1">
+  <link rel="stylesheet" href="css/styles.css?v=cat1">
   <script>
     // Prefere 127.0.0.1 no local para evitar falha IPv6 (localhost → ::1)
     (function () {
@@ -237,7 +237,7 @@
 
   <!-- ========== 6. CATÁLOGO + PDP ========== -->
   <div class="catalog-shell border-y border-teodora-border">
-  <main id="catalogo" class="flex-1 py-8 sm:py-10 lg:py-12 max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
+  <main id="catalogo" class="flex-1 py-8 sm:py-10 lg:py-12 max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 w-full">
 
     <!-- FLUXO DO CATÁLOGO PRINCIPAL -->
     <div id="catalogMainFlow" class="space-y-5 sm:space-y-6">
@@ -261,7 +261,6 @@
               <option value="populares">Mais relevantes</option>
               <option value="preco-crescente">Menor preço</option>
               <option value="preco-decrescente">Maior preço</option>
-              <option value="avaliacao">Melhor avaliados</option>
             </select>
           </label>
         </div>
@@ -272,9 +271,9 @@
         <button onclick="resetAllFilters()" id="clearFiltersBtn" class="text-xs text-teodora-textMuted hover:text-teodora-text underline-offset-2 hover:underline ml-auto">Limpar</button>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      <div class="grid grid-cols-1 lg:grid-cols-[240px_minmax(0,1fr)] gap-6 lg:gap-8 items-start">
         
-        <aside class="hidden lg:block lg:col-span-3 sticky top-28 space-y-6 bg-white border border-teodora-border p-5">
+        <aside class="hidden lg:block sticky top-28 space-y-6 bg-white border border-teodora-border p-5">
           
           <div class="flex items-baseline justify-between gap-3">
             <h3 id="sidebarCategoryTitle" class="font-heading text-xl text-teodora-text font-normal">Filtros</h3>
@@ -320,7 +319,7 @@
 
         </aside>
 
-        <section class="col-span-1 lg:col-span-9 min-w-0">
+        <section class="col-span-1 min-w-0">
           
           <div id="productGridContainer" class="space-y-8 sm:space-y-10"></div>
 
@@ -363,7 +362,7 @@
         <!-- Coluna Esquerda: Galeria de Imagens -->
         <div class="lg:col-span-6 space-y-4">
           <div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-white border border-teodora-border shadow-subtle group">
-            <img id="pdpMainImage" src="" alt="Produto Teodora" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+            <img id="pdpMainImage" src="" alt="Produto Teodora" class="w-full h-full object-contain p-[6%] mix-blend-multiply transition-transform duration-700 group-hover:scale-105">
             <span id="pdpBadgeTag" class="absolute top-4 left-4 px-3.5 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-widest bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
               Mais Vendido
             </span>
@@ -386,18 +385,6 @@
               Produto
             </h1>
 
-            <div class="flex items-center gap-3 mt-2 text-xs">
-              <div class="flex text-teodora-gold text-xs">
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-                <i class="fa-solid fa-star"></i>
-              </div>
-              <span id="pdpRating" class="font-bold text-teodora-text">4.8</span>
-              <span class="text-teodora-border">•</span>
-              <span id="pdpReviewsCount" class="text-teodora-textMuted">48 avaliações</span>
-            </div>
           </div>
 
           <!-- Preço e parcelamento -->
@@ -516,9 +503,6 @@
           <button id="tabBtnAtivos" onclick="switchPdpTab('ativos')" class="pdp-tab-btn pb-3 border-b-2 border-transparent text-teodora-textMuted hover:text-teodora-text transition">
             <span id="pdpIngredientsTab">Ingredientes</span>
           </button>
-          <button id="tabBtnAvaliacoes" onclick="switchPdpTab('avaliacoes')" class="pdp-tab-btn pb-3 border-b-2 border-transparent text-teodora-textMuted hover:text-teodora-text transition">
-            Avaliações
-          </button>
         </div>
 
         <div id="pdpTabContentRitual" class="text-xs sm:text-sm text-teodora-textMuted leading-relaxed space-y-3">
@@ -535,24 +519,6 @@
           </div>
         </div>
 
-        <div id="pdpTabContentAvaliacoes" class="hidden space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div class="p-4 rounded-2xl bg-teodora-bgLight border border-teodora-border space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-teodora-text">Mariana S.</span>
-                <span class="text-teodora-gold"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
-              </div>
-              <p class="text-teodora-textMuted leading-relaxed">"Chegou rápido e bem embalado. O perfume é original e a fixação está ótima."</p>
-            </div>
-            <div class="p-4 rounded-2xl bg-teodora-bgLight border border-teodora-border space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-teodora-text">Lucas R.</span>
-                <span class="text-teodora-gold"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
-              </div>
-              <p class="text-teodora-textMuted leading-relaxed">"Comprei pra presentear e veio tudo certinho. Recomendo a loja."</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       <!-- Produtos similares -->
@@ -938,6 +904,6 @@
   <script src="js/br-utils.js?v=1"></script>
   <script src="js/data.js?v=fotos-auto"></script>
   <script src="js/category-profiles.js?v=sem-ritual"></script>
-  <script src="js/app.js?v=home1"></script>
+  <script src="js/app.js?v=cat3"></script>
 </body>
 </html>
