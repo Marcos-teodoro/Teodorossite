@@ -71,6 +71,44 @@
     return data;
   }
 
+  // Status de pedido/pagamento em português (o banco e o Mercado Pago guardam em inglês).
+  const STATUS_LABELS = {
+    pending: 'Pendente',
+    approved: 'Aprovado',
+    rejected: 'Recusado',
+    shipped: 'Enviado',
+    delivered: 'Entregue',
+    cancelled: 'Cancelado',
+    canceled: 'Cancelado',
+    refunded: 'Reembolsado',
+    in_process: 'Em análise',
+    in_mediation: 'Em mediação',
+    charged_back: 'Contestado (chargeback)',
+    authorized: 'Autorizado',
+    expired: 'Expirado',
+    failed: 'Falhou',
+    processed: 'Processado',
+    action_required: 'Aguardando pagamento',
+  };
+  const SOURCE_LABELS = {
+    admin: 'Painel admin',
+    webhook: 'Mercado Pago (aviso automático)',
+    mercadopago: 'Mercado Pago',
+    refresh: 'Consulta ao Mercado Pago',
+  };
+
+  function statusLabel(status) {
+    const key = String(status || '').toLowerCase();
+    return STATUS_LABELS[key] || (status ? String(status) : '—');
+  }
+
+  function sourceLabel(source) {
+    const raw = String(source || '');
+    const [base, extra] = raw.split(':');
+    const label = SOURCE_LABELS[base] || raw;
+    return extra === 'sem-estoque' ? `${label} — sem estoque no momento do pagamento` : label;
+  }
+
   function absoluteUrl(url) {
     if (!url) return '';
     if (/^https?:\/\//i.test(url)) return url;
@@ -86,5 +124,7 @@
     api,
     apiForm,
     absoluteUrl,
+    statusLabel,
+    sourceLabel,
   };
 })(window);

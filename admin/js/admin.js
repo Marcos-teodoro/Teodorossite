@@ -1412,7 +1412,7 @@
       cancelled: 'bg-stone-100 text-stone-500',
     };
     const cls = map[status] || 'bg-stone-100 text-stone-500';
-    return `<span class="text-[11px] font-semibold px-2 py-0.5 rounded ${cls}">${escapeHtml(status || '—')}</span>`;
+    return `<span class="text-[11px] font-semibold px-2 py-0.5 rounded ${cls}">${escapeHtml(TeodoraAPI.statusLabel(status))}</span>`;
   }
 
   async function loadOrders() {
@@ -1454,7 +1454,7 @@
             <td class="py-3 px-6">
               <select data-oid="${oid}" class="_osel text-xs px-2 py-1 border border-stone-200 rounded bg-white">
                 ${['pending','approved','rejected','shipped','delivered','cancelled'].map((s) =>
-                  `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`
+                  `<option value="${s}" ${o.status === s ? 'selected' : ''}>${TeodoraAPI.statusLabel(s)}</option>`
                 ).join('')}
               </select>
             </td>
@@ -1517,7 +1517,7 @@
               <div><span class="text-stone-400 uppercase tracking-wider font-semibold text-[10px] block">Status</span>
                 <div class="mt-1">${statusBadge(o.status)}</div></div>
               <div><span class="text-stone-400 uppercase tracking-wider font-semibold text-[10px] block">MP Status</span>
-                <div class="font-mono text-stone-700 mt-1">${escapeHtml(o.mp_status || '—')}</div></div>
+                <div class="font-mono text-stone-700 mt-1">${escapeHtml(TeodoraAPI.statusLabel(o.mp_status))}</div></div>
               <div><span class="text-stone-400 uppercase tracking-wider font-semibold text-[10px] block">Data</span>
                 <div class="text-stone-600 mt-1">${fmtDate(o.created_at)}</div></div>
             </div>
@@ -1561,7 +1561,7 @@
               <span class="font-semibold text-stone-600 uppercase tracking-wider text-[10px] block mb-2">Mercado Pago</span>
               <div class="grid grid-cols-2 gap-2 text-stone-700">
                 <div><span class="text-stone-400">Payment ID:</span> <span class="font-mono">${escapeHtml(o.mp_payment_id || '—')}</span></div>
-                <div><span class="text-stone-400">Status MP:</span> <span class="font-mono">${escapeHtml(o.mp_status || '—')}</span></div>
+                <div><span class="text-stone-400">Status MP:</span> <span class="font-mono">${escapeHtml(TeodoraAPI.statusLabel(o.mp_status))}</span></div>
                 ${o.mp_transaction_id ? `<div><span class="text-stone-400">Transaction:</span> <span class="font-mono">${escapeHtml(o.mp_transaction_id)}</span></div>` : ''}
               </div>
             </div>` : ''}
@@ -1657,8 +1657,8 @@
                   <div class="flex items-start gap-3 text-xs">
                     <div class="w-2 h-2 rounded-full bg-stone-400 mt-1 shrink-0"></div>
                     <div>
-                      <span class="font-semibold text-stone-800">${escapeHtml(h.new_status || '')}</span>
-                      <span class="text-stone-400 ml-2">${fmtDate(h.created_at)} · ${escapeHtml(h.source || '')}</span>
+                      <span class="font-semibold text-stone-800">${escapeHtml(TeodoraAPI.statusLabel(h.new_status))}</span>
+                      <span class="text-stone-400 ml-2">${fmtDate(h.created_at)} · ${escapeHtml(TeodoraAPI.sourceLabel(h.source))}</span>
                     </div>
                   </div>`).join('') || '<p class="text-xs text-stone-400">Sem alterações registradas.</p>'}
               </div>

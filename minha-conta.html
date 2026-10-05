@@ -69,7 +69,7 @@
     </section>
   </main>
 
-  <script src="js/api.js"></script>
+  <script src="js/api.js?v=status-pt"></script>
   <script>
     if (!TeodoraAPI.getToken()) location.href = '/conta.html';
 
@@ -126,7 +126,7 @@
         <div class="border border-teodora-border p-4">
           <div class="flex justify-between gap-2 mb-2">
             <span class="font-mono text-xs">${o.id.slice(0, 8)}…</span>
-            <span class="text-xs uppercase tracking-wider">${o.status}</span>
+            <span class="text-xs uppercase tracking-wider">${TeodoraAPI.statusLabel(o.status)}</span>
           </div>
           <p class="font-semibold">${money(o.total)}</p>
           <p class="text-teodora-textMuted text-xs mt-1">${(o.items || []).map(i => `${i.quantity}x ${i.title}`).join(' · ')}</p>
