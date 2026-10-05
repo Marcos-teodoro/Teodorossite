@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Estilos e tema Teodora -->
-  <link rel="stylesheet" href="css/tailwind.css?v=sheet1">
+  <link rel="stylesheet" href="css/tailwind.css?v=home1">
   <link rel="stylesheet" href="css/styles.css">
   <script>
     // Prefere 127.0.0.1 no local para evitar falha IPv6 (localhost → ::1)
@@ -119,22 +119,22 @@
   <!-- ========== 3. HERO ========== -->
   <section id="homeHero" class="relative overflow-hidden border-b border-teodora-border">
     <div class="grid grid-cols-1 lg:grid-cols-2 min-h-0">
-      <div class="flex flex-col justify-center px-6 sm:px-10 lg:px-16 xl:px-20 py-12 lg:py-20 order-2 lg:order-1 hero-copy bg-gradient-to-br from-teodora-blush via-teodora-page to-teodora-cream">
+      <div class="flex flex-col justify-center px-5 sm:px-10 lg:px-16 xl:px-20 py-7 sm:py-12 lg:py-20 order-2 lg:order-1 hero-copy bg-gradient-to-br from-teodora-blush via-teodora-page to-teodora-cream">
         <p id="heroEyebrow" class="text-[11px] tracking-[0.35em] uppercase text-teodora-gold font-medium mb-4">TEODORA</p>
-        <h1 id="heroTitle" class="font-heading text-[2.1rem] sm:text-4xl lg:text-[2.85rem] text-teodora-text font-normal leading-[1.15] max-w-lg">
+        <h1 id="heroTitle" class="font-heading text-[1.85rem] sm:text-4xl lg:text-[2.85rem] text-teodora-text font-normal leading-[1.15] max-w-lg">
           Perfumes originais.<br>Entrega em todo o Brasil.
         </h1>
-        <div class="mt-8 flex flex-wrap items-center gap-3">
-          <a id="heroButton" href="#catalogo" class="inline-flex items-center gap-2 px-7 py-3.5 bg-teodora-text text-white text-[11px] uppercase tracking-[0.16em] font-semibold hover:bg-black transition">
+        <div class="mt-5 sm:mt-8 grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3">
+          <a id="heroButton" href="#catalogo" class="inline-flex items-center justify-center gap-2 px-3 sm:px-7 py-3.5 bg-teodora-text text-white text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.16em] font-semibold hover:bg-black transition">
             Ver produtos <span aria-hidden="true">→</span>
           </a>
-          <button onclick="setSpecialFilter('Mais Vendido')" class="inline-flex items-center px-7 py-3.5 bg-white border border-teodora-text/80 text-teodora-text text-[11px] uppercase tracking-[0.16em] font-medium hover:bg-teodora-cream transition">
+          <button onclick="setSpecialFilter('Mais Vendido')" class="inline-flex items-center justify-center px-3 sm:px-7 py-3.5 bg-white border border-teodora-text/80 text-teodora-text text-[11px] uppercase tracking-[0.14em] sm:tracking-[0.16em] font-medium hover:bg-teodora-cream transition">
             Mais vendidos
           </button>
         </div>
       </div>
 
-      <div class="relative order-1 lg:order-2 hero-visual h-[300px] sm:h-[380px] lg:h-auto lg:min-h-[520px] bg-teodora-blush">
+      <div class="relative order-1 lg:order-2 hero-visual h-[200px] sm:h-[380px] lg:h-auto lg:min-h-[520px] bg-teodora-blush">
         <img id="heroImage" src="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85"
              alt="Frasco de perfume Teodora"
              class="absolute inset-0 w-full h-full object-cover object-center">
@@ -200,35 +200,35 @@
   </section>
 
   <!-- ========== 5. BENEFÍCIOS ========== -->
-  <section id="homeBenefits" class="bg-teodora-cream border-b border-teodora-border py-4 sm:py-5">
+  <section id="homeBenefits" class="bg-teodora-cream border-b border-teodora-border py-5">
     <div class="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-3 gap-y-4 lg:gap-6">
         <div class="flex items-center gap-3">
           <i class="fa-regular fa-gem text-teodora-gold text-xl shrink-0"></i>
           <div class="min-w-0">
-            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Produtos Originais</h5>
-            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Marcas oficiais.</p>
+            <h5 class="text-[11px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-teodora-text">Produtos Originais</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug">Marcas oficiais.</p>
           </div>
         </div>
         <div class="flex items-center gap-3 lg:border-l lg:border-teodora-border lg:pl-6">
           <i class="fa-solid fa-truck-fast text-teodora-gold text-xl shrink-0"></i>
           <div class="min-w-0">
-            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Envio Rápido</h5>
-            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Todo o Brasil com rastreio.</p>
+            <h5 class="text-[11px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-teodora-text">Envio Rápido</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug">Todo o Brasil com rastreio.</p>
           </div>
         </div>
         <div class="flex items-center gap-3 lg:border-l lg:border-teodora-border lg:pl-6">
           <i class="fa-regular fa-comments text-teodora-gold text-xl shrink-0"></i>
           <div class="min-w-0">
-            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Atendimento</h5>
-            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Equipe pronta no WhatsApp.</p>
+            <h5 class="text-[11px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-teodora-text">Atendimento</h5>
+            <p class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug">Equipe pronta no WhatsApp.</p>
           </div>
         </div>
         <div class="flex items-center gap-3 lg:border-l lg:border-teodora-border lg:pl-6">
           <i class="fa-regular fa-credit-card text-teodora-gold text-xl shrink-0"></i>
           <div class="min-w-0">
-            <h5 class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.12em] text-teodora-text">Pagamento</h5>
-            <p id="benefitInstallments" class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug hidden sm:block">Até 6x sem juros no cartão.</p>
+            <h5 class="text-[11px] font-semibold uppercase tracking-[0.1em] sm:tracking-[0.12em] text-teodora-text">Pagamento</h5>
+            <p id="benefitInstallments" class="text-[11px] text-teodora-textMuted mt-0.5 leading-snug">Até 6x sem juros no cartão.</p>
           </div>
         </div>
       </div>
@@ -938,6 +938,6 @@
   <script src="js/br-utils.js?v=1"></script>
   <script src="js/data.js?v=fotos-auto"></script>
   <script src="js/category-profiles.js?v=sem-ritual"></script>
-  <script src="js/app.js?v=sheet1"></script>
+  <script src="js/app.js?v=home1"></script>
 </body>
 </html>

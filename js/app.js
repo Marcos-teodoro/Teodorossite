@@ -921,7 +921,7 @@ function createProductCardHTML(item) {
       <div class="p-3 sm:p-4 flex-1 flex flex-col gap-2">
         <div class="space-y-1 cursor-pointer" onclick="openProductPage(${item.id})">
           <p class="text-[9px] sm:text-[10px] uppercase tracking-[0.14em] text-teodora-textMuted line-clamp-1">${escapeStorefront(item.brandTag || item.volume)}</p>
-          <h3 class="font-heading text-sm sm:text-[15px] font-normal text-teodora-text leading-snug line-clamp-2">
+          <h3 class="font-heading text-sm sm:text-[15px] font-normal text-teodora-text leading-snug line-clamp-3 sm:line-clamp-2">
             ${escapeStorefront(item.title)}
           </h3>
           <p class="hidden sm:block text-[11px] text-teodora-textMuted font-light line-clamp-2 leading-relaxed">${escapeStorefront(item.notes)}</p>
