@@ -1902,8 +1902,11 @@
         body: JSON.stringify({ valor: document.getElementById('cc_credit_valor').value }),
       });
       const pix = data.pix_copia_cola || '';
+      const qr = data.qrcode_img || data.qrcode_url || '';
+      const qrSrc = /^(https?:|data:)/i.test(qr) ? qr : (qr ? `data:image/png;base64,${qr}` : '');
       if (box) {
         box.innerHTML = `
+          ${qrSrc ? `<img src="${escapeHtml(qrSrc)}" alt="QR Code PIX" class="w-40 h-40 mb-2 border border-stone-200 rounded">` : ''}
           <p class="font-medium text-stone-800">${escapeHtml(data.mensagem || 'PIX gerado')}</p>
           <p class="text-stone-500">Valor: ${money(data.valor || 0)}</p>
           ${pix ? `<textarea readonly class="w-full mt-2 text-[10px] font-mono border border-stone-200 rounded p-2 h-20">${escapeHtml(pix)}</textarea>

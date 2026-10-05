@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import re
+import math
 from typing import Any
 
 import httpx
@@ -173,9 +174,9 @@ async def _quote_once(
         "cep_remetente": origin,
         "cep_destinatario": dest,
         "peso": f"{weight_kg:.3f}",
-        "altura": f"{height_cm:.0f}",
-        "largura": f"{width_cm:.0f}",
-        "comprimento": f"{length_cm:.0f}",
+        "altura": str(math.ceil(height_cm)),
+        "largura": str(math.ceil(width_cm)),
+        "comprimento": str(math.ceil(length_cm)),
         "valor_encomenda": f"{declared_value:.2f}",
     }
     url = f"{settings.cepcerto_base_url.rstrip('/')}/api-cotacao-frete/"
@@ -338,19 +339,16 @@ async def create_credit_pix(valor: float) -> dict[str, Any]:
         "/api-credito/",
         {
             "token_cliente_postagem": token,
-            "valor": f"{valor:.2f}",
+            "valor_credito": f"{valor:.2f}",
         },
     )
     return {
         "ok": True,
         "mensagem": data.get("mensagem") or "Cobrança PIX gerada.",
         "valor": valor,
-        "pix_copia_cola": data.get("pix_copia_cola")
-        or data.get("qrcode_text")
-        or data.get("emv")
-        or data.get("codigo_pix")
-        or "",
-        "qrcode_base64": data.get("qrcode_base64") or data.get("qr_code_base64") or "",
+        "pix_copia_cola": data.get("copia_cola") or data.get("pix_copia_cola") or "",
+        "qrcode_url": data.get("qrcode_url") or "",
+        "qrcode_img": data.get("qrcode_img") or "",
         "raw": data,
     }
 
@@ -424,6 +422,12 @@ async def create_label(payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("CEP remetente (origem) inválido — cadastre o depósito no painel CepCerto.")
     if not body["nome_destinatario"]:
         raise ValueError("Nome do destinatário é obrigatório")
+    if len(body["cpf_cnpj_destinatario"]) not in (11, 14):
+        raise ValueError("CPF/CNPJ do destinatário inválido ou ausente (obrigatório na CepCerto).")
+    if len(body["whatsapp_destinatario"]) < 10:
+        raise ValueError("WhatsApp do destinatário inválido ou ausente (obrigatório na CepCerto).")
+    if "@" not in body["email_destinatario"]:
+        raise ValueError("E-mail do destinatário ausente (obrigatório na CepCerto).")
     if not body["cpf_cnpj_remetente"]:
         raise ValueError("Informe o CPF/CNPJ do remetente no painel CepCerto.")
 
