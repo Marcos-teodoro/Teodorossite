@@ -8,6 +8,7 @@ import httpx
 import mercadopago
 
 from ..config import get_settings
+from .http import SSL_CTX
 
 
 def get_sdk() -> mercadopago.SDK:
@@ -142,7 +143,7 @@ def create_order(
     }
     # Chave determinística: duplo clique no mesmo pedido/cartão não cobra duas vezes.
     key = hashlib.sha1(f"{order_ref}:{token or method_id}".encode()).hexdigest()
-    resp = httpx.post(ORDERS_URL, headers=_orders_headers(key), json=body, timeout=60)
+    resp = httpx.post(ORDERS_URL, headers=_orders_headers(key), json=body, timeout=60, verify=SSL_CTX)
     data = resp.json() if resp.content else {}
     if resp.status_code in (200, 201):
         return normalize_order(data)
@@ -155,6 +156,6 @@ def create_order(
 
 
 def get_order(order_id: str) -> dict[str, Any]:
-    resp = httpx.get(f"{ORDERS_URL}/{order_id}", headers=_orders_headers(), timeout=30)
+    resp = httpx.get(f"{ORDERS_URL}/{order_id}", headers=_orders_headers(), timeout=30, verify=SSL_CTX)
     resp.raise_for_status()
     return normalize_order(resp.json())

@@ -1,14 +1,17 @@
 """CepCerto freight + CEP + postagem helpers."""
 from __future__ import annotations
 
+import asyncio
 import json
 import re
+import time
 import math
 from typing import Any
 
 import httpx
 
 from ..config import get_settings
+from .http import SSL_CTX
 from ..db import get_connection
 
 SERVICE_CODES = (
@@ -118,14 +121,22 @@ async def lookup_cep(cep: str) -> dict[str, Any]:
     cep = _only_digits(cep)
     if len(cep) != 8:
         raise ValueError("CEP inválido")
+    cached = _cache_get(_CEP_CACHE, cep)
+    if cached is not None:
+        return cached
+    result = await _lookup_cep_uncached(cep)
+    _cache_put(_CEP_CACHE, cep, result, CEP_TTL)
+    return result
 
+
+async def _lookup_cep_uncached(cep: str) -> dict[str, Any]:
     settings = get_settings()
     if settings.cepcerto_consumption_key:
         url = (
             f"{settings.cepcerto_base_url.rstrip('/')}/ws/json/"
             f"{cep}/{settings.cepcerto_consumption_key}"
         )
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=20.0, verify=SSL_CTX) as client:
             resp = await client.get(url)
             if resp.status_code == 200:
                 data = resp.json()
@@ -142,7 +153,7 @@ async def lookup_cep(cep: str) -> dict[str, Any]:
                         "source": "cepcerto",
                     }
 
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    async with httpx.AsyncClient(timeout=15.0, verify=SSL_CTX) as client:
         resp = await client.get(f"https://viacep.com.br/ws/{cep}/json/")
         resp.raise_for_status()
         data = resp.json()
@@ -180,7 +191,7 @@ async def _quote_once(
         "valor_encomenda": f"{declared_value:.2f}",
     }
     url = f"{settings.cepcerto_base_url.rstrip('/')}/api-cotacao-frete/"
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=SSL_CTX) as client:
         resp = await client.post(url, json=payload)
         data = resp.json() if resp.content else {}
         if resp.status_code >= 400:
@@ -189,6 +200,27 @@ async def _quote_once(
             if "frete" not in data:
                 raise RuntimeError(data.get("mensagem") or "Falha na cotação CepCerto")
     return data
+
+
+_CEP_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
+_QUOTE_CACHE: dict[str, tuple[float, dict[str, Any]]] = {}
+CEP_TTL = 24 * 3600.0
+QUOTE_TTL = 3 * 3600.0      # cotação igual vale por 3 h (a CepCerto limita cotações por dia)
+STALE_TTL = 48 * 3600.0     # reserva: usada só se a CepCerto recusar (ex.: limite diário)
+_QUOTE_STALE: dict[str, tuple[float, dict[str, Any]]] = {}
+
+
+def _cache_get(store: dict, key: str):
+    hit = store.get(key)
+    if hit and hit[0] > time.monotonic():
+        return hit[1]
+    return None
+
+
+def _cache_put(store: dict, key: str, value: dict[str, Any], ttl: float) -> None:
+    if len(store) > 500:
+        store.clear()
+    store[key] = (time.monotonic() + ttl, value)
 
 
 async def quote_freight(
@@ -201,7 +233,11 @@ async def quote_freight(
     declared_value: float,
     origin_cep: str | None = None,
 ) -> dict[str, Any]:
-    """Cotação com um ou vários CEPs de origem (mapa admin por serviço)."""
+    """Cotação com um ou vários CEPs de origem (mapa admin por serviço).
+
+    A CepCerto leva de 1 a 3 s por cotação. Para o cliente não esperar à toa: endereço e cotações saem em
+    paralelo, e o resultado fica guardado por 10 min (a mesma cotação é refeita no checkout).
+    """
     settings = get_settings()
     dest = _only_digits(dest_cep)
     if len(dest) != 8:
@@ -213,11 +249,19 @@ async def quote_freight(
     length_cm = max(1.0, min(100.0, float(length_cm)))
     declared_value = max(50.0, min(35000.0, float(declared_value)))
 
-    address = await lookup_cep(dest)
     origins = load_shipping_origins()
     fallback = _only_digits(origin_cep or settings.cepcerto_origin_cep)
+    cache_key = json.dumps(
+        [dest, f"{weight_kg:.3f}", math.ceil(height_cm), math.ceil(width_cm), math.ceil(length_cm),
+         f"{declared_value:.2f}", fallback, bool(settings.cepcerto_postage_token), origins],
+        sort_keys=True,
+    )
+    cached = _cache_get(_QUOTE_CACHE, cache_key)
+    if cached is not None:
+        return cached
 
     if not settings.cepcerto_postage_token:
+        address = await lookup_cep(dest)
         base = 12.5 + weight_kg * 4.5
         origin_info = resolve_origin_for_code("pac", origins)
         origin_use = origin_info["cep"] or fallback
@@ -261,9 +305,7 @@ async def quote_freight(
     if not by_cep and len(fallback) == 8:
         by_cep[fallback] = list(SERVICE_CODES)
 
-    merged: dict[str, dict[str, Any]] = {}
-    last_error: str | None = None
-    for origin, codes in by_cep.items():
+    async def quote_origin(origin: str):
         try:
             data = await _quote_once(
                 origin=origin,
@@ -274,9 +316,25 @@ async def quote_freight(
                 length_cm=length_cm,
                 declared_value=declared_value,
             )
-        except Exception as exc:
-            last_error = str(exc)
+            return origin, data, None
+        except Exception as exc:  # noqa: BLE001
+            return origin, None, str(exc)
+
+    # Endereço de destino e cotações de cada origem em paralelo (antes eram uma atrás da outra)
+    address_task = asyncio.create_task(lookup_cep(dest))
+    results = await asyncio.gather(*(quote_origin(o) for o in by_cep))
+    try:
+        address = await address_task
+    except Exception:
+        address = {"cep": dest, "logradouro": "", "bairro": "", "localidade": "", "uf": "", "source": "indisponivel"}
+
+    merged: dict[str, dict[str, Any]] = {}
+    last_error: str | None = None
+    for origin, data, error in results:
+        if error:
+            last_error = error
             continue
+        codes = by_cep[origin]
         for opt in normalize_quote_response(data):
             if opt["code"] not in codes:
                 continue
@@ -289,14 +347,20 @@ async def quote_freight(
 
     options = sorted(merged.values(), key=lambda o: o["price"])
     if not options:
+        stale = _cache_get(_QUOTE_STALE, cache_key)
+        if stale is not None:  # CepCerto indisponível/limite diário: reaproveita a última cotação igual
+            return {**stale, "stale": True}
         raise RuntimeError(last_error or "CepCerto não retornou opções de frete para este CEP.")
 
-    return {
+    result = {
         "address": address,
         "options": options,
         "demo": False,
         "origins": origins,
     }
+    _cache_put(_QUOTE_CACHE, cache_key, result, QUOTE_TTL)
+    _cache_put(_QUOTE_STALE, cache_key, result, STALE_TTL)
+    return result
 
 
 def _require_postage_token() -> str:
@@ -310,7 +374,7 @@ def _require_postage_token() -> str:
 async def _async_post(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     settings = get_settings()
     url = f"{settings.cepcerto_base_url.rstrip('/')}/{path.lstrip('/')}"
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=SSL_CTX) as client:
         resp = await client.post(url, json=payload)
         data = resp.json() if resp.content else {}
         if resp.status_code >= 400:

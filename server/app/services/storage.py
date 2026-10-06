@@ -66,7 +66,7 @@ async def ensure_bucket(settings: Settings | None = None) -> None:
     if not settings.use_supabase:
         return
     url = f"{_base(settings)}/storage/v1/bucket/{BUCKET}"
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=SSL_CTX) as client:
         res = await client.get(url, headers=_headers(settings))
         if res.status_code == 200:
             return
@@ -95,7 +95,7 @@ async def upload_bytes(
         )
     await ensure_bucket(settings)
     upload_url = f"{_base(settings)}/storage/v1/object/{BUCKET}/{object_path}"
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=60.0, verify=SSL_CTX) as client:
         res = await client.post(
             upload_url,
             headers={
@@ -119,7 +119,7 @@ async def delete_object(url_or_path: str, settings: Settings | None = None) -> N
     path = object_path_from_url(url_or_path, settings) or url_or_path.lstrip("/")
     if not path:
         return
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    async with httpx.AsyncClient(timeout=30.0, verify=SSL_CTX) as client:
         res = await client.post(
             f"{_base(settings)}/storage/v1/object/remove/{BUCKET}",
             headers=_headers(settings, "application/json"),

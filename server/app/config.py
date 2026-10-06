@@ -74,7 +74,7 @@ class Settings(BaseSettings):
                 value = "postgresql://" + value[len("postgres://"):]
         return value
 
-    @field_validator("mp_access_token", "mp_public_key", mode="before")
+    @field_validator("mp_access_token", "mp_public_key", "cepcerto_postage_token", "cepcerto_consumption_key", mode="before")
     @classmethod
     def _clean_mp_key(cls, value):
         """Aceita a chave mesmo colada com quebra de linha ou com outra variável junto (ex.: "...\nMP_SANDBOX=true")."""

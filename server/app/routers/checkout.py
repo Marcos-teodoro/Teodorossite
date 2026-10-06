@@ -117,7 +117,9 @@ def build_validated_order(body: PrepareBody) -> dict[str, Any]:
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Não foi possível confirmar o frete: {exc}") from exc
+        from .shipping import friendly_freight_error
+
+        raise HTTPException(status_code=502, detail=friendly_freight_error(exc)) from exc
     match = next(
         (
             o

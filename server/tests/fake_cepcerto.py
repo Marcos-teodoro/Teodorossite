@@ -6,12 +6,14 @@ permite testar emissão, cancelamento e rastreio de ponta a ponta.
 """
 from __future__ import annotations
 
+import asyncio
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
-STATE = {"saldo": 100.0, "labels": {}, "requests": []}
+STATE = {"saldo": 100.0, "labels": {}, "requests": [], "delay": 0.0, "fail_quotes": None}
 
 REQUIRED_POSTAGE = [
     "token_cliente_postagem", "request_id", "tipo_entrega", "logistica_reversa", "cep_remetente",
@@ -24,7 +26,7 @@ PRICES = {"pac": 18.90, "sedex": 29.70, "jadlog-package": 17.50, "jadlog-dotcom"
 
 
 def reset(saldo: float = 100.0) -> None:
-    STATE.update({"saldo": saldo, "labels": {}, "requests": []})
+    STATE.update({"saldo": saldo, "labels": {}, "requests": [], "delay": 0.0, "fail_quotes": None})
 
 
 def brl(v: float) -> str:
@@ -44,6 +46,10 @@ async def saldo(request: Request):
 async def cotacao(request: Request):
     d = await request.json()
     STATE["requests"].append(("cotacao", d))
+    if STATE["delay"]:
+        await asyncio.sleep(STATE["delay"])
+    if STATE["fail_quotes"]:
+        return JSONResponse({"status": "erro", "mensagem": STATE["fail_quotes"]}, status_code=429)
     return {"status": "sucesso", "frete": {
         "valor_pac": "18,90", "prazo_pac": "até 6 dias", "valor_sedex": "29,70", "prazo_sedex": "até 2 dias",
         "valor_jadlog_package": "17,50", "prazo_jadlog_package": "até 4 dias",

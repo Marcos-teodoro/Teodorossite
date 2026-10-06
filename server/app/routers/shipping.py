@@ -9,6 +9,15 @@ from ..services.package import DEFAULT_WEIGHT_KG, default_package_dims
 router = APIRouter(prefix="/api/shipping", tags=["shipping"])
 
 
+def friendly_freight_error(exc: Exception) -> str:
+    """Mensagem para o cliente (os textos da CepCerto falam de token e limite, que ele não precisa ver)."""
+    text = str(exc).lower()
+    if "limite" in text or "token" in text or "saldo" in text:
+        print(f"[frete] CepCerto recusou a cotação: {exc}")
+        return "Não conseguimos calcular o frete agora. Tente novamente em alguns minutos ou fale com a gente pelo WhatsApp."
+    return f"Não conseguimos calcular o frete: {exc}"
+
+
 @router.get("/cep/{cep}")
 async def shipping_cep(cep: str):
     try:
@@ -104,4 +113,4 @@ async def shipping_quote(
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
+        raise HTTPException(status_code=502, detail=friendly_freight_error(exc)) from exc
