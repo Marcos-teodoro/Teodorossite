@@ -52,20 +52,22 @@ O cliente paga o frete **junto no total** do Mercado Pago. A etiqueta debita a *
 - Admin: https://teodorossite-production.up.railway.app/admin/
 - Health: https://teodorossite-production.up.railway.app/api/health
 
-## 5) Volume (OBRIGATÓRIO — sem ele os dados somem a cada deploy)
+## 5) Banco de dados: Supabase (Postgres) — OBRIGATÓRIO
 
-O banco é SQLite dentro do contêiner. O disco do Railway é **apagado a cada deploy**: produtos, pedidos e clientes
-cadastrados são perdidos. Para guardar os dados:
+Produtos, pedidos, clientes e endereços ficam no **Postgres do Supabase** (as fotos já ficam no Storage do mesmo projeto).
+Sem `DATABASE_URL` o servidor cai num SQLite dentro do contêiner, cujo disco é **apagado a cada deploy**.
 
-1. Railway → seu serviço → **Settings → Volumes → New Volume**.
-2. **Mount path:** `/data` (não use `/app/server`, que cobriria o código do site).
-3. Pronto: ao detectar o volume (`RAILWAY_VOLUME_MOUNT_PATH`), o servidor grava o banco em `/data/teodora.db`.
-   Confira em `/api/health`: `"persistentStorage": true`.
+1. Supabase → **Project Settings → Database → Connection string → URI**.
+2. Escolha **Session pooler** (porta 5432). O Railway não alcança a conexão direta (IPv6). Troque `[YOUR-PASSWORD]`
+   pela senha do banco (Project Settings → Database → Reset database password, se não lembrar).
+3. Railway → Variables → `DATABASE_URL=postgresql://postgres.<ref>:<senha>@aws-0-<regiao>.pooler.supabase.com:5432/postgres`
+4. Reinicie. Na primeira subida o sistema **cria todas as tabelas sozinho**, já com RLS ligado (ninguém acessa pela API pública do
+   Supabase). Confira em `/api/health`: `"database": "postgres"`.
 
-As fotos dos produtos ficam no Supabase Storage, então sobrevivem mesmo sem volume.
+### Restaurar o catálogo
+`server/seed_catalog.json` guarda os produtos já cadastrados (fotos já no Supabase). Com o banco novo e vazio, adicione
+`SEED_CATALOG=1`, reinicie **uma vez** e depois **remova** a variável. Para atualizar o arquivo com o catálogo atual:
+`cd server && python scripts/export_catalog.py` (com `DATABASE_URL` apontando para o banco de onde exportar).
 
-### Restaurar o catálogo depois de perder os dados
-O arquivo `server/seed_catalog.json` guarda os produtos cadastrados (com as fotos já no Supabase).
-Com o volume criado e o banco vazio, adicione a variável `SEED_CATALOG=1`, reinicie o serviço uma vez e
-**remova** a variável depois. Para atualizar o arquivo com o catálogo atual (rodando local):
-`cd server && python scripts/export_catalog.py`.
+> Alternativa sem Supabase: um Volume do Railway montado em `/data` (o servidor detecta `RAILWAY_VOLUME_MOUNT_PATH` e grava o
+> SQLite lá). Não use `/app/server` como mount path: cobriria o código.

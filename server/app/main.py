@@ -50,6 +50,13 @@ def on_startup():
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 
 
+@app.on_event("shutdown")
+def on_shutdown():
+    from .db import reset_pool
+
+    reset_pool()
+
+
 app.include_router(auth_router)
 app.include_router(addresses_router)
 app.include_router(orders_router)
@@ -72,6 +79,7 @@ def health():
         "ok": True,
         "service": "teodora-fastapi",
         "sandbox": settings.mp_sandbox,
+        "database": "postgres" if settings.database_url.startswith(("postgres://", "postgresql://")) else "sqlite",
         "persistentStorage": settings.persistent_storage,
         "hasMpToken": bool(settings.mp_access_token),
         "hasMpPublicKey": bool(settings.mp_public_key),

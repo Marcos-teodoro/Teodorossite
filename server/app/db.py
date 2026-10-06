@@ -1,6 +1,10 @@
 import json
+import os
+import re
 import sqlite3
+import threading
 from contextlib import contextmanager
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
@@ -206,8 +210,223 @@ def _sqlite_path() -> Path:
     return Path(get_settings().uploads_dir.parent.parent / "teodora.db")
 
 
+def is_postgres() -> bool:
+    return get_settings().database_url.startswith(("postgres://", "postgresql://"))
+
+
+# ---------------------------------------------------------------------------
+# Postgres (Supabase). O código do app foi escrito em SQL "estilo SQLite"; esta camada traduz o pouco
+# que difere (placeholders, datetime(), INSERT OR IGNORE...) e imita a API do sqlite3 usada no app.
+# ---------------------------------------------------------------------------
+
+_NOW_EXPR = "to_char(timezone('utc', now()), 'YYYY-MM-DD HH24:MI:SS')"
+_SERIAL_TABLES = set(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+) \(\s+id INTEGER PRIMARY KEY AUTOINCREMENT", SCHEMA_SQL))
+
+
+def _convert_placeholders(sql: str) -> str:
+    """'?' -> '%s' e '%' literal -> '%%', ignorando o que está entre aspas simples."""
+    out: list[str] = []
+    in_quote = False
+    for ch in sql:
+        if ch == "'":
+            in_quote = not in_quote
+            out.append(ch)
+        elif ch == "%":
+            out.append("%%")
+        elif ch == "?" and not in_quote:
+            out.append("%s")
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+@lru_cache(maxsize=512)
+def to_pg(sql: str) -> str:
+    text = sql.strip().rstrip(";")
+    ignore = bool(re.match(r"(?is)\s*INSERT\s+OR\s+IGNORE\s+INTO", text))
+    if ignore:
+        text = re.sub(r"(?is)INSERT\s+OR\s+IGNORE\s+INTO", "INSERT INTO", text, count=1)
+    text = re.sub(r"datetime\('now',\s*\?\)", f"to_char(timezone('utc', now()) + CAST(? AS interval), 'YYYY-MM-DD HH24:MI:SS')", text)
+    text = text.replace("datetime('now')", _NOW_EXPR)
+    text = re.sub(r"datetime\(([\w.]+)\)", r"replace(\1, 'T', ' ')", text)
+    text = re.sub(r"\bMAX\(\s*0\s*,", "GREATEST(0,", text)
+    text = re.sub(r"\bLIKE\b", "ILIKE", text)
+    text = _convert_placeholders(text)
+    if ignore:
+        text += " ON CONFLICT DO NOTHING"
+    return text
+
+
+def schema_to_pg(schema: str) -> list[str]:
+    text = re.sub(r"(?im)^PRAGMA .*$", "", schema)
+    text = text.replace("INTEGER PRIMARY KEY AUTOINCREMENT", "SERIAL PRIMARY KEY")
+    text = re.sub(r"\bREAL\b", "DOUBLE PRECISION", text)
+    text = text.replace("DEFAULT (datetime('now'))", f"DEFAULT ({_NOW_EXPR})")
+    return [stmt.strip() for stmt in text.split(";") if stmt.strip()]
+
+
+class PgRow(dict):
+    """Linha que aceita acesso por nome (como sqlite3.Row) e por posição."""
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return list(self.values())[key]
+        return super().__getitem__(key)
+
+
+def _row_factory(cursor):
+    names = [c.name for c in cursor.description] if cursor.description else []
+
+    def make(values):
+        return PgRow(zip(names, values))
+
+    return make
+
+
+class PgCursor:
+    def __init__(self, cursor, lastrowid=None):
+        self._cur = cursor
+        self.lastrowid = lastrowid
+
+    @property
+    def rowcount(self):
+        return self._cur.rowcount
+
+    def fetchone(self):
+        return self._cur.fetchone()
+
+    def fetchall(self):
+        return self._cur.fetchall()
+
+    def fetchmany(self, size=None):
+        return self._cur.fetchmany(size) if size else self._cur.fetchmany()
+
+    def __iter__(self):
+        return iter(self._cur.fetchall())
+
+
+def _adapt_params(params):
+    if params is None:
+        return ()
+    return tuple(int(p) if isinstance(p, bool) else p for p in params)
+
+
+class PgConn:
+    """Imita o trecho da API do sqlite3.Connection que o app usa."""
+
+    def __init__(self, conn):
+        self._conn = conn
+
+    def execute(self, sql, params=()):
+        stripped = sql.strip()
+        m = re.match(r"(?is)PRAGMA\s+table_info\((\w+)\)", stripped)
+        if m:
+            cur = self._conn.execute(
+                "SELECT column_name AS name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = %s",
+                (m.group(1),),
+            )
+            return PgCursor(cur)
+        if re.match(r"(?is)PRAGMA\b", stripped):
+            return PgCursor(self._conn.execute("SELECT 1 WHERE false"))
+        pg_sql = to_pg(sql)
+        want_id = False
+        ins = re.match(r"(?is)\s*INSERT\s+(?:OR\s+IGNORE\s+)?INTO\s+(\w+)", sql)
+        if ins and ins.group(1) in _SERIAL_TABLES and "RETURNING" not in sql.upper():
+            pg_sql += " RETURNING id"
+            want_id = True
+        cur = self._conn.execute(pg_sql, _adapt_params(params))
+        lastrowid = None
+        if want_id and cur.description:
+            row = cur.fetchone()
+            lastrowid = row["id"] if row else None
+        return PgCursor(cur, lastrowid)
+
+    def executemany(self, sql, seq):
+        pg_sql = to_pg(sql)
+        with self._conn.cursor() as cur:
+            cur.executemany(pg_sql, [_adapt_params(p) for p in seq])
+
+    def executescript(self, script):
+        for stmt in schema_to_pg(script):
+            self._conn.execute(stmt)
+
+    def commit(self):
+        self._conn.commit()
+
+    def rollback(self):
+        self._conn.rollback()
+
+
+_pool = None
+_pool_lock = threading.Lock()
+
+
+def _conninfo() -> str:
+    url = get_settings().database_url.replace("postgres://", "postgresql://", 1)
+    host = re.sub(r"^.*@", "", url.split("?")[0]).split("/")[0].split(":")[0]
+    if "sslmode=" not in url and host not in ("localhost", "127.0.0.1", "::1"):
+        url += ("&" if "?" in url else "?") + "sslmode=require"
+    return url
+
+
+def _get_pool():
+    global _pool
+    if _pool is None:
+        with _pool_lock:
+            if _pool is None:
+                from psycopg_pool import ConnectionPool
+
+                _pool = ConnectionPool(
+                    _conninfo(),
+                    min_size=1,
+                    max_size=int(os.environ.get("PG_POOL_MAX", "8")),
+                    # prepare_threshold=None: compatível com o pooler do Supabase (modo transação)
+                    kwargs={"row_factory": _row_factory, "prepare_threshold": None},
+                    timeout=30,
+                    open=True,
+                )
+    return _pool
+
+
+def reset_pool() -> None:
+    """Fecha o pool (usado em testes quando a URL do banco muda)."""
+    global _pool
+    with _pool_lock:
+        if _pool is not None:
+            _pool.close()
+            _pool = None
+
+
+import atexit  # noqa: E402
+
+atexit.register(reset_pool)
+
+
+def sync_sequences(conn) -> None:
+    """Depois de inserir ids explícitos (seed), alinha as sequências do Postgres. No SQLite não faz nada."""
+    if not is_postgres():
+        return
+    for table in sorted(_SERIAL_TABLES):
+        conn.execute(
+            f"SELECT setval(pg_get_serial_sequence('{table}', 'id'), COALESCE((SELECT MAX(id) FROM {table}), 0) + 1, false)"
+        )
+
+
 @contextmanager
-def get_connection() -> Iterator[sqlite3.Connection]:
+def get_connection() -> Iterator[Any]:
+    if is_postgres():
+        with _get_pool().connection() as raw:
+            conn = PgConn(raw)
+            try:
+                yield conn
+            except Exception:
+                raw.rollback()
+                raise
+            finally:
+                # fim sem commit = descarta (igual ao sqlite3); leituras terminam a transação aqui
+                if raw.info.transaction_status != 0:
+                    raw.rollback()
+        return
     path = _sqlite_path()
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(path), check_same_thread=False)
@@ -234,6 +453,12 @@ def init_db() -> None:
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
     with get_connection() as conn:
         conn.executescript(SCHEMA_SQL)
+        if is_postgres():
+            # Supabase expõe tabelas do schema public via API REST. RLS ligado e sem políticas = ninguém
+            # entra por lá (clientes, CPF, pedidos). O servidor usa a conexão direta do Postgres.
+            for table in sorted(re.findall(r"CREATE TABLE IF NOT EXISTS (\w+)", SCHEMA_SQL)):
+                conn.execute(f"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY")
+            conn.commit()
         # Lightweight migrations for databases created by older versions.
         profile_columns = {row["name"] for row in conn.execute("PRAGMA table_info(profiles)").fetchall()}
         if "cpf" not in profile_columns:

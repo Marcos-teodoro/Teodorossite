@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Configuração isolada ANTES de importar o app (banco temporário + CepCerto falso)
 TMP = tempfile.mkdtemp()
-os.environ["DATABASE_URL"] = f"sqlite:///{Path(TMP, 'teste.db').as_posix()}"
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{Path(TMP, 'teste.db').as_posix()}"
 os.environ["CEPCERTO_BASE_URL"] = "http://127.0.0.1:39901"
 os.environ["CEPCERTO_POSTAGE_TOKEN"] = "CEPCERTO_TESTE_PUBLICO"
 os.environ["CEPCERTO_ORIGIN_CEP"] = "01527050"

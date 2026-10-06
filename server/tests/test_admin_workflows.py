@@ -2,6 +2,7 @@ import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 _db_file = tempfile.NamedTemporaryFile(prefix="teodora-test-", suffix=".db", delete=False)
@@ -28,7 +29,7 @@ class AdminWorkflowTests(unittest.TestCase):
 
         customer = cls.client.post(
             "/api/auth/register",
-            json={"email": "cliente@teste.com", "password": "Senha123!", "name": "Cliente Teste"},
+            json={"email": "cliente@teste.com", "password": "Senha123!", "name": "Cliente Teste", "cpf": "52998224725", "phone": "11999998888"},
         )
         assert customer.status_code == 200, customer.text
         cls.customer_headers = {"Authorization": f"Bearer {customer.json()['token']}"}
@@ -89,17 +90,27 @@ class AdminWorkflowTests(unittest.TestCase):
         self.assertEqual(coupon_public.status_code, 200, coupon_public.text)
         self.assertEqual(coupon_public.json()["coupon"]["discount"], 20)
 
-        checkout = self.client.post(
-            "/api/checkout/prepare",
-            json={
-                "items": [{"id": product["id"], "variantId": variant_id, "quantity": 1}],
-                "shippingCost": 0,
-                "couponCode": "TESTE20",
-                "paymentHint": "pix",
-                "payer": {"name": "Cliente Teste", "email": "cliente@teste.com"},
-            },
-            headers=self.customer_headers,
-        )
+        async def fake_quote(**_kwargs):  # frete vem do servidor; aqui sem rede e sem custo
+            return {"options": [{"code": "pac", "name": "PAC", "price": 0.0, "days": "até 8 dias", "carrier": "Correios"}]}
+
+        with mock.patch("app.routers.checkout.cepcerto.quote_freight", fake_quote):
+            checkout = self.client.post(
+                "/api/checkout/prepare",
+                json={
+                    "items": [{"id": product["id"], "variantId": variant_id, "quantity": 1}],
+                    "couponCode": "TESTE20",
+                    "paymentHint": "pix",
+                    "shippingOption": {"cep": "01310100", "code": "pac", "name": "PAC"},
+                    "payer": {
+                        "name": "Cliente Teste",
+                        "email": "cliente@teste.com",
+                        "doc": "52998224725",
+                        "phone": "11999998888",
+                        "addressNumber": "10",
+                    },
+                },
+                headers=self.customer_headers,
+            )
         self.assertEqual(checkout.status_code, 200, checkout.text)
         self.assertEqual(checkout.json()["amount"], 80)
         order_id = checkout.json()["orderId"]

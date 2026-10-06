@@ -65,6 +65,15 @@ class Settings(BaseSettings):
     uploads_dir: Path = ROOT / "uploads" / "product-photos"
     max_categories: int = 8
 
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def _clean_database_url(cls, value):
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith("postgres://"):
+                value = "postgresql://" + value[len("postgres://"):]
+        return value
+
     @field_validator("mp_access_token", "mp_public_key", mode="before")
     @classmethod
     def _clean_mp_key(cls, value):
@@ -78,6 +87,8 @@ class Settings(BaseSettings):
     @property
     def persistent_storage(self) -> bool:
         """True quando o banco está num volume do Railway (ou fora do Railway, em desenvolvimento)."""
+        if self.database_url.startswith(("postgres://", "postgresql://")):
+            return True  # banco gerenciado (Supabase)
         on_railway = bool(os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_PROJECT_ID"))
         return (not on_railway) or bool(os.environ.get("RAILWAY_VOLUME_MOUNT_PATH"))
 

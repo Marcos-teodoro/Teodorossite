@@ -7,7 +7,7 @@ from pathlib import Path
 
 from ..auth import hash_password
 from ..config import get_settings
-from ..db import get_connection
+from ..db import get_connection, sync_sequences
 
 CATEGORIES = [
     ("perfumes", "Perfumes", 1),
@@ -73,6 +73,7 @@ def _seed_catalog_file(conn) -> int:
                 (product["id"], img["url"], img.get("sort_order", 0), img.get("is_cover", 0)),
             )
         count += 1
+    sync_sequences(conn)
     print(f"[seed] catálogo restaurado: {count} produto(s).")
     return count
 
