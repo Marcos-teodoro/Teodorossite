@@ -1,0 +1,234 @@
+{
+  "products": [
+    {
+      "id": 30,
+      "title": "Tommy Girl",
+      "brand_tag": "Tommy Hilfiger",
+      "volume": "100ml",
+      "category_id": 1,
+      "category_slug": "perfumes",
+      "family": "floral",
+      "intensity": "edt",
+      "occasion": "dia",
+      "sensation": "fresco",
+      "price": 371.9,
+      "old_price": null,
+      "badge": "",
+      "notes": "",
+      "description": "Uma fragrância feminina que combina frescor cítrico, delicadeza floral e um fundo amadeirado envolvente. A bergamota e a hortelã proporcionam uma abertura refrescante, enquanto o jasmim e a rosa trazem feminilidade. O sândalo, o âmbar e o musk completam a composição com um toque aconchegante.\n\nIdeal para mulheres que gostam de fragrâncias leves, versáteis e elegantes, especialmente para acompanhar a rotina.",
+      "ritual": "Aplique sobre a pele limpa e hidratada, preferencialmente após o banho.\n\nPontos recomendados:\n\nPescoço e nuca\n\nPulsos\n\nAtrás das orelhas\n\nColo\n\nBorrife a uma distância de aproximadamente 15 a 20 cm e deixe secar naturalmente, sem esfregar.\n\nDica: de 3 a 5 borrifadas são uma boa quantidade inicial para uma fragrância discreta. Ajuste conforme sua preferência.",
+      "ingredients": "",
+      "pyramid_top": "Bergamota e hortelã-verde.",
+      "pyramid_heart": "Jasmim, rosa e acorde de chá gelado.",
+      "pyramid_base": "Sândalo, âmbar quente e musk.",
+      "similar_ids": "[]",
+      "stock": 50,
+      "active": 1,
+      "weight_kg": 0.53,
+      "height_cm": 10.0,
+      "width_cm": 20.0,
+      "length_cm": 25.0,
+      "cover_image": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/30/f58178074c1b470db6053a0b27a7352b.jpg",
+      "rating": 4.8,
+      "reviews": 48,
+      "images": [
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/30/f58178074c1b470db6053a0b27a7352b.jpg",
+          "sort_order": 0,
+          "is_cover": 1
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/30/0414bcbbd8b343f2ac41627688d4bc0e.jpg",
+          "sort_order": 1,
+          "is_cover": 0
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/30/cf2d3e3f59a34a7d9f5fe53a4b83e5e9.jpg",
+          "sort_order": 2,
+          "is_cover": 0
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "title": "Polo Black",
+      "brand_tag": "Ralph Lauren",
+      "volume": "125ml",
+      "category_id": 1,
+      "category_slug": "perfumes",
+      "family": "amadeirado",
+      "intensity": "edp",
+      "occasion": "noite",
+      "sensation": "marcante",
+      "price": 491.9,
+      "old_price": null,
+      "badge": "",
+      "notes": "",
+      "description": "Uma fragrância masculina sofisticada, que combina o frescor da manga gelada e das notas cítricas com um coração aromático e um fundo amadeirado envolvente.\n\nSua composição reúne notas de manga, mandarina, limão, cardamomo, jasmim, fava tonka, patchouli e cedro, criando uma fragrância moderna e marcante.\n\nIdeal para homens que apreciam elegância, personalidade e um perfume versátil para diferentes ocasiões.",
+      "ritual": "Aplique o perfume sobre a pele limpa e seca, preferencialmente após o banho.\n\nPontos recomendados:\n\nPescoço\n\nNuca\n\nPeito\n\nPulsos\n\nBorrife a uma distância de aproximadamente 15 a 20 cm da pele. Não esfregue após a aplicação; deixe a fragrância secar naturalmente.\n\nDica: comece com 3 a 5 borrifadas e ajuste a quantidade conforme a ocasião e sua preferência.",
+      "ingredients": "",
+      "pyramid_top": "Acorde de manga gelada, óleo de mandarina, óleo de limão e cardamomo.",
+      "pyramid_heart": "Acorde ozônico, jasmim e artemísia prateada.",
+      "pyramid_base": "Acorde de musgo, absoluto de fava tonka, patchouli noir e cedro.",
+      "similar_ids": "[]",
+      "stock": 50,
+      "active": 1,
+      "weight_kg": 0.53,
+      "height_cm": 10.0,
+      "width_cm": 20.0,
+      "length_cm": 25.0,
+      "cover_image": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/31/a77dd318f877458f891b844490ab8099.jpg",
+      "rating": 4.8,
+      "reviews": 48,
+      "images": [
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/31/a77dd318f877458f891b844490ab8099.jpg",
+          "sort_order": 0,
+          "is_cover": 1
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/31/c5cd72a9e51b4baa9d3e3d6497f06f03.jpg",
+          "sort_order": 1,
+          "is_cover": 0
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "title": "Rabanne Fame",
+      "brand_tag": "Rabanne",
+      "volume": "50ml",
+      "category_id": 1,
+      "category_slug": "perfumes",
+      "family": "amadeirado",
+      "intensity": "edp",
+      "occasion": "noite",
+      "sensation": "marcante",
+      "price": 490.9,
+      "old_price": null,
+      "badge": "",
+      "notes": "",
+      "description": "Uma fragrância feminina envolvente e moderna, que combina a doçura tropical da manga com a delicadeza do jasmim e a sensualidade do incenso cremoso.\n\nSeu aroma frutado, floral e sofisticado foi criado para mulheres que gostam de marcar presença com elegância e personalidade. O frasco dourado, inspirado em uma peça de joalheria, completa a experiência luxuosa do perfume.",
+      "ritual": "Aplique sobre a pele limpa e seca, preferencialmente após o banho.\n\nPontos recomendados:\n\nPescoço e nuca\n\nPulsos\n\nAtrás das orelhas\n\nColo\n\nDobras dos cotovelos\n\nBorrife a uma distância de aproximadamente 15 a 20 cm. Não esfregue a pele após a aplicação.\n\nDica: comece com 2 a 4 borrifadas e ajuste conforme a ocasião e sua preferência.",
+      "ingredients": "Parfum (Fragrance), Aqua (Water), Hydroxycitronellal, Linalool, Benzyl Salicylate, Butyl Methoxydibenzoylmethane, Limonene, Coumarin, Citronellol, Geraniol, Alpha-Isomethyl Ionone, Cinnamyl Alcohol, Farnesol, Citral, Benzyl Alcohol, Tris (Tetramethylhydroxypiperidinol) Citrate, Benzyl Benzoate, CI 19140, CI 60730, CI 14700.",
+      "pyramid_top": "Manga suculenta.",
+      "pyramid_heart": "Jasmim.",
+      "pyramid_base": "Incenso cremoso.",
+      "similar_ids": "[]",
+      "stock": 50,
+      "active": 1,
+      "weight_kg": 0.68,
+      "height_cm": 10.0,
+      "width_cm": 20.0,
+      "length_cm": 25.0,
+      "cover_image": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/32/c8b8a6d68fc746faa6e6df8df8e06813.jpg",
+      "rating": 4.8,
+      "reviews": 48,
+      "images": [
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/32/c8b8a6d68fc746faa6e6df8df8e06813.jpg",
+          "sort_order": 0,
+          "is_cover": 1
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/32/6cc5ed9f079c4329a97741f52409ab1f.jpg",
+          "sort_order": 1,
+          "is_cover": 0
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "title": "Rabanne Phantom Masculino",
+      "brand_tag": "Rabanne",
+      "volume": "100ml",
+      "category_id": 1,
+      "category_slug": "perfumes",
+      "family": "amadeirado",
+      "intensity": "parfum",
+      "occasion": "noite",
+      "sensation": "marcante",
+      "price": 541.9,
+      "old_price": null,
+      "badge": "",
+      "notes": "",
+      "description": "Uma fragrância masculina intensa e sofisticada, que combina o frescor cítrico da bergamota e do limão com o toque aromático da lavanda e a profundidade das madeiras.\n\nA baunilha de Madagascar, o vetiver e o bálsamo-de-tolu conferem um fundo quente e envolvente. Seu perfil moderno e marcante é ideal para quem aprecia perfumes com personalidade e presença.\n\nO frasco em formato de robô, com acabamento preto, traduz o estilo futurista e ousado da linha Phantom.",
+      "ritual": "Aplique sobre a pele limpa e seca, preferencialmente após o banho.\n\nPontos recomendados:\n\nPescoço\n\nNuca\n\nPeito\n\nPulsos\n\nAtrás das orelhas\n\nBorrife a aproximadamente 15 a 20 cm da pele e deixe secar naturalmente, sem esfregar.\n\nDica: por ser uma fragrância intensa, comece com 2 a 4 borrifadas. Ajuste a quantidade conforme a ocasião e sua preferência.",
+      "ingredients": "Alcohol Denat., Parfum (Fragrance), Aqua (Water), Limonene, Linalool, Coumarin, Butyl Methoxydibenzoylmethane, Alpha-Isomethyl Ionone, Citronellol, Citral, Geraniol, Tris(Tetramethylhydroxypiperidinol) Citrate, CI 60730, CI 42090, CI 19140.",
+      "pyramid_top": "Cardamomo, ruibarbo, bergamota e limão.",
+      "pyramid_heart": "Lavanda, patchouli, gerânio e cedro.",
+      "pyramid_base": "Baunilha de Madagascar, vetiver do Haiti e bálsamo-de-tolu.",
+      "similar_ids": "[]",
+      "stock": 50,
+      "active": 1,
+      "weight_kg": 0.53,
+      "height_cm": 10.0,
+      "width_cm": 20.0,
+      "length_cm": 25.0,
+      "cover_image": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/33/3fdc7d9be7bf436f947e6581502f89fd.jpg",
+      "rating": 4.8,
+      "reviews": 48,
+      "images": [
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/33/3fdc7d9be7bf436f947e6581502f89fd.jpg",
+          "sort_order": 0,
+          "is_cover": 1
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/33/17bc5975b2fb4d23b7cc0bfccdab5201.jpg",
+          "sort_order": 1,
+          "is_cover": 0
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/33/17060dea156a454694ecb57ed5662b6a.jpg",
+          "sort_order": 2,
+          "is_cover": 0
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "title": "Tônico em Discos Exfoliantes Medicube Zero",
+      "brand_tag": "Medicube",
+      "volume": "155 g / 5.46 oz. (70 discos/pads)",
+      "category_id": 2,
+      "category_slug": "skincare",
+      "family": "",
+      "intensity": "",
+      "occasion": "",
+      "sensation": "",
+      "price": 278.0,
+      "old_price": null,
+      "badge": "Mais Vendido",
+      "notes": "",
+      "description": "O Medicube Zero Pore Pad 2.0 é o tônico em discos multifuncional líder de vendas da K-Beauty, desenvolvido para renovar a textura da pele e minimizar visivelmente os poros aparentes.   Sua fórmula combina AHA, BHA, Pantenol, Alantoína e Hialuronato de Sódio, oferecendo uma esfoliação química e física suave que remove células mortas, cravos e o excesso de sebo sem ressecar. Os discos possuem dupla face: um lado em alto-relevo (texturizado) para esfoliar áreas de maior textura e oleosidade, e um lado macio e liso para polir, acalmar e hidratar a pele.",
+      "ritual": "Após a limpeza do rosto, pegue um disco com a pinça.\n\nPasse delicadamente o lado texturizado (em relevo) pelo rosto, do centro para fora, evitando a área dos olhos e lábios.\n\nVire o disco e passe o lado liso por todo o rosto para finalizar.\n\nDê leves batidinhas na pele para absorção completa da essência residual. Não enxágue.\n\nDica: Durante o dia, finalize sempre com protetor solar.",
+      "ingredients": "Ingredientes Chave: AHA (Complexo de Frutas), BHA (Ácido Salicílico), Pantenol, Alantoína, Hialuronato de Sódio, Extrato de Casca de Salgueiro Branco, Extrato de Folha de Cipreste.   Composição Completa: Water, Methylpropanediol, Tromethamine, Lactic Acid, Alcohol Denat., 1,2-Hexanediol, Panthenol, Glycereth-26, Salicylic Acid, Ammonium Acryloyldimethyltaurate/VP Copolymer, Betaine, Trehalose, Polyglyceryl-10 Laurate, Ethylhexylglycerin, Glycerin, Allantoin, Polyglyceryl-10 Myristate, Disodium EDTA, Sodium Hyaluronate, Butylene Glycol, Citrus Aurantium Dulcis (Orange) Peel Oil, Citrus Aurantium Bergamia (Bergamot) Fruit Oil",
+      "pyramid_top": "Ativos de Ação Rápida (Topo): AHA (Ácido Lático / Complexo de Frutas) – Exfoliação superficial suave.",
+      "pyramid_heart": "Ativos de Ação Profunda (Coração): BHA (Ácido Salicílico / Casca de Salgueiro Branco) – Desobstrução dos poros e controle de oleosidade.",
+      "pyramid_base": "Ativos de Fixação e Barreira (Fundo): Pantenol, Alantoína e Hialuronato de Sódio (Sodium Hyaluronate) – Hidratação profunda, acalmando a pele.",
+      "similar_ids": "[]",
+      "stock": 50,
+      "active": 1,
+      "weight_kg": 0.53,
+      "height_cm": 10.0,
+      "width_cm": 20.0,
+      "length_cm": 25.0,
+      "cover_image": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/34/e6def615e2e140349b4298d47c94718c.jpg",
+      "rating": 4.8,
+      "reviews": 48,
+      "images": [
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/34/e6def615e2e140349b4298d47c94718c.jpg",
+          "sort_order": 0,
+          "is_cover": 1
+        },
+        {
+          "url": "https://rdydqtwspgwzlcmxvphz.supabase.co/storage/v1/object/public/product-photos/products/34/a98af343b49942dba01b7f3a85305426.jpg",
+          "sort_order": 1,
+          "is_cover": 0
+        }
+      ]
+    }
+  ]
+}

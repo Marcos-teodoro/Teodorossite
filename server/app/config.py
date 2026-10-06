@@ -1,6 +1,8 @@
+import os
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,7 +20,13 @@ class Settings(BaseSettings):
     app_env: str = "development"
     base_url: str = "http://localhost:3001"
     frontend_url: str = "http://localhost:5500"
-    database_url: str = f"sqlite:///{(ROOT / 'teodora.db').as_posix()}"
+    # No Railway, ao anexar um Volume o serviço recebe RAILWAY_VOLUME_MOUNT_PATH: o banco passa a viver
+    # nele (sobrevive a deploys). Sem volume, o disco do contêiner é apagado a cada deploy.
+    database_url: str = (
+        f"sqlite:///{(Path(os.environ['RAILWAY_VOLUME_MOUNT_PATH']) / 'teodora.db').as_posix()}"
+        if os.environ.get("RAILWAY_VOLUME_MOUNT_PATH")
+        else f"sqlite:///{(ROOT / 'teodora.db').as_posix()}"
+    )
 
     # Auth local (também usado se Supabase Auth não estiver ativo)
     jwt_secret: str = "teodora-dev-secret-change-me"
@@ -56,6 +64,22 @@ class Settings(BaseSettings):
 
     uploads_dir: Path = ROOT / "uploads" / "product-photos"
     max_categories: int = 8
+
+    @field_validator("mp_access_token", "mp_public_key", mode="before")
+    @classmethod
+    def _clean_mp_key(cls, value):
+        """Aceita a chave mesmo colada com quebra de linha ou com outra variável junto (ex.: "...\nMP_SANDBOX=true")."""
+        if not isinstance(value, str):
+            return value
+        lines = [ln.strip() for ln in value.replace("\r", "").split("\n") if ln.strip()]
+        first = lines[0] if lines else ""
+        return first.split()[0].strip("\"'") if first else ""
+
+    @property
+    def persistent_storage(self) -> bool:
+        """True quando o banco está num volume do Railway (ou fora do Railway, em desenvolvimento)."""
+        on_railway = bool(os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_PROJECT_ID"))
+        return (not on_railway) or bool(os.environ.get("RAILWAY_VOLUME_MOUNT_PATH"))
 
     @property
     def use_supabase(self) -> bool:

@@ -52,6 +52,31 @@ def _load_seed_products() -> list[dict]:
     return []
 
 
+def _seed_catalog_file(conn) -> int:
+    """Insere os produtos e fotos de server/seed_catalog.json (gerado por scripts/export_catalog.py)."""
+    path = Path(__file__).resolve().parents[2] / "seed_catalog.json"
+    if not path.exists():
+        print("[seed] SEED_CATALOG=1, mas server/seed_catalog.json não existe.")
+        return 0
+    data = json.loads(path.read_text(encoding="utf-8"))
+    columns = {r["name"] for r in conn.execute("PRAGMA table_info(products)").fetchall()}
+    slug_to_id = {r["slug"]: r["id"] for r in conn.execute("SELECT id, slug FROM categories").fetchall()}
+    count = 0
+    for product in data.get("products", []):
+        row = {k: v for k, v in product.items() if k in columns and k not in ("created_at", "updated_at")}
+        row["category_id"] = slug_to_id.get(row.get("category_slug"), row.get("category_id"))
+        names = ", ".join(row)
+        conn.execute(f"INSERT INTO products ({names}) VALUES ({', '.join('?' * len(row))})", list(row.values()))
+        for img in product.get("images", []):
+            conn.execute(
+                "INSERT INTO product_images (product_id, url, sort_order, is_cover) VALUES (?, ?, ?, ?)",
+                (product["id"], img["url"], img.get("sort_order", 0), img.get("is_cover", 0)),
+            )
+        count += 1
+    print(f"[seed] catálogo restaurado: {count} produto(s).")
+    return count
+
+
 def seed_if_empty() -> None:
     settings = get_settings()
     with get_connection() as conn:
@@ -112,6 +137,10 @@ def seed_if_empty() -> None:
                     """,
                     (pid, image),
                 )
+
+        # Restaura o catálogo real exportado (server/seed_catalog.json) em banco vazio, só com SEED_CATALOG=1.
+        if prod_count == 0 and os.environ.get("SEED_CATALOG") == "1":
+            _seed_catalog_file(conn)
 
         # Garante admin oficial (e-mail + UID Supabase)
         admin_id = settings.admin_user_id

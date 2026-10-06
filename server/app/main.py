@@ -40,6 +40,11 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup():
     settings.validate_production_secrets()
+    if not settings.persistent_storage:
+        print(
+            "[AVISO] Sem Volume no Railway: produtos, pedidos e clientes são APAGADOS a cada deploy. "
+            "Crie um Volume no serviço (veja RAILWAY.md)."
+        )
     init_db()
     seed_if_empty()
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
@@ -67,6 +72,7 @@ def health():
         "ok": True,
         "service": "teodora-fastapi",
         "sandbox": settings.mp_sandbox,
+        "persistentStorage": settings.persistent_storage,
         "hasMpToken": bool(settings.mp_access_token),
         "hasMpPublicKey": bool(settings.mp_public_key),
         "hasCepCerto": bool(settings.cepcerto_postage_token),

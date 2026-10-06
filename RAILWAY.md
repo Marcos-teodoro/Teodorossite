@@ -52,5 +52,20 @@ O cliente paga o frete **junto no total** do Mercado Pago. A etiqueta debita a *
 - Admin: https://teodorossite-production.up.railway.app/admin/
 - Health: https://teodorossite-production.up.railway.app/api/health
 
-## 5) Volume
-SQLite e uploads: monte um volume em `/app/server` para não perder dados a cada redeploy.
+## 5) Volume (OBRIGATÓRIO — sem ele os dados somem a cada deploy)
+
+O banco é SQLite dentro do contêiner. O disco do Railway é **apagado a cada deploy**: produtos, pedidos e clientes
+cadastrados são perdidos. Para guardar os dados:
+
+1. Railway → seu serviço → **Settings → Volumes → New Volume**.
+2. **Mount path:** `/data` (não use `/app/server`, que cobriria o código do site).
+3. Pronto: ao detectar o volume (`RAILWAY_VOLUME_MOUNT_PATH`), o servidor grava o banco em `/data/teodora.db`.
+   Confira em `/api/health`: `"persistentStorage": true`.
+
+As fotos dos produtos ficam no Supabase Storage, então sobrevivem mesmo sem volume.
+
+### Restaurar o catálogo depois de perder os dados
+O arquivo `server/seed_catalog.json` guarda os produtos cadastrados (com as fotos já no Supabase).
+Com o volume criado e o banco vazio, adicione a variável `SEED_CATALOG=1`, reinicie o serviço uma vez e
+**remova** a variável depois. Para atualizar o arquivo com o catálogo atual (rodando local):
+`cd server && python scripts/export_catalog.py`.
