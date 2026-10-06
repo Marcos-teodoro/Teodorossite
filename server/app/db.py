@@ -383,6 +383,8 @@ def _get_pool():
                     # prepare_threshold=None: compatível com o pooler do Supabase (modo transação)
                     kwargs={"row_factory": _row_factory, "prepare_threshold": None},
                     timeout=30,
+                    check=ConnectionPool.check_connection,  # descarta conexões que o Supabase fechou por inatividade
+                    max_idle=300,
                     open=True,
                 )
     return _pool

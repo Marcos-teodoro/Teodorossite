@@ -175,17 +175,27 @@ const CATEGORY_FILTER_CONFIGS = {
 
 async function loadCatalogFromApi() {
   const apiBase = (typeof window.TEODORA_API_BASE === 'string' ? window.TEODORA_API_BASE : 'http://127.0.0.1:3001').replace(/\/$/, '');
-  const productsRes = await fetch(`${apiBase}/api/catalog/products`, { cache: 'no-store' });
-  if (!productsRes.ok) throw new Error(`Catálogo HTTP ${productsRes.status}`);
-
-  const [categoriesRes, configRes] = await Promise.all([
-    fetch(`${apiBase}/api/catalog/categories`, { cache: 'no-store' }).catch(() => null),
-    fetch(`${apiBase}/api/storefront/config`, { cache: 'no-store' }).catch(() => null),
-  ]);
-
-  const data = await productsRes.json();
-  const categoryData = categoriesRes && categoriesRes.ok ? await categoriesRes.json() : { categories: [] };
-  const configData = configRes && configRes.ok ? await configRes.json() : { settings: {} };
+  // Uma única chamada traz produtos, categorias e configurações (menos viagens até o servidor).
+  let data;
+  let categoryData = { categories: [] };
+  let configData = { settings: {} };
+  const bootRes = await fetch(`${apiBase}/api/catalog/bootstrap`, { cache: 'no-store' }).catch(() => null);
+  if (bootRes && bootRes.ok) {
+    const boot = await bootRes.json();
+    data = { products: boot.products };
+    categoryData = { categories: boot.categories };
+    configData = { settings: boot.settings };
+  } else {
+    const [productsRes, categoriesRes, configRes] = await Promise.all([
+      fetch(`${apiBase}/api/catalog/products`, { cache: 'no-store' }),
+      fetch(`${apiBase}/api/catalog/categories`, { cache: 'no-store' }).catch(() => null),
+      fetch(`${apiBase}/api/storefront/config`, { cache: 'no-store' }).catch(() => null),
+    ]);
+    if (!productsRes.ok) throw new Error(`Catálogo HTTP ${productsRes.status}`);
+    data = await productsRes.json();
+    if (categoriesRes && categoriesRes.ok) categoryData = await categoriesRes.json();
+    if (configRes && configRes.ok) configData = await configRes.json();
+  }
 
   APP_STATE.storeSettings = { installments: 6, ...(configData.settings || {}) };
   APP_STATE.categories = (categoryData.categories || []).map((category) => ({

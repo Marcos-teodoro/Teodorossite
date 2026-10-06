@@ -50,6 +50,16 @@ def on_startup():
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 
 
+@app.middleware("http")
+async def clear_cache_on_write(request, call_next):
+    response = await call_next(request)
+    if request.method not in ("GET", "HEAD", "OPTIONS"):
+        from .services.cache import clear
+
+        clear()
+    return response
+
+
 @app.on_event("shutdown")
 def on_shutdown():
     from .db import reset_pool

@@ -3,15 +3,19 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException, Query
 
 from ..db import get_connection
+from ..services.cache import cached
 
 router = APIRouter(prefix="/api/storefront", tags=["storefront"])
 
 
 @router.get("/config")
 def storefront_config():
-    with get_connection() as conn:
-        rows = conn.execute("SELECT key, value FROM site_settings").fetchall()
-    return {"settings": {row["key"]: row["value"] for row in rows}}
+    def build():
+        with get_connection() as conn:
+            rows = conn.execute("SELECT key, value FROM site_settings").fetchall()
+        return {"settings": {row["key"]: row["value"] for row in rows}}
+
+    return cached("config", build)
 
 
 @router.get("/coupon")

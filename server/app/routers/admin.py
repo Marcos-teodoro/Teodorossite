@@ -261,12 +261,11 @@ def admin_products(
     elif status == "inactive":
         sql += " AND active = 0"
     sql += " ORDER BY id DESC"
+    from .catalog import storefront_products
+
+    where = sql[len("SELECT * FROM products WHERE 1=1"):].replace(" ORDER BY id DESC", "")
     with get_connection() as conn:
-        rows = rows_to_list(conn.execute(sql, params).fetchall())
-        out = []
-        for row in rows:
-            row["similar_ids"] = parse_json_field(row.get("similar_ids"), [])
-            out.append(product_to_storefront(row, _product_images(conn, row["id"]), _product_variants(conn, row["id"])))
+        out = storefront_products(conn, where, params, order="id DESC")
     return {"products": out}
 
 
