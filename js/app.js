@@ -13,6 +13,47 @@ function escapeStorefront(value) {
     .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
 }
 
+// Miniatura WebP de 600px gerada no upload (nome_w600.webp). Se não existir, a <img> volta para a original.
+const THUMB_RE = /(\/(?:storage\/v1\/object\/public\/product-photos\/|uploads\/product-photos\/)[^?#]+)\.(?:jpe?g|png|webp)$/i;
+function thumbUrl(src) {
+  const value = String(src || '');
+  return THUMB_RE.test(value) ? value.replace(THUMB_RE, '$1_w600.webp') : value;
+}
+function thumbAttrs(src) {
+  const full = String(src || '');
+  const thumb = thumbUrl(full);
+  if (thumb === full) return `src="${escapeStorefront(full)}"`;
+  return `src="${escapeStorefront(thumb)}" data-full="${escapeStorefront(full)}" onerror="if(this.dataset.full){this.src=this.dataset.full;this.dataset.full=''}"`;
+}
+
+// Fotos do Unsplash: o celular baixa a versão pequena.
+function setHeroImage(img, url) {
+  if (!img || !url || img.getAttribute('src') === url) return;
+  if (/^https:\/\/images\.unsplash\.com\//.test(url) && /[?&]w=\d+/.test(url)) {
+    const at = (w, q) => url.replace(/([?&])w=\d+/, `$1w=${w}`).replace(/([?&])q=\d+/, `$1q=${q}`);
+    img.srcset = `${at(640, 75)} 640w, ${at(960, 80)} 960w, ${at(1400, 85)} 1400w`;
+  } else {
+    img.removeAttribute('srcset');
+  }
+  img.src = url;
+}
+
+// O SDK do Mercado Pago (~70 KB) só é baixado quando o cliente abre o checkout.
+let mercadoPagoSdkPromise = null;
+function loadMercadoPagoSdk() {
+  if (window.MercadoPago) return Promise.resolve();
+  if (!mercadoPagoSdkPromise) {
+    mercadoPagoSdkPromise = new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://sdk.mercadopago.com/js/v2';
+      script.onload = () => resolve();
+      script.onerror = () => { mercadoPagoSdkPromise = null; reject(new Error('SDK Mercado Pago não carregou.')); };
+      document.head.appendChild(script);
+    });
+  }
+  return mercadoPagoSdkPromise;
+}
+
 function installmentCount() {
   const value = Number(APP_STATE.storeSettings?.installments || 6);
   return Math.max(1, Math.min(12, value || 6));
@@ -28,7 +69,7 @@ function renderStorefrontSettings() {
   const heroButton = document.getElementById('heroButton');
   if (heroButton && settings.hero_button) heroButton.firstChild.textContent = `${settings.hero_button} `;
   const heroImage = document.getElementById('heroImage');
-  if (heroImage && settings.hero_image) heroImage.src = settings.hero_image;
+  if (heroImage && settings.hero_image) setHeroImage(heroImage, settings.hero_image);
   setText('topInstallments', `${installmentCount()}x sem juros`);
   setText('benefitInstallments', `Até ${installmentCount()}x sem juros no cartão.`);
   setText('pdpInstallmentCount', `${installmentCount()}x`);
@@ -66,7 +107,7 @@ function renderStorefrontCategories() {
       return `
         <button onclick="setCategoryFilter('${category.slug}')" data-circle-cat="${category.slug}" class="cat-circle-card group text-center">
           <div class="aspect-square overflow-hidden rounded-2xl mb-2.5 bg-teodora-cream">
-            <img src="${escapeStorefront(image)}" alt="${escapeStorefront(category.name)}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <img ${thumbAttrs(image)} alt="${escapeStorefront(category.name)}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
           </div>
           <span class="text-xs tracking-wide text-teodora-text">${escapeStorefront(category.name)}</span>
         </button>`;
@@ -819,7 +860,7 @@ function renderSimilarProducts(product) {
   container.innerHTML = similarList.map(item => `
     <article class="group bg-white rounded-3xl border border-teodora-border hover:border-teodora-gold/50 shadow-card-clean hover:shadow-card-hover transition-all duration-300 flex flex-col h-full overflow-hidden p-4">
       <div onclick="openProductPage(${item.id})" class="relative w-full aspect-[3/4] rounded-2xl overflow-hidden bg-teodora-bgLight mb-4 flex-shrink-0 cursor-pointer">
-        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-full h-full object-contain p-[6%] mix-blend-multiply group-hover:scale-105 transition-transform duration-700">
+        <img ${thumbAttrs(item.image)} alt="${escapeStorefront(item.title)}" loading="lazy" class="w-full h-full object-contain p-[6%] mix-blend-multiply group-hover:scale-105 transition-transform duration-700">
         ${item.badge ? `
           <span class="absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider bg-white/95 text-teodora-text border border-teodora-border shadow-sm">
             ${escapeStorefront(item.badge)}
@@ -891,7 +932,7 @@ function createProductCardHTML(item) {
   return `
     <article class="product-card group flex flex-col h-full overflow-hidden">
       <div onclick="openProductPage(${item.id})" class="product-card__media relative w-full overflow-hidden cursor-pointer">
-        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy">
+        <img ${thumbAttrs(item.image)} alt="${escapeStorefront(item.title)}" class="transition-transform duration-700 ease-out group-hover:scale-[1.03]" loading="lazy" decoding="async">
         ${item.badge ? `
           <span class="absolute top-2.5 left-2.5 text-[9px] sm:text-[10px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 ${badgeClass}">
             ${escapeStorefront(item.badge)}
@@ -1016,7 +1057,7 @@ function updateCartUI() {
   } else {
     listEl.innerHTML = APP_STATE.cart.map(item => `
       <div class="flex items-center gap-3 p-3 bg-teodora-bgLight rounded-2xl border border-teodora-border">
-        <img src="${escapeStorefront(item.image)}" alt="${escapeStorefront(item.title)}" class="w-16 h-16 rounded-xl object-cover bg-white border border-teodora-border">
+        <img ${thumbAttrs(item.image)} alt="${escapeStorefront(item.title)}" class="w-16 h-16 rounded-xl object-cover bg-white border border-teodora-border">
         <div class="flex-1 min-w-0">
           <h4 class="font-heading text-xs font-semibold text-teodora-text truncate">${escapeStorefront(item.title)}</h4>
           <p class="text-[10px] text-teodora-textMuted">${item.volume}</p>
@@ -1166,6 +1207,7 @@ async function openMercadoPagoModal() {
     return;
   }
   toggleCartDrawer(false);
+  loadMercadoPagoSdk().catch(() => {}); // adianta o download enquanto o cliente preenche os dados
 
   const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discount = calculateCouponDiscount(subtotal);
@@ -1369,7 +1411,7 @@ function closeMercadoPagoModal() {
 }
 
 async function mountPaymentBrick(amount, publicKey, orderId) {
-  if (!window.MercadoPago) throw new Error('SDK Mercado Pago não carregou.');
+  await loadMercadoPagoSdk();
   if (!publicKey) throw new Error('MP_PUBLIC_KEY não configurada no servidor.');
 
   const mp = new window.MercadoPago(publicKey, { locale: 'pt-BR' });
@@ -1786,7 +1828,7 @@ function openWishlistModal() {
     list.innerHTML = APP_STATE.wishlist.map(p => `
       <div class="flex items-center justify-between p-3 bg-teodora-bgLight rounded-2xl border border-teodora-border">
         <div class="flex items-center gap-3">
-          <img src="${escapeStorefront(p.image)}" class="w-12 h-12 rounded-xl object-cover border border-teodora-border">
+          <img ${thumbAttrs(p.image)} alt="${escapeStorefront(p.title)}" class="w-12 h-12 rounded-xl object-cover border border-teodora-border">
           <div>
             <p class="text-xs font-semibold text-teodora-text">${escapeStorefront(p.title)}</p>
             <p class="text-xs text-teodora-text font-bold">${formatBRL(p.price)}</p>
@@ -1854,7 +1896,7 @@ function executeLiveSearch(query) {
   out.innerHTML = matches.map(m => `
     <div onclick="openQuickModal(${m.id}); closeSearchModal();" class="flex items-center justify-between p-2.5 rounded-xl hover:bg-teodora-roseLight cursor-pointer transition">
       <div class="flex items-center gap-3">
-        <img src="${escapeStorefront(m.image)}" class="w-11 h-11 rounded-lg object-cover border border-teodora-border">
+        <img ${thumbAttrs(m.image)} alt="${escapeStorefront(m.title)}" class="w-11 h-11 rounded-lg object-cover border border-teodora-border">
         <div>
           <p class="text-xs font-semibold text-teodora-text">${escapeStorefront(m.title)}</p>
           <p class="text-[10px] text-teodora-textMuted">${escapeStorefront(m.volume)}</p>

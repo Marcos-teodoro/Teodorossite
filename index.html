@@ -4,14 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TEODORA — Perfumes e Cosméticos</title>
-  
-  <!-- Fontes -->
+  <meta name="description" content="Teodora: perfumes originais, skincare, maquiagem e cosméticos com entrega para todo o Brasil. Pague com Pix ou cartão.">
+
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <link rel="preconnect" href="https://rdydqtwspgwzlcmxvphz.supabase.co">
+
+  <!-- Fontes e ícones carregam sem bloquear a primeira pintura da página -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
-  
-  <!-- FontAwesome 6 Icons CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  </noscript>
   
   <!-- Estilos e tema Teodora -->
   <link rel="stylesheet" href="css/tailwind.css?v=cat1">
@@ -136,6 +142,11 @@
 
       <div class="relative order-1 lg:order-2 hero-visual h-[200px] sm:h-[380px] lg:h-auto lg:min-h-[520px] bg-teodora-blush">
         <img id="heroImage" src="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85"
+             srcset="https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=640&q=75 640w,
+                     https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=960&q=80 960w,
+                     https://images.unsplash.com/photo-1595425970377-c9703cf48b6d?auto=format&fit=crop&w=1400&q=85 1400w"
+             sizes="(min-width: 1024px) 50vw, 100vw"
+             fetchpriority="high" decoding="async"
              alt="Frasco de perfume Teodora"
              class="absolute inset-0 w-full h-full object-cover object-center">
       </div>
@@ -899,7 +910,6 @@
   </footer>
 
   <!-- Dados e lógica da loja -->
-  <script src="https://sdk.mercadopago.com/js/v2"></script>
   <script src="js/api.js?v=status-pt"></script>
   <script src="js/br-utils.js?v=1"></script>
   <script src="js/data.js?v=rapido1"></script>

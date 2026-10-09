@@ -1,8 +1,10 @@
+import hashlib
+import re
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
@@ -48,6 +50,23 @@ def on_startup():
     init_db()
     seed_if_empty()
     settings.uploads_dir.mkdir(parents=True, exist_ok=True)
+
+
+STATIC_PREFIXES = ("/css/", "/js/", "/admin/css/", "/admin/js/")
+
+
+@app.middleware("http")
+async def static_cache_headers(request, call_next):
+    """CSS/JS com ?v=<hash> (posto automaticamente nas páginas) e fotos com nome único: cache de 1 ano."""
+    response = await call_next(request)
+    path = request.url.path
+    if response.status_code == 200 and "cache-control" not in response.headers:
+        if path.startswith(STATIC_PREFIXES):
+            versioned = "v" in request.query_params
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable" if versioned else "public, max-age=3600"
+        elif path.startswith("/uploads/"):
+            response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return response
 
 
 @app.middleware("http")
@@ -123,14 +142,41 @@ for mount_path, directory in static_mounts:
         app.mount(mount_path, StaticFiles(directory=str(directory)), name=mount_path.strip("/").replace("/", "_"))
 
 
+_ASSET_RE = re.compile(r'((?:href|src)=")((?:\.\./|/)?(?:admin/)?(?:css|js)/[\w.\-/]+\.(?:css|js))(?:\?v=[^"]*)?"')
+_asset_versions: dict[Path, tuple[float, str]] = {}
+
+
+def _asset_version(file: Path) -> str | None:
+    try:
+        mtime = file.stat().st_mtime
+    except OSError:
+        return None
+    cached = _asset_versions.get(file)
+    if not cached or cached[0] != mtime:
+        cached = (mtime, hashlib.sha1(file.read_bytes()).hexdigest()[:10])
+        _asset_versions[file] = cached
+    return cached[1]
+
+
+def versioned_html(page: Path, headers: dict[str, str] | None = None) -> HTMLResponse:
+    """Troca o ?v= dos CSS/JS locais pelo hash do arquivo: cada mudança gera URL nova, sem bump manual."""
+
+    def replace(match: re.Match) -> str:
+        version = _asset_version(PROJECT_ROOT / match.group(2).lstrip("./"))
+        return f'{match.group(1)}{match.group(2)}?v={version}"' if version else match.group(0)
+
+    html = _ASSET_RE.sub(replace, page.read_text(encoding="utf-8"))
+    return HTMLResponse(html, headers=headers or {"Cache-Control": "no-cache"})
+
+
 @app.get("/")
 def index_page():
-    return FileResponse(PROJECT_ROOT / "index.html")
+    return versioned_html(PROJECT_ROOT / "index.html")
 
 
 @app.get("/conta.html")
 def conta_page():
-    return FileResponse(
+    return versioned_html(
         PROJECT_ROOT / "conta.html",
         headers={"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"},
     )
@@ -138,14 +184,14 @@ def conta_page():
 
 @app.get("/minha-conta.html")
 def minha_conta_page():
-    return FileResponse(PROJECT_ROOT / "minha-conta.html")
+    return versioned_html(PROJECT_ROOT / "minha-conta.html")
 
 
 @app.get("/admin")
 @app.get("/admin/")
 @app.get("/admin/index.html")
 def admin_page():
-    return FileResponse(
+    return versioned_html(
         PROJECT_ROOT / "admin" / "index.html",
         headers={"Cache-Control": "no-store, no-cache, must-revalidate", "Pragma": "no-cache"},
     )

@@ -7,6 +7,7 @@ from urllib.parse import quote, unquote
 import httpx
 
 from ..config import Settings, get_settings
+from .http import SSL_CTX
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,8 @@ async def upload_bytes(
             headers={
                 **_headers(settings, content_type),
                 "x-upsert": "true",
+                # Cada foto tem nome único (uuid), então o navegador pode guardá-la por 1 ano.
+                "cache-control": "public, max-age=31536000, immutable",
             },
             content=data,
         )
@@ -119,11 +122,14 @@ async def delete_object(url_or_path: str, settings: Settings | None = None) -> N
     path = object_path_from_url(url_or_path, settings) or url_or_path.lstrip("/")
     if not path:
         return
+    from .thumbnails import thumb_name
+
+    prefixes = [path] + ([thumb_name(path)] if thumb_name(path) else [])
     async with httpx.AsyncClient(timeout=30.0, verify=SSL_CTX) as client:
         res = await client.post(
             f"{_base(settings)}/storage/v1/object/remove/{BUCKET}",
             headers=_headers(settings, "application/json"),
-            json={"prefixes": [path]},
+            json={"prefixes": prefixes},
         )
         if res.status_code not in (200, 204) and res.status_code != 404:
             logger.warning("Falha ao remover %s do Storage: %s %s", path, res.status_code, res.text[:200])

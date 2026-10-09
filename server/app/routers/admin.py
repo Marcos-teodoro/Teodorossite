@@ -12,6 +12,7 @@ from ..db import get_connection, parse_json_field, row_to_dict, rows_to_list
 from ..schemas import CategoryBody, ProductBody, product_to_storefront
 from ..services.inventory import transition_order_stock
 from ..services.storage import StorageError, delete_object, is_supabase_storage_url, upload_bytes
+from ..services.thumbnails import store_thumbnail, thumb_name
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -133,12 +134,14 @@ async def upload_category_image(
         try:
             url = await upload_bytes(data=data, object_path=object_name, content_type=mime, settings=settings)
             storage = "supabase"
+            await store_thumbnail(data, object_name=object_name, settings=settings)
         except StorageError as err:
             raise HTTPException(status_code=err.status_code, detail=str(err)) from err
     else:
         settings.uploads_dir.mkdir(parents=True, exist_ok=True)
         local_name = f"cat_{category_id}_{uuid.uuid4().hex}{ext}"
         (settings.uploads_dir / local_name).write_bytes(data)
+        await store_thumbnail(data, local_path=settings.uploads_dir / local_name)
         url = f"/uploads/product-photos/{local_name}"
 
     old_url = row_to_dict(row).get("image_url") or ""
@@ -425,8 +428,9 @@ async def delete_product(product_id: int, _admin: dict = Depends(require_admin))
         conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
         conn.commit()
     for local_file in local_files:
-        if local_file.exists():
-            local_file.unlink()
+        for path in (local_file, local_file.with_name(thumb_name(local_file.name) or local_file.name)):
+            if path.exists():
+                path.unlink()
     for remote in remote_urls:
         await delete_object(remote, settings)
     return {"ok": True}
@@ -489,6 +493,7 @@ async def upload_product_image(
                 settings=settings,
             )
             storage = "supabase"
+            await store_thumbnail(data, object_name=object_name, settings=settings)
         except StorageError as err:
             raise HTTPException(status_code=err.status_code, detail=str(err)) from err
     else:
@@ -496,6 +501,7 @@ async def upload_product_image(
         local_name = f"{product_id}_{uuid.uuid4().hex}{ext}"
         dest = settings.uploads_dir / local_name
         dest.write_bytes(data)
+        await store_thumbnail(data, local_path=dest)
         url = f"/uploads/product-photos/{local_name}"
 
     with get_connection() as conn:
@@ -564,8 +570,10 @@ async def delete_image(product_id: int, image_id: int, _admin: dict = Depends(re
             else:
                 conn.execute("UPDATE products SET cover_image = NULL WHERE id = ?", (product_id,))
         conn.commit()
-    if local_file and local_file.exists():
-        local_file.unlink()
+    if local_file:
+        for path in (local_file, local_file.with_name(thumb_name(local_file.name) or local_file.name)):
+            if path.exists():
+                path.unlink()
     if remote_url:
         await delete_object(remote_url, settings)
     return {"ok": True}
