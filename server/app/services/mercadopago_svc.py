@@ -24,6 +24,7 @@ def create_payment(payment_data: dict[str, Any]) -> dict[str, Any]:
     response = result.get("response") or {}
     status = result.get("status")
     if status not in (200, 201):
+        print(f"[mercadopago] /v1/payments {status}: {str(response)[:2000]}")
         message = (
             (response.get("message") if isinstance(response, dict) else None)
             or (response.get("error") if isinstance(response, dict) else None)
@@ -126,6 +127,9 @@ def create_order(
         if form.get("issuer_id"):
             method["issuer_id"] = str(form["issuer_id"])
 
+    # Com credenciais de teste, a API Orders só aceita este e-mail de comprador (outros dão 422).
+    if get_settings().mp_sandbox:
+        payer_email = "test@testuser.com"
     payer: dict[str, Any] = {"email": payer_email}
     form_payer = form.get("payer") if isinstance(form.get("payer"), dict) else {}
     if form_payer.get("identification"):
@@ -150,8 +154,15 @@ def create_order(
     # 402 = pagamento recusado: a Order vem em "data" e deve ser tratada como recusa, não como erro de API.
     if resp.status_code == 402 and isinstance(data.get("data"), dict):
         return normalize_order(data["data"])
+    print(f"[mercadopago] /v1/orders {resp.status_code}: {resp.text[:2000]}")
     errors = data.get("errors") if isinstance(data, dict) else None
-    message = (errors[0].get("message") if errors else None) or data.get("message") or f"Mercado Pago status {resp.status_code}"
+    first = errors[0] if errors and isinstance(errors[0], dict) else {}
+    message = first.get("message") or data.get("message") or f"Mercado Pago status {resp.status_code}"
+    details = first.get("details")
+    if details:
+        message = f"{message} ({'; '.join(map(str, details))})"
+    elif first.get("code"):
+        message = f"{message} ({first['code']})"
     raise RuntimeError(str(message))
 
 
