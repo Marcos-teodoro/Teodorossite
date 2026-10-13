@@ -19,6 +19,26 @@
     return Number(n || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
+  // Peso digitado pelo admin: aceita "0,223", "0.223", "223g", "223 g" ou "0,223 kg".
+  // Número inteiro acima de 30 sem unidade é tratado como gramas (frete vai até 30 kg).
+  function parseKg(v) {
+    let s = String(v ?? '').trim().toLowerCase().replace(/\s+/g, '');
+    if (!s) return 0;
+    let grams = false;
+    if (s.endsWith('kg')) s = s.slice(0, -2);
+    else if (s.endsWith('g')) { s = s.slice(0, -1); grams = true; }
+    if (s.includes(',') && s.includes('.')) s = s.replace(/\./g, '');
+    s = s.replace(',', '.');
+    let n = parseFloat(s);
+    if (!Number.isFinite(n) || n < 0) return 0;
+    if (grams || (n > 30 && !s.includes('.'))) n /= 1000;
+    return Math.round(n * 1000) / 1000;
+  }
+
+  function fmtKg(v) {
+    return Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 3 });
+  }
+
   function fmtDate(str) {
     if (!str) return '—';
     try {
@@ -621,7 +641,7 @@
       prod_notas_fundo: '',
       prod_descricao: '',
       prod_ingredientes: '',
-      prod_peso_manual: '0.38',
+      prod_peso_manual: '0,38',
       prod_altura: '',
       prod_largura: '',
       prod_comprimento: '',
@@ -675,8 +695,7 @@
       set('prod_notas_fundo', p.pyramid?.base || '');
       set('prod_descricao', p.description || '');
       set('prod_ingredientes', p.ingredients || '');
-      set('prod_peso_manual', p.weightKg ?? 0.38);
-      set('prod_altura', p.heightCm ?? '');
+            set('prod_altura', p.heightCm ?? '');
       set('prod_largura', p.widthCm ?? '');
       set('prod_comprimento', p.lengthCm ?? '');
       const heading = document.getElementById('form-product-heading');
@@ -684,6 +703,14 @@
       if (bc) bc.textContent = `Produtos / ${escapeHtml(p.title || 'Editar')}`;
       renderGallery(p);
       populateBoxSelect(p.box_id || null);
+      // weight_kg salvo = frasco + tara da caixa; mostra só o frasco para não somar a tara de novo.
+      {
+        const b = _boxes.find((x) => String(x.id) === String(document.getElementById('prod_caixa_id')?.value));
+        const tara = b ? parseKg(b.tara) : 0.15;
+        const frasco = p.weightKg != null ? Math.max(0, parseKg(p.weightKg) - tara) : 0.38;
+        set('prod_peso_manual', fmtKg(frasco));
+        updateShippingWeights();
+      }
       calculateDiscount();
       const adv = document.getElementById('prod-advanced');
       if (adv) adv.open = Boolean(p.oldPrice || p.badge || p.ingredients || p.family || p.intensity || p.occasion || p.sensation || (p.pyramid && (p.pyramid.top || p.pyramid.heart || p.pyramid.base)));
@@ -739,11 +766,11 @@
       description: g('prod_descricao').trim(),
       ingredients: g('prod_ingredientes').trim(),
       weight_kg: (() => {
-        const peso = parseFloat(g('prod_peso_manual')) || 0;
+        const peso = parseKg(g('prod_peso_manual'));
         const boxId = g('prod_caixa_id');
         const b = _boxes.find((x) => String(x.id) === String(boxId));
-        const tara = b ? (parseFloat(b.tara) || 0) : 0.15;
-        return Math.max(0.1, peso + tara);
+        const tara = b ? parseKg(b.tara) : 0.15;
+        return Math.max(0.1, Math.round((peso + tara) * 1000) / 1000);
       })(),
       height_cm: parseFloat(g('prod_altura')) || 10,
       width_cm: parseFloat(g('prod_largura')) || 20,
@@ -1369,7 +1396,7 @@
             ${b.isDefault ? '<span class="ml-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">Padrão</span>' : ''}
           </td>
           <td class="py-3.5 px-6 font-mono text-xs">${b.altura ?? '—'} × ${b.largura ?? '—'} × ${b.comprimento ?? '—'} cm</td>
-          <td class="py-3.5 px-6 font-mono text-xs">${b.tara != null ? `${b.tara} kg` : '—'}</td>
+          <td class="py-3.5 px-6 font-mono text-xs">${b.tara != null ? `${fmtKg(parseKg(b.tara))} kg` : '—'}</td>
           <td class="py-3.5 px-6 text-xs text-stone-500">${escapeHtml(b.desc || '—')}</td>
           <td class="py-3.5 px-6"><span class="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">Ativa</span></td>
           <td class="py-3.5 px-6 text-right">
@@ -1402,7 +1429,7 @@
       altura: parseFloat(document.getElementById('box_altura').value) || 0,
       largura: parseFloat(document.getElementById('box_largura').value) || 0,
       comprimento: parseFloat(document.getElementById('box_comprimento').value) || 0,
-      tara: parseFloat(document.getElementById('box_tara').value) || 0,
+      tara: parseKg(document.getElementById('box_tara').value),
       isDefault: document.getElementById('box_default').checked,
     };
     if (box.isDefault) _boxes.forEach((b) => (b.isDefault = false));
@@ -1431,7 +1458,7 @@
     document.getElementById('box_altura').value = b.altura || '';
     document.getElementById('box_largura').value = b.largura || '';
     document.getElementById('box_comprimento').value = b.comprimento || '';
-    document.getElementById('box_tara').value = b.tara || '';
+    document.getElementById('box_tara').value = b.tara ? fmtKg(parseKg(b.tara)) : '';
     document.getElementById('box_default').checked = !!b.isDefault;
     document.getElementById('box_nome').scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
@@ -1479,12 +1506,12 @@
 
   function updateShippingWeights() {
     loadBoxesFromStorage();
-    const peso = parseFloat(document.getElementById('prod_peso_manual')?.value) || 0;
+    const peso = parseKg(document.getElementById('prod_peso_manual')?.value);
     const boxId = document.getElementById('prod_caixa_id')?.value;
     const b = _boxes.find((x) => String(x.id) === String(boxId));
-    const tara = b ? (parseFloat(b.tara) || 0) : 0;
+    const tara = b ? parseKg(b.tara) : 0;
     const total = peso + tara;
-    const fmt = (v) => v.toFixed(2).replace('.', ',');
+    const fmt = fmtKg;
     const sp = document.getElementById('summary-prod-weight');
     const sb = document.getElementById('summary-box-tare');
     const st = document.getElementById('summary-total-weight');
@@ -2039,7 +2066,7 @@
         method: 'POST',
         body: JSON.stringify({
           cep: document.getElementById('cc_quote_cep').value,
-          weight: document.getElementById('cc_quote_weight').value,
+          weight: parseKg(document.getElementById('cc_quote_weight').value),
           height: document.getElementById('cc_quote_h').value,
           width: document.getElementById('cc_quote_w').value,
           length: document.getElementById('cc_quote_l').value,
