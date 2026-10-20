@@ -109,6 +109,34 @@ class VariantBody(BaseModel):
         return self
 
 
+AUDIENCES = ("feminino", "masculino", "unissex")
+
+
+def normalize_audience(value: str | None) -> str:
+    """Público do produto (subcategoria). Vazio = não informado."""
+    value = (value or "").strip().lower()
+    if value and value not in AUDIENCES:
+        raise ValueError("Publico deve ser feminino, masculino ou unissex")
+    return value
+
+
+class BulkCategoryBody(BaseModel):
+    ids: list[int] = Field(min_length=1, max_length=500)
+    category_slug: Optional[str] = None
+    audience: Optional[str] = None
+
+    @field_validator("audience")
+    @classmethod
+    def validate_audience(cls, value: Optional[str]) -> Optional[str]:
+        return None if value is None else normalize_audience(value)
+
+    @model_validator(mode="after")
+    def validate_change(self):
+        if self.category_slug is None and self.audience is None:
+            raise ValueError("Informe a categoria ou o publico")
+        return self
+
+
 class ProductBody(BaseModel):
     title: str
     brand_tag: str = ""
@@ -118,6 +146,7 @@ class ProductBody(BaseModel):
     intensity: str = ""
     occasion: str = ""
     sensation: str = ""
+    audience: str = ""
     price: float
     old_price: Optional[float] = None
     badge: str = ""
@@ -152,6 +181,11 @@ class ProductBody(BaseModel):
         if value <= 0:
             raise ValueError("Valor deve ser maior que zero")
         return value
+
+    @field_validator("audience")
+    @classmethod
+    def validate_audience(cls, value: str) -> str:
+        return normalize_audience(value)
 
     @field_validator("stock")
     @classmethod
@@ -213,6 +247,7 @@ def product_to_storefront(
         "intensity": row.get("intensity") or "",
         "occasion": row.get("occasion") or "",
         "sensation": row.get("sensation") or "",
+        "audience": row.get("audience") or "",
         "price": float(row["price"]),
         "oldPrice": float(row["old_price"]) if row.get("old_price") is not None else None,
         "badge": row.get("badge") or "",

@@ -156,5 +156,60 @@ class AdminWorkflowTests(unittest.TestCase):
         self.assertNotIn("ignored", public_settings)
 
 
+    def test_audience_and_bulk_category(self):
+        def create(title, **extra):
+            res = self.client.post(
+                "/api/admin/products",
+                json={"title": title, "category_slug": "perfumes", "price": 950, "stock": 2, **extra},
+                headers=self.admin_headers,
+            )
+            self.assertEqual(res.status_code, 200, res.text)
+            return res.json()["product"]
+
+        first = create("Perfume Caro Feminino", audience="Feminino")
+        self.assertEqual(first["audience"], "feminino")
+        second = create("Perfume Caro Dois")
+        self.assertEqual(second["audience"], "")
+
+        invalid = self.client.post(
+            "/api/admin/products",
+            json={"title": "Publico Errado", "price": 10, "stock": 1, "audience": "infantil"},
+            headers=self.admin_headers,
+        )
+        self.assertEqual(invalid.status_code, 422)
+
+        ids = [first["id"], second["id"]]
+        denied = self.client.post(
+            "/api/admin/products/bulk-category",
+            json={"ids": ids, "category_slug": "skincare"},
+            headers=self.customer_headers,
+        )
+        self.assertIn(denied.status_code, (401, 403))
+
+        empty = self.client.post(
+            "/api/admin/products/bulk-category", json={"ids": ids}, headers=self.admin_headers
+        )
+        self.assertEqual(empty.status_code, 422)
+        unknown = self.client.post(
+            "/api/admin/products/bulk-category",
+            json={"ids": ids, "category_slug": "nao-existe"},
+            headers=self.admin_headers,
+        )
+        self.assertEqual(unknown.status_code, 400)
+
+        bulk = self.client.post(
+            "/api/admin/products/bulk-category",
+            json={"ids": ids, "category_slug": "kits", "audience": "unissex"},
+            headers=self.admin_headers,
+        )
+        self.assertEqual(bulk.status_code, 200, bulk.text)
+        self.assertEqual(bulk.json()["updated"], 2)
+
+        catalog = {p["id"]: p for p in self.client.get("/api/catalog/bootstrap").json()["products"]}
+        for pid in ids:
+            self.assertEqual(catalog[pid]["category"], "kits")
+            self.assertEqual(catalog[pid]["audience"], "unissex")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -158,6 +158,7 @@
       const data = await TeodoraAPI.api('/api/admin/categories');
       _categories = data.categories || [];
     } catch (_) {}
+    syncCategorySelects();
     await loadBoxesFromServer();
     bindGalleryUploadControls();
     navigateView('dashboard');
@@ -395,6 +396,10 @@
             : '';
           return `
           <tr class="hover:bg-stone-50/50 transition-colors">
+            <td class="py-3 pl-5 pr-1">
+              <input type="checkbox" data-bulk-id="${escapeHtml(String(p.id))}" ${_selectedProductIds.has(String(p.id)) ? 'checked' : ''}
+                onchange="toggleProductSelection('${escapeHtml(String(p.id))}', this.checked)" class="w-4 h-4 accent-stone-900 cursor-pointer">
+            </td>
             <td class="py-3 px-5">
               ${imgSrc
                 ? `<img src="${escapeHtml(imgSrc)}" alt="" class="w-10 h-10 object-cover rounded border border-stone-200">`
@@ -405,7 +410,7 @@
               <div class="text-xs text-stone-400 mt-0.5">${escapeHtml(p.brandTag || '')}${badgeHtml}</div>
             </td>
             <td class="py-3 px-5 text-xs text-stone-500 font-mono">${escapeHtml(String(p.id || '').slice(0, 8))}</td>
-            <td class="py-3 px-5 text-xs text-stone-600">${escapeHtml(p.category || '—')}</td>
+            <td class="py-3 px-5 text-xs text-stone-600">${escapeHtml(categoryName(p.category))}${p.audience ? `<span class="block text-[11px] text-stone-400">${escapeHtml(AUDIENCE_LABEL[p.audience] || p.audience)}</span>` : ''}</td>
             <td class="py-3 px-5 font-mono text-sm font-medium text-stone-900">${money(p.price)}</td>
             <td class="py-3 px-5 text-sm ${stockCls}">${p.stock ?? 0}</td>
             <td class="py-3 px-5 text-xs text-stone-500">${escapeHtml(p.box_name || '—')}</td>
@@ -426,12 +431,83 @@
             </td>
           </tr>`;
         }).join('')
-      : '<tr><td colspan="9" class="py-10 text-center text-sm text-stone-400">Nenhum produto encontrado.</td></tr>';
+      : '<tr><td colspan="10" class="py-10 text-center text-sm text-stone-400">Nenhum produto encontrado.</td></tr>';
 
     const info = document.getElementById('catalog-pagination-info');
     if (info) info.textContent = total > 0 ? `Mostrando ${start + 1} a ${end} de ${total} produto(s)` : 'Nenhum produto';
     renderPagination(totalPages);
+    updateBulkBar();
   }
+
+  // ============================================================
+  // PRODUTOS — TROCA DE CATEGORIA / PÚBLICO EM MASSA
+  // ============================================================
+
+  const _selectedProductIds = new Set();
+
+  function categoryName(slug) {
+    const c = (_categories.length ? _categories : DEFAULT_CATEGORIES).find((x) => x.slug === slug);
+    return c ? c.name : (slug || '—');
+  }
+
+  function updateBulkBar() {
+    const bar = document.getElementById('bulk-category-bar');
+    if (bar) bar.classList.toggle('hidden', _selectedProductIds.size === 0);
+    const count = document.getElementById('bulk-selected-count');
+    if (count) count.textContent = `${_selectedProductIds.size} selecionado(s)`;
+    const all = document.getElementById('bulk-select-all');
+    if (all) {
+      const boxes = [...document.querySelectorAll('#products-table-body [data-bulk-id]')];
+      all.checked = boxes.length > 0 && boxes.every((b) => b.checked);
+    }
+  }
+
+  window.toggleProductSelection = function (id, checked) {
+    if (checked) _selectedProductIds.add(String(id));
+    else _selectedProductIds.delete(String(id));
+    updateBulkBar();
+  };
+
+  window.toggleSelectAllProducts = function (checked) {
+    document.querySelectorAll('#products-table-body [data-bulk-id]').forEach((box) => {
+      box.checked = checked;
+      if (checked) _selectedProductIds.add(box.dataset.bulkId);
+      else _selectedProductIds.delete(box.dataset.bulkId);
+    });
+    updateBulkBar();
+  };
+
+  window.clearProductSelection = function () {
+    _selectedProductIds.clear();
+    document.querySelectorAll('#products-table-body [data-bulk-id]').forEach((box) => { box.checked = false; });
+    updateBulkBar();
+  };
+
+  window.applyBulkCategory = async function () {
+    const ids = [..._selectedProductIds].map(Number).filter(Boolean);
+    const category = document.getElementById('bulk-category-select')?.value || '';
+    const audience = document.getElementById('bulk-audience-select')?.value ?? '__keep';
+    if (!ids.length) return;
+    if (!category && audience === '__keep') {
+      showToast('Escolha a nova categoria ou o público.', 'error');
+      return;
+    }
+    const body = { ids };
+    if (category) body.category_slug = category;
+    if (audience !== '__keep') body.audience = audience;
+    try {
+      const res = await TeodoraAPI.api('/api/admin/products/bulk-category', { method: 'POST', body: JSON.stringify(body) });
+      showToast(`${res.updated ?? ids.length} produto(s) atualizado(s).`);
+      _selectedProductIds.clear();
+      const catSel = document.getElementById('bulk-category-select');
+      if (catSel) catSel.value = '';
+      const audSel = document.getElementById('bulk-audience-select');
+      if (audSel) audSel.value = '__keep';
+      await loadProducts(false);
+    } catch (err) {
+      showToast(err.message || 'Erro ao atualizar produtos.', 'error');
+    }
+  };
 
   function renderPagination(totalPages) {
     const ctrl = document.getElementById('catalog-pagination-controls');
@@ -596,6 +672,7 @@
   function missingItems() {
     const val = (id) => (document.getElementById(id)?.value || '').trim();
     const missing = [];
+    if (!val('prod_categoria')) missing.push('categoria');
     if (!val('prod_titulo')) missing.push('nome do produto');
     if (!(parseFloat(val('prod_preco')) > 0)) missing.push('preço');
     if (val('prod_estoque') === '' || !(parseInt(val('prod_estoque'), 10) >= 0)) missing.push('quantidade em estoque');
@@ -630,7 +707,7 @@
       prod_titulo: '',
       prod_marca: '',
       prod_volume: '',
-      prod_categoria: 'perfumes',
+      prod_categoria: '',
       prod_selo: 'sem_selo',
       prod_preco: '',
       prod_preco_antigo: '',
@@ -650,7 +727,9 @@
       const el = document.getElementById(id);
       if (el) el.value = val;
     });
-    applyCategoryProfile(document.getElementById('prod_categoria')?.value || 'perfumes', true);
+    applyCategoryProfile('perfumes', true);
+    renderCategoryPicker();
+    selectProductCategory('');
     const heading = document.getElementById('form-product-heading');
     if (heading) heading.textContent = 'Novo produto';
     const bc = document.getElementById('breadcrumb-current');
@@ -679,13 +758,15 @@
       set('prod_titulo', p.title || '');
       set('prod_marca', p.brandTag || '');
       set('prod_volume', p.volume || '');
-      set('prod_categoria', p.category || 'perfumes');
+      set('prod_categoria', '');
+      renderCategoryPicker();
+      selectProductCategory(p.category || 'perfumes', true);
+      selectProductAudience(p.audience || '');
       set('prod_selo', BADGE_IN[p.badge || ''] || 'sem_selo');
       set('prod_preco', p.price ?? '');
       set('prod_preco_antigo', p.oldPrice ?? '');
       set('prod_estoque', p.stock ?? 0);
       set('prod_ativo', p.active !== false ? 'sim' : 'nao');
-      applyCategoryProfile(p.category || 'perfumes', true);
       setSelectValue(document.getElementById('prod_familia'), p.family);
       setSelectValue(document.getElementById('prod_concentracao'), p.intensity);
       setSelectValue(document.getElementById('prod_ocasiao'), p.occasion);
@@ -739,6 +820,11 @@
     // Rascunho pode ficar sem foto; produto publicado precisa de tudo.
     const blocking = publishing ? missing : missing.filter((m) => !m.includes('foto'));
     if (blocking.length) {
+      if (blocking.includes('categoria')) {
+        const block = document.getElementById('prod-cat-block');
+        block?.classList.add('needs-choice');
+        block?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
       showToast(`Falta preencher: ${blocking.join(', ')}.`, 'error');
       updateReadiness();
       return;
@@ -751,6 +837,7 @@
       brand_tag: g('prod_marca').trim(),
       volume: g('prod_volume').trim(),
       category_slug: g('prod_categoria'),
+      audience: AUDIENCE_CATEGORIES.includes(g('prod_categoria')) ? g('prod_publico') : '',
       badge: BADGE_OUT[g('prod_selo')] ?? '',
       price: parseFloat(g('prod_preco')) || 0,
       old_price: parseFloat(g('prod_preco_antigo')) || null,
@@ -1209,12 +1296,63 @@
       filter.innerHTML = `<option value="todos">Todas as Categorias</option>${options}`;
       filter.value = current || 'todos';
     }
-    const prodCat = document.getElementById('prod_categoria');
-    if (prodCat && options) {
-      const current = prodCat.value;
-      prodCat.innerHTML = options;
-      if ([...prodCat.options].some((o) => o.value === current)) prodCat.value = current;
+    const bulk = document.getElementById('bulk-category-select');
+    if (bulk && options) bulk.innerHTML = `<option value="">Categoria: manter</option>${options}`;
+    renderCategoryPicker();
+  }
+
+  // ============================================================
+  // CATEGORIA + PÚBLICO NO CADASTRO (botões; valor fica em inputs hidden)
+  // ============================================================
+
+  const DEFAULT_CATEGORIES = [
+    { slug: 'perfumes', name: 'Perfumes' }, { slug: 'skincare', name: 'Skincare' },
+    { slug: 'maquiagem', name: 'Maquiagem' }, { slug: 'cabelos', name: 'Cabelos' },
+    { slug: 'corpo', name: 'Corpo & Banho' }, { slug: 'kits', name: 'Kits' },
+  ];
+  // Categorias em que faz sentido perguntar "para quem?"
+  const AUDIENCE_CATEGORIES = ['perfumes', 'kits'];
+  const AUDIENCE_LABEL = { feminino: 'Feminino', masculino: 'Masculino', unissex: 'Unissex' };
+
+  function renderCategoryPicker() {
+    const box = document.getElementById('prod-cat-picker');
+    if (!box) return;
+    const cats = _categories.length ? _categories : DEFAULT_CATEGORIES;
+    box.innerHTML = cats.map((c) =>
+      `<button type="button" data-cat="${escapeHtml(c.slug)}" onclick="selectProductCategory('${escapeHtml(c.slug)}')" class="pick-btn">${escapeHtml(c.name)}</button>`
+    ).join('');
+    markPicked('prod-cat-picker', 'cat', document.getElementById('prod_categoria')?.value || '');
+  }
+
+  function markPicked(containerId, attr, value) {
+    document.querySelectorAll(`#${containerId} [data-${attr}]`).forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset[attr] === value);
+    });
+  }
+
+  function selectProductCategory(slug, keepAudience) {
+    const input = document.getElementById('prod_categoria');
+    if (!input) return;
+    const changed = input.value !== slug;
+    input.value = slug;
+    if (slug && !document.querySelector(`#prod-cat-picker [data-cat="${CSS.escape(slug)}"]`)) {
+      // categoria antiga que não está mais na lista: mostra para não perder o dado
+      document.getElementById('prod-cat-picker')?.insertAdjacentHTML('beforeend',
+        `<button type="button" data-cat="${escapeHtml(slug)}" onclick="selectProductCategory('${escapeHtml(slug)}')" class="pick-btn">${escapeHtml(slug)}</button>`);
     }
+    markPicked('prod-cat-picker', 'cat', slug);
+    document.getElementById('prod-cat-block')?.classList.remove('needs-choice');
+    const showAudience = AUDIENCE_CATEGORIES.includes(slug);
+    document.getElementById('prod-audience-wrap')?.classList.toggle('hidden', !showAudience);
+    if (!showAudience && !keepAudience) selectProductAudience('');
+    if (changed) applyCategoryProfile(slug || 'perfumes', true);
+    updateReadiness();
+  }
+
+  function selectProductAudience(value) {
+    const input = document.getElementById('prod_publico');
+    if (input) input.value = value || '';
+    markPicked('prod-audience-picker', 'audience', value || '');
   }
 
   function renderCategoriesTable() {
@@ -2519,6 +2657,8 @@
   window.handleSaveProduct    = handleSaveProduct;
   window.autoGenerateTitle    = autoGenerateTitle;
   window.applyCategoryProfile = applyCategoryProfile;
+  window.selectProductCategory = selectProductCategory;
+  window.selectProductAudience = selectProductAudience;
   window.calculateDiscount    = calculateDiscount;
   window.handleCatalogSearch          = handleCatalogSearch;
   window.handleCatalogCategoryChange  = handleCatalogCategoryChange;

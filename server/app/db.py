@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS products (
   intensity TEXT DEFAULT 'edp',
   occasion TEXT DEFAULT 'dia',
   sensation TEXT DEFAULT 'romantico',
+  audience TEXT DEFAULT '',
   price REAL NOT NULL,
   old_price REAL,
   badge TEXT DEFAULT '',
@@ -475,6 +476,10 @@ def init_db() -> None:
         }.items():
             if name not in order_columns:
                 conn.execute(f"ALTER TABLE orders ADD COLUMN {name} {definition}")
+        product_columns = {row["name"] for row in conn.execute("PRAGMA table_info(products)").fetchall()}
+        if "audience" not in product_columns:
+            # Público do produto (subcategoria): feminino, masculino, unissex ou vazio.
+            conn.execute("ALTER TABLE products ADD COLUMN audience TEXT DEFAULT ''")
         item_columns = {row["name"] for row in conn.execute("PRAGMA table_info(order_items)").fetchall()}
         for name, definition in {
             "variant_id": "INTEGER",

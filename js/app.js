@@ -152,6 +152,8 @@ function getFilteredProducts() {
     if (selectedVals && selectedVals.length > 0) {
       result = result.filter(p => {
         const prodVal = p[groupId];
+        // Perfume unissex também aparece para quem filtrou Feminino ou Masculino.
+        if (groupId === 'audience' && prodVal === 'unissex') return true;
         if (Array.isArray(prodVal)) {
           return selectedVals.some(v => prodVal.includes(v));
         }
@@ -438,11 +440,7 @@ function resetAllFilters() {
   const dSearch = document.getElementById('headerDesktopSearch');
   if (dSearch) dSearch.value = '';
 
-  const priceSlider = document.getElementById('priceRangeInput');
-  if (priceSlider) priceSlider.value = PRICE_FILTER_MAX;
-
-  const priceLabel = document.getElementById('priceDisplayLabel');
-  if (priceLabel) priceLabel.innerText = formatBRL(PRICE_FILTER_MAX);
+  syncPriceRangeLimits();
 
   const badgeDefault = document.querySelector('input[name="badgeFilter"][value=""]');
   if (badgeDefault) badgeDefault.checked = true;
@@ -450,6 +448,21 @@ function resetAllFilters() {
   updateNavigationUI('todos');
   renderDynamicFilters();
   renderProducts();
+}
+
+// Ajusta os sliders de preço (desktop e mobile) ao teto calculado do catálogo.
+function syncPriceRangeLimits() {
+  document.querySelectorAll('[data-price-range]').forEach((input) => {
+    input.max = String(PRICE_FILTER_MAX);
+    input.value = String(APP_STATE.filters.maxPrice);
+  });
+  const formatted = formatBRL(APP_STATE.filters.maxPrice);
+  ['priceDisplayLabel', 'mobilePriceLabel'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = formatted;
+  });
+  const maxLabel = document.getElementById('priceRangeMaxLabel');
+  if (maxLabel) maxLabel.innerText = `R$ ${PRICE_FILTER_MAX}`;
 }
 
 function handlePriceRangeChange(val) {

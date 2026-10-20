@@ -1,5 +1,7 @@
 // Estado da loja + filtros. Catálogo vem da API (/api/catalog/products).
-const PRICE_FILTER_MAX = 800;
+// Teto do filtro de preço: recalculado pelo produto mais caro ao carregar o catálogo
+// (antes era fixo em 800 e escondia perfumes mais caros da loja inteira).
+let PRICE_FILTER_MAX = 800;
 
 function makeProduct(p) {
   const firstSaved = (p.images || []).map((img) => img && img.url).find(Boolean) || '';
@@ -16,6 +18,7 @@ function makeProduct(p) {
     intensity: "edp",
     occasion: "dia",
     sensation: "romantico",
+    audience: "",
     notes: "Boa fixação e projeção",
     pyramid: {
       top: "Notas de saída",
@@ -114,6 +117,16 @@ const CATEGORY_FILTER_CONFIGS = {
     eyebrow: "Perfumes",
     title: "Filtrar",
     groups: [
+      {
+        id: "audience",
+        name: "Para quem",
+        type: "pills",
+        options: [
+          { value: "feminino", label: "Feminino" },
+          { value: "masculino", label: "Masculino" },
+          { value: "unissex", label: "Unissex" }
+        ]
+      },
       {
         id: "family",
         name: "Família olfativa",
@@ -232,5 +245,9 @@ async function loadCatalogFromApi() {
     return product;
   });
   if (!APP_STATE.products.length) throw new Error('Catálogo vazio');
+  const highest = APP_STATE.products.reduce((max, p) => Math.max(max, Number(p.price) || 0), 0);
+  PRICE_FILTER_MAX = Math.max(800, Math.ceil(highest / 100) * 100);
+  APP_STATE.filters.maxPrice = PRICE_FILTER_MAX;
+  if (typeof syncPriceRangeLimits === 'function') syncPriceRangeLimits();
   APP_STATE.catalogLoaded = true;
 }

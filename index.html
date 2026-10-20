@@ -299,10 +299,10 @@
               <h4 class="text-[11px] uppercase tracking-[0.14em] text-teodora-textMuted">Preço até</h4>
               <span id="priceDisplayLabel" class="text-sm text-teodora-text">R$ 800,00</span>
             </div>
-            <input type="range" id="priceRangeInput" min="50" max="800" step="10" value="800" oninput="handlePriceRangeChange(this.value)" class="w-full cursor-pointer">
+            <input type="range" id="priceRangeInput" data-price-range min="50" max="800" step="10" value="800" oninput="handlePriceRangeChange(this.value)" class="w-full cursor-pointer">
             <div class="flex justify-between text-[10px] text-teodora-textMuted">
               <span>R$ 50</span>
-              <span>R$ 800</span>
+              <span id="priceRangeMaxLabel">R$ 800</span>
             </div>
           </div>
 
@@ -591,7 +591,7 @@
           <span class="text-xs uppercase tracking-wider font-bold text-teodora-textMuted">Preço Máximo</span>
           <span id="mobilePriceLabel" class="text-xs font-bold text-teodora-text">R$ 800,00</span>
         </div>
-        <input type="range" min="50" max="800" step="10" value="800" oninput="handlePriceRangeChange(this.value)" class="w-full">
+        <input type="range" data-price-range min="50" max="800" step="10" value="800" oninput="handlePriceRangeChange(this.value)" class="w-full">
       </div>
 
       <div class="pt-6 border-t border-teodora-border">

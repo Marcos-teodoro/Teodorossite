@@ -64,6 +64,21 @@
       box-shadow: 0 0 0 1px #141413 !important;
     }
 
+    /* Botões de escolha (categoria / público) no cadastro de produto */
+    .pick-btn {
+      padding: 0.55rem 1rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      border: 1px solid #D6D3CD;
+      border-radius: 999px;
+      background: #fff;
+      color: #44403C;
+      transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .pick-btn:hover { border-color: #141413; }
+    .pick-btn.is-active { background: #141413; border-color: #141413; color: #fff; }
+    #prod-cat-block.needs-choice { border-color: #F87171; background: #FEF2F2; }
+
     /* Scrollbar sutil */
     ::-webkit-scrollbar {
       width: 6px;
@@ -392,16 +407,36 @@
             </div>
           </div>
 
+          <!-- Troca de categoria em massa: aparece quando algum produto é marcado -->
+          <div id="bulk-category-bar" class="hidden mb-4 bg-stone-900 text-white rounded px-4 py-3 flex flex-col md:flex-row md:items-center gap-3">
+            <span id="bulk-selected-count" class="text-xs font-semibold uppercase tracking-wider">0 selecionado(s)</span>
+            <div class="flex flex-wrap items-center gap-2 md:ml-auto">
+              <select id="bulk-category-select" class="text-xs px-3 py-2 bg-white text-stone-800 border border-stone-300 rounded">
+                <option value="">Categoria: manter</option>
+              </select>
+              <select id="bulk-audience-select" class="text-xs px-3 py-2 bg-white text-stone-800 border border-stone-300 rounded">
+                <option value="__keep">Público: manter</option>
+                <option value="feminino">Feminino</option>
+                <option value="masculino">Masculino</option>
+                <option value="unissex">Unissex</option>
+                <option value="">Sem público</option>
+              </select>
+              <button type="button" onclick="applyBulkCategory()" class="px-4 py-2 text-xs uppercase tracking-wider font-semibold rounded bg-amber-500 hover:bg-amber-400 text-stone-900">Aplicar</button>
+              <button type="button" onclick="clearProductSelection()" class="px-3 py-2 text-xs rounded border border-stone-600 hover:bg-stone-800">Cancelar</button>
+            </div>
+          </div>
+
           <!-- Tabela Principal de Produtos -->
           <div class="bg-white rounded border border-brand-border shadow-[0_1px_3px_rgba(0,0,0,0.02)] overflow-hidden">
             <div class="overflow-x-auto">
               <table class="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr class="border-b border-stone-200 bg-stone-50/70 text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
+                    <th class="py-3 pl-5 pr-1 w-8"><input type="checkbox" id="bulk-select-all" onchange="toggleSelectAllProducts(this.checked)" title="Selecionar todos desta página" class="w-4 h-4 accent-stone-900 cursor-pointer"></th>
                     <th class="py-3 px-5">Foto</th>
                     <th class="py-3 px-5">Produto & Marca</th>
                     <th class="py-3 px-5">SKU</th>
-                    <th class="py-3 px-5">Categoria</th>
+                    <th class="py-3 px-5">Categoria · Público</th>
                     <th class="py-3 px-5">Preço</th>
                     <th class="py-3 px-5">Estoque</th>
                     <th class="py-3 px-5">Caixa</th>
@@ -513,22 +548,28 @@
               </div>
 
               <div class="p-6 space-y-5">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Categoria e público em botões: um toque e pronto (as categorias vêm do banco) -->
+                <div id="prod-cat-block" class="rounded border border-stone-200 bg-[#FCFBF9] p-4 space-y-4">
                   <div>
-                    <label for="prod_categoria" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Categoria <span class="text-red-500">*</span></label>
-                    <select id="prod_categoria" onchange="applyCategoryProfile(this.value, true)" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
-                      <option value="perfumes" selected>Perfumes</option>
-                      <option value="skincare">Skincare</option>
-                      <option value="maquiagem">Maquiagem</option>
-                      <option value="cabelos">Cabelos</option>
-                      <option value="corpo">Corpo & Banho</option>
-                      <option value="kits">Kits & Presentes</option>
-                    </select>
+                    <span class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-2">Categoria <span class="text-red-500">*</span> <span class="normal-case tracking-normal font-normal text-stone-500">— define onde o produto aparece na loja</span></span>
+                    <input type="hidden" id="prod_categoria" value="">
+                    <div id="prod-cat-picker" class="flex flex-wrap gap-2"></div>
                   </div>
-                  <div>
-                    <label for="prod_marca" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Marca</label>
-                    <input type="text" id="prod_marca" value="" oninput="autoGenerateTitle()" placeholder="Ex: Tommy Hilfiger, Paco Rabanne, Medicube" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
+                  <div id="prod-audience-wrap" class="hidden">
+                    <span class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-2">Para quem? <span class="normal-case tracking-normal font-normal text-stone-500">— aparece como filtro na loja</span></span>
+                    <input type="hidden" id="prod_publico" value="">
+                    <div id="prod-audience-picker" class="flex flex-wrap gap-2">
+                      <button type="button" data-audience="feminino" onclick="selectProductAudience('feminino')" class="pick-btn">Feminino</button>
+                      <button type="button" data-audience="masculino" onclick="selectProductAudience('masculino')" class="pick-btn">Masculino</button>
+                      <button type="button" data-audience="unissex" onclick="selectProductAudience('unissex')" class="pick-btn">Unissex</button>
+                      <button type="button" data-audience="" onclick="selectProductAudience('')" class="pick-btn">Não informar</button>
+                    </div>
                   </div>
+                </div>
+
+                <div>
+                  <label for="prod_marca" class="block text-[11px] font-semibold tracking-wider text-stone-700 uppercase mb-1.5">Marca</label>
+                  <input type="text" id="prod_marca" value="" oninput="autoGenerateTitle()" placeholder="Ex: Tommy Hilfiger, Paco Rabanne, Medicube" class="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded transition-all">
                 </div>
 
                 <div>

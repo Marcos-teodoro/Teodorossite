@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from ..auth import require_admin
 from ..config import get_settings
 from ..db import get_connection, parse_json_field, row_to_dict, rows_to_list
-from ..schemas import CategoryBody, ProductBody, product_to_storefront
+from ..schemas import BulkCategoryBody, CategoryBody, ProductBody, product_to_storefront
 from ..services.inventory import transition_order_stock
 from ..services.storage import StorageError, delete_object, is_supabase_storage_url, upload_bytes
 from ..services.thumbnails import store_thumbnail, thumb_name
@@ -272,6 +272,31 @@ def admin_products(
     return {"products": out}
 
 
+@router.post("/products/bulk-category")
+def bulk_update_category(body: BulkCategoryBody, _admin: dict = Depends(require_admin)):
+    """Troca categoria e/ou público de vários produtos de uma vez (ajuste rápido do catálogo)."""
+    ids = sorted(set(body.ids))
+    sets: list[str] = []
+    params: list = []
+    with get_connection() as conn:
+        if body.category_slug is not None:
+            cat = conn.execute("SELECT id FROM categories WHERE slug = ?", (body.category_slug,)).fetchone()
+            if not cat:
+                raise HTTPException(status_code=400, detail="Categoria não encontrada")
+            sets += ["category_id = ?", "category_slug = ?"]
+            params += [cat["id"], body.category_slug]
+        if body.audience is not None:
+            sets.append("audience = ?")
+            params.append(body.audience)
+        marks = ",".join("?" * len(ids))
+        cur = conn.execute(
+            f"UPDATE products SET {', '.join(sets)}, updated_at = datetime('now') WHERE id IN ({marks})",
+            params + ids,
+        )
+        conn.commit()
+    return {"ok": True, "updated": cur.rowcount}
+
+
 @router.get("/products/{product_id}")
 def admin_product(product_id: int, _admin: dict = Depends(require_admin)):
     with get_connection() as conn:
@@ -293,10 +318,10 @@ def create_product(body: ProductBody, _admin: dict = Depends(require_admin)):
             """
             INSERT INTO products (
               title, brand_tag, volume, category_id, category_slug, family, intensity,
-              occasion, sensation, price, old_price, badge, notes, description, ritual,
+              occasion, sensation, audience, price, old_price, badge, notes, description, ritual,
               ingredients, pyramid_top, pyramid_heart, pyramid_base, similar_ids, stock,
               active, weight_kg, height_cm, width_cm, length_cm, cover_image
-            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """,
             (
                 body.title,
@@ -308,6 +333,7 @@ def create_product(body: ProductBody, _admin: dict = Depends(require_admin)):
                 body.intensity,
                 body.occasion,
                 body.sensation,
+                body.audience,
                 body.price,
                 body.old_price,
                 body.badge,
@@ -355,7 +381,7 @@ def update_product(product_id: int, body: ProductBody, _admin: dict = Depends(re
             """
             UPDATE products SET
               title=?, brand_tag=?, volume=?, category_id=?, category_slug=?, family=?, intensity=?,
-              occasion=?, sensation=?, price=?, old_price=?, badge=?, notes=?, description=?, ritual=?,
+              occasion=?, sensation=?, audience=?, price=?, old_price=?, badge=?, notes=?, description=?, ritual=?,
               ingredients=?, pyramid_top=?, pyramid_heart=?, pyramid_base=?, similar_ids=?, stock=?,
               active=?, weight_kg=?, height_cm=?, width_cm=?, length_cm=?, cover_image=?,
               updated_at=datetime('now')
@@ -371,6 +397,7 @@ def update_product(product_id: int, body: ProductBody, _admin: dict = Depends(re
                 body.intensity,
                 body.occasion,
                 body.sensation,
+                body.audience,
                 body.price,
                 body.old_price,
                 body.badge,
